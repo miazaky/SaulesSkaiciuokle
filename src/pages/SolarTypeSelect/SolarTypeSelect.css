@@ -1,0 +1,16 @@
+.solar-type-select {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.solar-type-select__title {
+  margin-bottom: 32px;
+}
+
+.solar-type-select__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}

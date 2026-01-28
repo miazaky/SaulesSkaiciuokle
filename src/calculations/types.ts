@@ -9,16 +9,3 @@ export type CalculatorInput = {
   reserve: number;
   clampGap: number;
 };
-
-
-type SummaryState = {
-  batteryType: BatteryType;
-  moduleCount: number;
-  moduleLength: number;
-  moduleWidth: number;
-  moduleThickness: number;
-  constructionLength: number;
-  rowsCount: number;
-  reserve: number;
-  gap: number;
-};

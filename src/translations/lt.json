@@ -1,10 +1,15 @@
 {
   "title": {
-    "selectBattery": "Pasirinkite saulės baterijos tipą"
+    "selectBattery": "Pasirinkite saulės baterijos tipą",
+    "whereInstall": "Kur planuojate statyti saulės baterijas?"
   },
   "batteryTypes": {
     "ezys": "Ežys",
     "poline": "Poline"
+  },
+    "solarTypes": {
+    "ground": "Ant žemės",
+    "roof": "Ant stogo"
   },
   "sections": {
     "modules": "Modulių duomenys",

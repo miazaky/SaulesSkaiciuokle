@@ -147,6 +147,16 @@ export default function SolarGroundCalculator() {
           <button
             className="solar-calculator__actions"
             onClick={() =>
+              navigate("/", {
+              })
+            }
+          >
+            Grįžti atgal
+          </button>
+          
+          <button
+            className="solar-calculator__actions"
+            onClick={() =>
               navigate("/summary", {
                 state: {
                   batteryType,

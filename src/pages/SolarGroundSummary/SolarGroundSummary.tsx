@@ -76,7 +76,7 @@ export default function SolarGroundSummary() {
       <button
         className="solar-summary__actions"
         onClick={() =>
-          navigate("/solars", {
+          navigate("/ground", {
             state,
           })
         }
