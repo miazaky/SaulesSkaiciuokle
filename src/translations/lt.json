@@ -1,0 +1,26 @@
+{
+  "title": {
+    "selectBattery": "Pasirinkite saulės baterijos tipą"
+  },
+  "batteryTypes": {
+    "ezys": "Ežys",
+    "poline": "Poline"
+  },
+  "sections": {
+    "modules": "Modulių duomenys",
+    "construction": "Konstrukcijos duomenys"
+  },
+  "fields": {
+    "moduleCount": "Modulių kiekis, vnt. (lyg. sk., min 8, max 54)",
+    "moduleLength": "Modulio ilgis, mm (1700-2400)",
+    "moduleWidth": "Modulio plotis, mm",
+    "moduleThickness": "Modulio storis, mm",
+    "constructionLength": "Konstrukcijos ilgis, mm (max 32000)",
+    "rowsCount": "Modulių eilių kiekis, vnt.",
+    "reserve": "Grebėsto rezervas (mm)",
+    "gap": "Tarpas tarp modulių prispaudėjams (mm)"
+  },
+  "actions": {
+    "next": "Kitas žingsnis"
+  }
+}

@@ -1,20 +1,22 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, FormEvent, ChangeEvent } from 'react'
+
+type QuestionType = 'choose_one' | 'interval' | 'free_text'
 
 function CreateQuestion() {
-  const [questionText, setQuestionText] = useState('')
-  const [questionType, setQuestionType] = useState('choose_one')
-  const [imageFile, setImageFile] = useState(null)
+  const [questionText, setQuestionText] = useState<string>('')
+  const [questionType, setQuestionType] = useState<QuestionType>('choose_one')
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
-  const [choicesText, setChoicesText] = useState('')
-  const [intervalMin, setIntervalMin] = useState('')
-  const [intervalMax, setIntervalMax] = useState('')
+  const [choicesText, setChoicesText] = useState<string>('')
+  const [intervalMin, setIntervalMin] = useState<string>('')
+  const [intervalMax, setIntervalMax] = useState<string>('')
 
-  const imagePreviewUrl = useMemo(() => {
+  const imagePreviewUrl = useMemo<string | null>(() => {
     if (!imageFile) return null
     return URL.createObjectURL(imageFile)
   }, [imageFile])
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const payload = {
@@ -22,13 +24,23 @@ function CreateQuestion() {
       questionType,
       imageFile,
       ...(questionType === 'choose_one'
-        ? { choices: choicesText.split('\n').map(s => s.trim()).filter(Boolean) }
+        ? {
+            choices: choicesText
+              .split('\n')
+              .map(s => s.trim())
+              .filter(Boolean),
+          }
         : {}),
       ...(questionType === 'interval'
-        ? { min: intervalMin === '' ? null : Number(intervalMin), max: intervalMax === '' ? null : Number(intervalMax) }
+        ? {
+            min: intervalMin === '' ? null : Number(intervalMin),
+            max: intervalMax === '' ? null : Number(intervalMax),
+          }
         : {}),
     }
+
     console.log('Question payload:', payload)
+
     setQuestionText('')
     setQuestionType('choose_one')
     setImageFile(null)
@@ -42,14 +54,16 @@ function CreateQuestion() {
       <h1>Create question</h1>
 
       <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12 }}>
-        <label style={{ display: 'grid', gap: 6}}>
+        <label style={{ display: 'grid', gap: 6 }}>
           <span>Question</span>
           <textarea
             value={questionText}
-            onChange={(e) => setQuestionText(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+              setQuestionText(e.target.value)
+            }
             placeholder="Type your question..."
             rows={4}
-            style= {{resize: 'none'}}
+            style={{ resize: 'none' }}
           />
         </label>
 
@@ -58,13 +72,21 @@ function CreateQuestion() {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setImageFile(e.target.files?.[0] ?? null)
+            }
           />
+
           {imagePreviewUrl && (
             <img
               src={imagePreviewUrl}
               alt="Uploaded preview"
-              style={{ maxWidth: '50%', height: 'auto', border: '1px solid #ddd', borderRadius: 6 }}
+              style={{
+                maxWidth: '50%',
+                height: 'auto',
+                border: '1px solid #ddd',
+                borderRadius: 6,
+              }}
               onLoad={() => URL.revokeObjectURL(imagePreviewUrl)}
             />
           )}
@@ -74,7 +96,9 @@ function CreateQuestion() {
           <span>Question type</span>
           <select
             value={questionType}
-            onChange={(e) => setQuestionType(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              setQuestionType(e.target.value as QuestionType)
+            }
           >
             <option value="choose_one">Choose one</option>
             <option value="interval">Interval (user typed)</option>
@@ -87,7 +111,9 @@ function CreateQuestion() {
             <span>Choices (one per line)</span>
             <textarea
               value={choicesText}
-              onChange={(e) => setChoicesText(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                setChoicesText(e.target.value)
+              }
               placeholder={`Option A\nOption B\nOption C`}
               rows={4}
             />
@@ -101,14 +127,18 @@ function CreateQuestion() {
               <input
                 type="number"
                 value={intervalMin}
-                onChange={(e) => setIntervalMin(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setIntervalMin(e.target.value)
+                }
                 placeholder="Min"
                 style={{ flex: 1 }}
               />
               <input
                 type="number"
                 value={intervalMax}
-                onChange={(e) => setIntervalMax(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setIntervalMax(e.target.value)
+                }
                 placeholder="Max"
                 style={{ flex: 1 }}
               />
