@@ -5,7 +5,8 @@
   },
   "batteryTypes": {
     "ezys": "Ežys",
-    "poline": "Poline"
+    "poline": "Poline",
+    "ploksciasStogas": "Plokščio stogo modulis"
   },
     "solarTypes": {
     "ground": "Ant žemės",
@@ -13,15 +14,49 @@
   },
   "sections": {
     "modules": "Modulių duomenys",
+    "moduleOrientation": "Sistemos orientacija",
     "construction": "Konstrukcijos duomenys"
+  },
+  "orientation":{
+    "PT": "Pietų",
+    "RV": "Rytų-Vakarų"
+  },
+  "system":{
+    "systemTitle": "Sistema",
+    "PT5": "PT5",
+    "PT10": "PT10",
+    "PT15": "PT15",
+    "PT20": "PT20",
+    "PT15-L": "PT15-L",
+    "RV10": "RV10",
+    "RV10-Z": "RV10-Z"
+  },
+  "sides":{
+    "short": "Trumpoji kraštinė",
+    "long": "Ilgoji kraštinė",
+    "both": "Abi kraštinės"
+  },
+  "color":{
+    "black": "Juoda",
+    "grey": "Pilka"
+  },
+  "select":{
+    "placeholder": "Pasirinkti..."
   },
   "fields": {
     "moduleCount": "Modulių kiekis, vnt. (lyg. sk., min 8, max 54)",
+    "moduleCountRoof": "Modulių kiekis, vnt.",
     "moduleLength": "Modulio ilgis, mm (1700-2400)",
+    "moduleLengthRoof": "Modulio ilgis, mm (nuo 1762)",
     "moduleWidth": "Modulio plotis, mm",
     "moduleThickness": "Modulio storis, mm",
+    "gapBetweenRows": "Atstumas tarp eilių, mm",
+    "moduleConstruction": "Modulio tvirtinimas",
+    "moduleConstructionNote": "PT5 ir PT20 sistemoms, kai modulis didesnis nei 2m – kreipkitės individualiai.",
+    "moduleColor": "Modulio spalva",
     "constructionLength": "Konstrukcijos ilgis, mm (max 32000)",
     "rowsCount": "Modulių eilių kiekis, vnt.",
+    "blockCount": "Modulių blokų kiekis, vnt.",
     "reserve": "Grebėsto rezervas (mm)",
     "gap": "Tarpas tarp modulių prispaudėjams (mm)"
   },

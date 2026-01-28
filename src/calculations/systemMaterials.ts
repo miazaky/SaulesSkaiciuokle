@@ -11,6 +11,8 @@ export type SystemMaterialDefinition = {
 
 // J5 / J6 – Priekinė / Galinė koja
 function calculateLegCount(constructionLength: number): number {
+      console.log("constructionLength(mm) =", constructionLength);
+
   if (constructionLength <= 4300) return 2;
   if (constructionLength <= 7200) return 3;
   if (constructionLength <= 10100) return 4;
@@ -22,6 +24,7 @@ function calculateLegCount(constructionLength: number): number {
   if (constructionLength <= 27500) return 10;
   if (constructionLength <= 30400) return 11;
   if (constructionLength <= 32000) return 12;
+
 
   throw new Error("Klaida: constructionLength viršija 32000");
 }
@@ -114,7 +117,7 @@ function calculateGrebestuJungtys(j11: number, j12: number): number {
 
 /* ----------------- MATERIAL DEFINITIONS ----------------- */
 
-export const systemMaterials: SystemMaterialDefinition[] = [
+export const groundSystemMaterials: SystemMaterialDefinition[] = [
   {
     code: "K-1E",
     name: "Priekinė koja",
@@ -228,7 +231,58 @@ export const systemMaterials: SystemMaterialDefinition[] = [
     code: "Clamp V",
     name: "Vidinių prispaudėjų kompl.",
     length: null,
-    calculateQuantity: (i) =>
-      (i.moduleCount - 2) * 2, // J18
+    calculateQuantity: (i) => (i.moduleCount - 2) * 2,
   },
+];
+
+export const roofSystemMaterials: SystemMaterialDefinition[] = [
+  // RV10 / RV10-Z
+  {
+    code: "RV10-1",
+    name: "Priekinis/galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * 2, // J30
+  },
+  {
+    code: "RV10-2",
+    name: "Vidurinis (jungiamasis) laikiklis aukštas",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount/2), // J31
+  },
+  {
+    code: "RV10-4",
+    name: "Vidurinis (jungiamasis) laikiklis žemas",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * ((i.rowsCount/2)-1), // J32
+  },
+  {
+    code: "RV10-1(P)",
+    name: "Pagalbinis priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount*i.rowsCount), // J33
+  },
+  {
+    code: "RV10-2(P)",
+    name: "Pagalbinis vidurinis (jungiamasis) laikiklis aukštas",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount*i.rowsCount/2), // J34
+  },
+  {
+    code: "",
+    name: "Prispaudėjas galinis",
+    length: null,
+    calculateQuantity: (i) => (i.rowsCount * 2) * 2, // J35
+  },
+  {
+    code: "",
+    name: "Prispaudėjas vidinis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount - 1) * (i.rowsCount * 2), // J36
+  },
+  {
+    code: "",
+    name: "M8x30 varžtas",
+    length: null,
+    calculateQuantity: (i) => ((i.rowsCount * 2) * 2)+((i.moduleCount - 1) * (i.rowsCount * 2)), // J37
+  }
 ];
