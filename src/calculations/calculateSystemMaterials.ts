@@ -1,5 +1,6 @@
-import { systemMaterials } from "./systemMaterials";
 import { CalculatorInput } from "./types";
+import { solarGroundMaterials } from "../config/solarGround/materials";
+import { registry } from "./solarGround/formulaRegistry";
 
 export type CalculatedSystemMaterial = {
   code: string;
@@ -9,23 +10,46 @@ export type CalculatedSystemMaterial = {
   note?: string;
 };
 
-export function calculateSystemMaterials(
-  input: CalculatorInput
-): CalculatedSystemMaterial[] {
-  return systemMaterials.map((row) => ({
-    code:
-      typeof row.code === "function"
-        ? row.code(input)
-        : row.code,
+function resolveValue(input: CalculatorInput, spec: string | { from: string }) {
+  if (typeof spec === "string") {
+    return spec;
+  }
+  const v = registry[spec.from]?.(input);
+  return v == null ? "" : String(v);
+}
 
-    name: row.name,
+function resolveLength(input: CalculatorInput, spec: number | null | { from: string }) {
+  if (spec === null) {
+    return null;
+  }
+  if (typeof spec === "number") {
+    return spec;
+  }
 
-    quantity: row.calculateQuantity(input),
+  const v = registry[spec.from]?.(input);
+  if (v === null || v === undefined || v === "") return null;
 
-    length: row.calculateLength
-      ? row.calculateLength(input)
-      : row.length ?? null,
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
-    note: row.note ?? "",
-  }));
+export function calculateSystemMaterials(input: CalculatorInput): CalculatedSystemMaterial[] {
+  return solarGroundMaterials
+    .map((m) => {
+      const qtyVal = registry[m.qty]?.(input);
+      const qty = Number(qtyVal);
+
+      if (!Number.isFinite(qty)) {
+        throw new Error(`Formula '${m.qty}' returned non-number: ${String(qtyVal)}`);
+      }
+
+      return {
+        code: resolveValue(input, m.code),
+        name: m.name,
+        quantity: qty,
+        length: resolveLength(input, m.length),
+        note: m.note ?? "",
+      };
+    })
+    .filter((row) => row.quantity !== 0);
 }
