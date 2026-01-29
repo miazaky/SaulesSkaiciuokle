@@ -5,6 +5,8 @@ export type SystemMaterialDefinition = {
   name: string;
   length: number | null;
   note?: string;
+  systems?: CalculatorInput["system"][];
+  construction?: CalculatorInput["moduleConstruction"][];
   calculateQuantity: (input: CalculatorInput) => number;
   calculateLength?: (input: CalculatorInput) => number | null;
 };
@@ -238,51 +240,333 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
 export const roofSystemMaterials: SystemMaterialDefinition[] = [
   // RV10 / RV10-Z
   {
+    systems: ["RV10"],
     code: "RV10-1",
     name: "Priekinis/galinis laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * 2, // J30
+    calculateQuantity: (i) => (i.moduleCount + 1) * 2,
   },
   {
+    systems: ["RV10"],
     code: "RV10-2",
     name: "Vidurinis (jungiamasis) laikiklis aukštas",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount/2), // J31
+    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount / 2),
   },
   {
+    systems: ["RV10"],
     code: "RV10-4",
     name: "Vidurinis (jungiamasis) laikiklis žemas",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * ((i.rowsCount/2)-1), // J32
+    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount / 2 - 1),
   },
   {
+    systems: ["RV10"],
     code: "RV10-1(P)",
     name: "Pagalbinis priekinis laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount*i.rowsCount), // J33
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount),
   },
   {
+    systems: ["RV10"],
     code: "RV10-2(P)",
     name: "Pagalbinis vidurinis (jungiamasis) laikiklis aukštas",
     length: null,
-    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount*i.rowsCount/2), // J34
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : (i.moduleCount * i.rowsCount) / 2),
   },
   {
+    systems: ["RV10", "RV10-Z"],
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => (i.rowsCount * 2) * 2, // J35
+    calculateQuantity: (i) => (i.rowsCount * 2) * 2,
   },
   {
+    systems: ["RV10", "RV10-Z"],
     code: "",
     name: "Prispaudėjas vidinis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount - 1) * (i.rowsCount * 2), // J36
+    calculateQuantity: (i) => (i.moduleCount - 1) * (i.rowsCount * 2),
   },
   {
+    systems: ["RV10", "RV10-Z"],
     code: "",
     name: "M8x30 varžtas",
     length: null,
-    calculateQuantity: (i) => ((i.rowsCount * 2) * 2)+((i.moduleCount - 1) * (i.rowsCount * 2)), // J37
+    calculateQuantity: (i) => (i.rowsCount * 2) * 2 + (i.moduleCount - 1) * (i.rowsCount * 2),
+  },
+  {
+    systems: ["RV10-Z"],
+    code: "RV10-Z",
+    name: "Dvigubo greito montavimo laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * i.rowsCount/2,
+  },
+
+  // PT5
+  {
+    systems: ["PT5"],
+    code: "PT5-1",
+    name: "Priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT5"],
+    code: "PT5-3",
+    name: "Galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT5"],
+    code: "PT5-2",
+    name: "Vidurinis (jungiamasis) laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+  },
+  {
+    systems: ["PT5"],
+    code: "",
+    name: "Pagalbinis priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount),
+  },
+  {
+    systems: ["PT5"],
+    code: "",
+    name: "Pagalbinis galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount),
+  },
+  {
+    systems: ["PT5"],
+    code: "",
+    name: "Vejalentė",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount * i.rowsCount,
+  },
+  {
+    systems: ["PT5"],
+    code: "",
+    name: "Savisriegiai varžtai vejalentėm",
+    length: null,
+    calculateQuantity: (i) => ((i.moduleCount + 1) * 2) * (i.rowsCount - 1),
+  },
+  {
+    systems: ["PT5"],
+    code: "",
+    name: "Prispaudėjas galinis",
+    length: null,
+    calculateQuantity: (i) => (i.rowsCount * 2) * 2,
+  },
+  {
+    systems: ["PT5"],
+    code: "",
+    name: "Prispaudėjas vidinis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount - 1) * (i.rowsCount * 2),
+  },
+  {
+    systems: ["PT5"],
+    code: "",
+    name: "M8x30 varžtas",
+    length: null,
+    calculateQuantity: (i) => (i.rowsCount * 2) * 2 + (i.moduleCount - 1) * (i.rowsCount * 2),
+  },
+
+  // PT10
+  {
+    systems: ["PT10"],
+    code: "PT10-1",
+    name: "Priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT10"],
+    code: "PT10-4", 
+    name: "Galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT10"],
+    code: "PT10-2",
+    name: "Vidurinis (jungiamasis) laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+  },
+  {
+    systems: ["PT10"],
+    code: "PT10-1(P)",
+    name: "Pagalbinis priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount),
+  },
+  {
+    systems: ["PT10"],
+    code: "PT10-4(P)",
+    name: "Pagalbinis galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount),
+  },
+
+  // PT15
+  {
+    systems: ["PT15"],
+    code: "PT15-1",
+    name: "Priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT15"],
+    code: "PT15-3",
+    name: "Galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT15"],
+    code: "PT15-4",
+    name: "Vidurinis (jungiamasis) laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+  },
+  {
+    systems: ["PT15"],
+    code: "PT15-1(P)",
+    name: "Pagalbinis priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount),
+  },
+  {
+    systems: ["PT15"],
+    code: "PT15-3(P)",
+    name: "Pagalbinis galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount),
+  },
+
+  // PT20
+  {
+    systems: ["PT20"],
+    code: "PT20-1",
+    name: "Priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT20"],
+    code: "PT20-3", 
+    name: "Galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount + 1,
+  },
+  {
+    systems: ["PT20"],
+    code: "PT20-2",
+    name: "Vidurinis (jungiamasis) laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+  },
+
+  {
+    systems: ["PT15-L"],
+    construction: ["ilgoji"],
+    code: "PT15-L",
+    name: "Viengubo montavimo laikiklis",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount * i.rowsCount*2,
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["ilgoji"],
+    code: "",
+    name: "Vejalentė",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount * i.rowsCount,
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["ilgoji"],
+    code: "",
+    name: "Savisriegiai varžtai vejalentėm",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount * i.rowsCount)*4,
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["ilgoji"],
+    code: "",
+    name: "Prispaudėjas galinis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount*2) *(i.rowsCount* 2),
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["ilgoji"],
+    code: "",
+    name: "M8x30 varžtas",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount*2) *(i.rowsCount* 2),
+  },
+
+
+
+
+
+
+
+
+
+  {
+    systems: ["PT15-L"],
+    construction: ["trumpoji"],
+    code: "PT15-L",
+    name: "Viengubo montavimo laikiklis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount+1)* i.rowsCount,
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["trumpoji"],
+    code: "",
+    name: "Vejalentė",
+    length: null,
+    calculateQuantity: (i) => i.moduleCount * i.rowsCount,
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["trumpoji"],
+    code: "",
+    name: "Savisriegiai varžtai vejalentėm",
+    length: null,
+    calculateQuantity: (i) =>  ((i.moduleCount + 1)*2)*(i.rowsCount-1),//priekinis laikiklis*2 *rowscount-1
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["trumpoji"],
+    code: "",
+    name: "Prispaudėjas galinis",
+    length: null,
+    calculateQuantity: (i) => (i.rowsCount*2) *2,
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["trumpoji"],
+    code: "",
+    name: "Prispaudėjas vidinis",
+    length: null,
+    calculateQuantity: (i) => (i.moduleCount-1) *(i.rowsCount* 2),
+  },
+  {
+    systems: ["PT15-L"],
+    construction: ["trumpoji"],
+    code: "",
+    name: "M8x30 varžtas",
+    length: null,
+    calculateQuantity: (i) => ((i.rowsCount*2) *2) + ((i.moduleCount-1) *(i.rowsCount* 2)),
   }
 ];

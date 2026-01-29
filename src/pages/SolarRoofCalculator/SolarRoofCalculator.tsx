@@ -268,7 +268,7 @@ export default function SolarRoofCalculator() {
     if (!Number.isFinite(rowsCount) || rowsCount < 2) setRowsCount(2);
   }, [system]);
 
-  const showActions = Boolean(batteryType && orientation);
+  const showActions = Boolean(batteryType && orientation && system);
 
   return (
     <div className="solar-calculator">
@@ -488,6 +488,31 @@ export default function SolarRoofCalculator() {
         <div className="solar-calculator__content">
           <h3>{t("sections.modules")}</h3>
           <FormGrid columns={2}>
+            {/* RV blocks/rows*/}
+            {system === "RV10-Z" ? (
+              <InputField label={t("fields.rowsCount")}>
+                <input
+                  type="number"
+                  min={2}
+                  value={rowsCount}
+                  onChange={(e) =>
+                    setRowsCount(Math.max(2, Number(e.target.value)))
+                  }
+                />
+              </InputField>
+            ) : (
+              <InputField label={t("fields.rowsCount")}>
+                <input
+                  type="number"
+                  min={2}
+                  value={rowsCount}
+                  onChange={(e) =>
+                    setRowsCount(Math.max(2, Number(e.target.value)))
+                  }
+                />
+              </InputField>
+            )}
+            
             <InputField label={t("system.systemTitle")}>
               <select
                 value={system ?? ""}
@@ -598,30 +623,7 @@ export default function SolarRoofCalculator() {
               )}
             </InputField>
 
-            {/* RV blocks/rows*/}
-            {system === "RV10-Z" ? (
-              <InputField label={t("fields.rowsCount")}>
-                <input
-                  type="number"
-                  min={2}
-                  value={rowsCount}
-                  onChange={(e) =>
-                    setRowsCount(Math.max(2, Number(e.target.value)))
-                  }
-                />
-              </InputField>
-            ) : (
-              <InputField label={t("fields.rowsCount")}>
-                <input
-                  type="number"
-                  min={2}
-                  value={rowsCount}
-                  onChange={(e) =>
-                    setRowsCount(Math.max(2, Number(e.target.value)))
-                  }
-                />
-              </InputField>
-            )}
+            
           </FormGrid>
 
         </div>

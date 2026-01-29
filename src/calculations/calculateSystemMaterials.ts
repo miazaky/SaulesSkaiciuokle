@@ -35,11 +35,10 @@ function resolveLength(input: CalculatorInput, spec: number | null | { from: str
 }
 
 export function calculateSystemMaterials(input: CalculatorInput): CalculatedSystemMaterial[] {
-  const materials = input.batteryType === "ploksciasStogas"
-      ? roofSystemMaterials
-      : groundSystemMaterials;
+  const materials =
+    input.batteryType === "ploksciasStogas" ? roofSystemMaterials : groundSystemMaterials;
 
-  if (materials == groundSystemMaterials){
+  if (materials == groundSystemMaterials) {
     return solarGroundMaterials
     .map((m) => {
       const qtyVal = registry[m.qty]?.(input);
@@ -58,9 +57,13 @@ export function calculateSystemMaterials(input: CalculatorInput): CalculatedSyst
       };
     })
     .filter((row) => row.quantity !== 0);
-  }
-  else{
-    return materials.map((row) => ({
+  } else {
+    const filtered = materials.filter((row) => {
+      if (!row.systems) return true;
+      return row.systems.includes(input.system) && (!row.construction || row.construction.includes(input.moduleConstruction));
+    });
+
+    return filtered.map((row) => ({
       code: typeof row.code === "function" ? row.code(input) : row.code,
       name: row.name,
       quantity: row.calculateQuantity(input),

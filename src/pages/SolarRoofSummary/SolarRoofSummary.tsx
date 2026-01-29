@@ -27,7 +27,6 @@ export default function SolarRoofSummary() {
             <th>Kodas</th>
             <th>Pavadinimas</th>
             <th>Kiekis, vnt.</th>
-            <th>Pastabos</th>
           </tr>
         </thead>
         <tbody>
@@ -36,8 +35,6 @@ export default function SolarRoofSummary() {
               <td>{item.code}</td>
               <td>{item.name}</td>
               <td>{item.quantity}</td>
-              <td>{item.length ?? "-"}</td>
-              <td>{item.note}</td>
             </tr>
           ))}
         </tbody>
