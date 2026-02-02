@@ -413,7 +413,7 @@ export default function SolarRoofCalculator() {
     if (!Number.isFinite(rowsCount) || rowsCount < 2) setRowsCount(2);
   }, [system]);
 
-  const showActions = Boolean(batteryType && orientation && system);
+  const showActions = Boolean(batteryType && orientation && system || roofMaterial);
 
   return (
     <div className="solar-calculator">
