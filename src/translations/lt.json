@@ -6,7 +6,8 @@
   "batteryTypes": {
     "ezys": "Ežys",
     "poline": "Poline",
-    "ploksciasStogas": "Plokščio stogo modulis"
+    "ploksciasStogas": "Plokščio stogo modulis",
+    "slaitinisStogas": "Slaitinio stogo modulis"
   },
     "solarTypes": {
     "ground": "Ant žemės",
@@ -19,7 +20,16 @@
   },
   "orientation":{
     "PT": "Pietų",
-    "RV": "Rytų-Vakarų"
+    "RV": "Rytų-Vakarų",
+    "vertical": "Vertikalus",
+    "horizontal": "Horizontalus"
+  },
+  "roofSurface": {
+    "cement": "Pluoštinio cemento",
+    "valcuota": "Valcuota (klasikinė)",
+    "cerpiu": "Čerpių",
+    "bitumine": "Bituminių čerpių",
+    "skarda": "Trapecinė/banguota skardinė"
   },
   "system":{
     "systemTitle": "Sistema",
@@ -30,6 +40,32 @@
     "PT15-L": "PT15-L",
     "RV10": "RV10",
     "RV10-Z": "RV10-Z"
+  },
+  "mountingMethods":{
+    "studs": "Smeigės",
+    "clamps": "Spaustukai",
+    "hooks": "Kabliai",
+    "screwsR": "Savisriegiais varžtais per mini bėgelį",
+    "screwsEPDM40": "Savisriegiais varžtais per bėgelį EPDM guma 40",
+    "screwsEPDM80": "Savisriegiais varžtais per bėgelį EPDM guma 80"
+
+  },
+  "materials":{
+    "squareRail": "Kvadratinis bėgelis",
+    "squareRailJoint": "Kvadratinio bėgelio jungtis",
+    "squareRailFinish": "Kvadratinio bėgelio past. užbaigimas",
+    "m10Screw": "M10 varžtas 20",
+    "m10Nut": "M10 veržlės su sijonėliu",
+    "studs": "Smeigės",
+    "clampG": "Clamp G",
+    "m8Screw20": "M8 varžtas cilindrine galvute 20",
+    "clampV": "Clamp V",
+    "m8Screw": "M8 varžtas cilindrine galvute 25",
+    "m8Nut": "M8 mėnuliukai",
+    "railEDPMMini": "Bėgelis su EPDM guma mini",
+    "specScrew": "Spec. Savisriegiai bėgeliui",
+    "railEDPM40": "Bėgelis su EPDM guma 40",
+    "railEDPM80": "Bėgelis su EPDM guma 80"
   },
   "sides":{
     "short": "Trumpoji kraštinė",
@@ -46,7 +82,9 @@
   "fields": {
     "moduleCount": "Modulių kiekis, vnt. (lyg. sk., min 8, max 54)",
     "moduleCountRoof": "Modulių kiekis, vnt.",
+    "mountingMethod":"Montavimo būdas",
     "moduleLength": "Modulio ilgis, mm (1700-2400)",
+    "roofMaterial": "Stogo danga",
     "moduleLengthRoof": "Modulio ilgis, mm (nuo 1762)",
     "moduleWidth": "Modulio plotis, mm",
     "moduleThickness": "Modulio storis, mm",

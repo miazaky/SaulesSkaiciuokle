@@ -19,7 +19,10 @@ function resolveValue(input: CalculatorInput, spec: string | { from: string }) {
   return v == null ? "" : String(v);
 }
 
-function resolveLength(input: CalculatorInput, spec: number | null | { from: string }) {
+function resolveLength(
+  input: CalculatorInput,
+  spec: number | null | { from: string },
+) {
   if (spec === null) {
     return null;
   }
@@ -34,41 +37,46 @@ function resolveLength(input: CalculatorInput, spec: number | null | { from: str
   return Number.isFinite(n) ? n : null;
 }
 
-export function calculateSystemMaterials(input: CalculatorInput): CalculatedSystemMaterial[] {
+export function calculateSystemMaterials(
+  input: CalculatorInput,
+): CalculatedSystemMaterial[] {
   const materials =
-    input.batteryType === "ploksciasStogas" ? roofSystemMaterials : groundSystemMaterials;
+    input.batteryType === "ploksciasStogas" ||
+    input.batteryType === "slaitinisStogas"
+      ? roofSystemMaterials
+      : groundSystemMaterials;
 
-  if (materials == groundSystemMaterials) {
-    return solarGroundMaterials
-    .map((m) => {
-      const qtyVal = registry[m.qty]?.(input);
-      const qty = Number(qtyVal);
+  const filtered = materials.filter((row) => {
+    if (input.batteryType === "slaitinisStogas") {
+      if (row.systems) return false;
+      return row.mountingMethods?.includes(input.mountingMethod) ?? false;
+    }
 
-      if (!Number.isFinite(qty)) {
-        throw new Error(`Formula '${m.qty}' returned non-number: ${String(qtyVal)}`);
-      }
+    // Plokscias stogas
+    if (!row.systems) return false;
 
-      return {
-        code: resolveValue(input, m.code),
-        name: m.name,
-        quantity: qty,
-        length: resolveLength(input, m.length),
-        note: m.note ?? "",
-      };
-    })
-    .filter((row) => row.quantity !== 0);
-  } else {
-    const filtered = materials.filter((row) => {
-      if (!row.systems) return true;
-      return row.systems.includes(input.system) && (!row.construction || row.construction.includes(input.moduleConstruction));
-    });
+    if (!row.systems.includes(input.system)) {
+      return false;
+    }
 
-    return filtered.map((row) => ({
-      code: typeof row.code === "function" ? row.code(input) : row.code,
-      name: row.name,
-      quantity: row.calculateQuantity(input),
-      length: row.calculateLength ? row.calculateLength(input) : row.length ?? null,
-      note: row.note ?? "",
-    }));
-  }
+    if (row.orientation && !row.orientation.includes(input.orientation)) {
+      return false;
+    }
+
+    if (row.construction) {
+      return row.construction.includes(input.moduleConstruction);
+    }
+
+    return true;
+  });
+
+  return filtered.map((row) => ({
+    code: typeof row.code === "function" ? row.code(input) : row.code,
+    name: row.name,
+    quantity: row.calculateQuantity ? row.calculateQuantity(input) : 0,
+    length: row.calculateLength
+      ? row.calculateLength(input)
+      : (row.length ?? null),
+    note: row.note ?? "",
+  }));
 }

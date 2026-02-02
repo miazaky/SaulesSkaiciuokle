@@ -9,7 +9,7 @@ import "./SolarRoofCalculator.css";
 
 const MODULE_WIDTH = 1134;
 
-type BatteryType = "ploksciasStogas" | null;
+type BatteryType = "ploksciasStogas" | "slaitinisStogas" | null;
 type Orientation = "PT" | "RV" | null;
 type SystemKey =
   | "PT5"
@@ -19,6 +19,13 @@ type SystemKey =
   | "PT15-L"
   | "RV10"
   | "RV10-Z"
+  | null;
+type RoofMaterial =
+  | "cement"
+  | "valcuota"
+  | "cerpiu"
+  | "bitumine"
+  | "skarda"
   | null;
 
 export default function SolarRoofCalculator() {
@@ -38,6 +45,9 @@ export default function SolarRoofCalculator() {
         moduleColor: string;
         moduleConstruction: string;
         gapBetweenRows: number;
+        roofMaterial: RoofMaterial;
+        mountingMethod: string;
+        rowModuleCounts?: number[];
       }
     | undefined;
 
@@ -51,6 +61,10 @@ export default function SolarRoofCalculator() {
 
   const [system, setSystem] = useState<SystemKey>(
     restoredState?.system ?? null,
+  );
+
+  const [roofMaterial, setRoofMaterial] = useState<RoofMaterial>(
+    restoredState?.roofMaterial ?? null,
   );
 
   const [moduleLength, setModuleLength] = useState<number>(
@@ -69,6 +83,10 @@ export default function SolarRoofCalculator() {
     restoredState?.moduleColor ?? "",
   );
 
+  const [mountingMethod, setMountingMethod] = useState<string>(
+    restoredState?.mountingMethod ?? "",
+  );
+
   const [moduleConstruction, setModuleConstruction] = useState<string>(
     restoredState?.moduleConstruction ?? "",
   );
@@ -81,6 +99,14 @@ export default function SolarRoofCalculator() {
     restoredState?.rowsCount ?? 2,
   );
 
+  const [rowModuleCounts, setRowModuleCounts] = useState<number[]>(
+    restoredState?.rowModuleCounts?.length
+      ? restoredState.rowModuleCounts
+      : restoredState?.moduleCount
+        ? [restoredState.moduleCount]
+        : [0],
+  );
+
   const systemOptions = t("system", { returnObjects: true }) as Record<
     string,
     string
@@ -88,6 +114,69 @@ export default function SolarRoofCalculator() {
   const systemEntriesAll = Object.entries(systemOptions).filter(
     ([key]) => key !== "systemTitle" && key !== "select",
   );
+
+  const roofMaterialEntries = Object.entries(
+    t("roofSurface", { returnObjects: true }) as Record<string, string>,
+  );
+
+  const roofMountingMethodsEntries = Object.entries(
+    t("mountingMethods", { returnObjects: true }) as Record<string, string>,
+  );
+
+  const roofMountingMethodDisabled =
+    !roofMaterial ||
+    roofMaterial === "cement" ||
+    roofMaterial === "valcuota" ||
+    roofMaterial === "cerpiu";
+
+  //Mounting method rules
+  const allowedMountingMethods: string[] = (() => {
+    if (!roofMaterial) return [];
+
+    if (roofMaterial === "cement") return ["studs"];
+    if (roofMaterial === "valcuota") return ["clamps"];
+    if (roofMaterial === "cerpiu") return ["hooks"];
+    if (roofMaterial === "bitumine") return ["screwsR", "studs"];
+    if (roofMaterial === "skarda")
+      return ["screwsR", "screwsEPDM40", "screwsEPDM80"];
+    return [];
+  })();
+
+  const filteredRoofMountingMethodsEntries = roofMaterial
+    ? roofMountingMethodsEntries.filter(([key]) =>
+        allowedMountingMethods.includes(key),
+      )
+    : roofMountingMethodsEntries;
+
+  // Auto-set / keep mountingMethod valid when roof material changes
+  useEffect(() => {
+    if (!roofMaterial) {
+      if (mountingMethod !== "") setMountingMethod("");
+      return;
+    }
+
+    // Forced mappings
+    if (roofMaterial === "cement") {
+      if (mountingMethod !== "studs") setMountingMethod("studs");
+      return;
+    }
+    if (roofMaterial === "valcuota") {
+      if (mountingMethod !== "clamps") setMountingMethod("clamps");
+      return;
+    }
+    if (roofMaterial === "cerpiu") {
+      if (mountingMethod !== "hooks") setMountingMethod("hooks");
+      return;
+    }
+
+    if (
+      mountingMethod !== "" &&
+      !allowedMountingMethods.includes(mountingMethod)
+    ) {
+      setMountingMethod("");
+    }
+  }, [roofMaterial, mountingMethod, allowedMountingMethods.join(",")]);
+
   const systemEntriesPT = systemEntriesAll.filter(([key]) =>
     key.startsWith("PT"),
   );
@@ -145,43 +234,99 @@ export default function SolarRoofCalculator() {
     if (moduleConstruction !== "abi") setModuleConstruction("abi");
   }, [system, isOver2m, moduleConstruction]);
 
+  useEffect(() => {
+    if (batteryType !== "slaitinisStogas") return;
+
+    setRowModuleCounts((prev) => {
+      const nextLen = Math.max(1, rowsCount || 1);
+      const next = prev.slice(0, nextLen);
+
+      while (next.length < nextLen) next.push(next[next.length - 1] ?? 0);
+
+      return next;
+    });
+  }, [batteryType, rowsCount]);
+
   // Dropdown options/lock state (PT + RV)
   const constructionSelectDisabled =
     !system || system.startsWith("RV") || !(system === "PT15-L" && !isOver2m); // only PT15-L <=2m is selectable
 
-  const constructionOptions: Array<{ value: string; label: string }> = (() => {
-    if (!system) {
-      return [
-        { value: "trumpoji", label: t("sides.short") },
-        { value: "ilgoji", label: t("sides.long") },
-        { value: "abi", label: t("sides.both") },
-      ];
-    }
+  const allowedConstructionOptions: string[] = (() => {
+    if (!system) return ["trumpoji", "ilgoji", "abi"];
 
     // RV options
     if (system === "RV10") {
-      return isOver2m
-        ? [{ value: "abi", label: t("sides.both") }]
-        : [{ value: "trumpoji", label: t("sides.short") }];
+      return isOver2m ? ["abi"] : ["trumpoji"];
     }
     if (system === "RV10-Z") {
-      return [{ value: "trumpoji", label: t("sides.short") }];
+      return ["trumpoji"];
     }
 
     // PT options
     if (system === "PT15-L") {
-      if (isOver2m) return [{ value: "ilgoji", label: t("sides.long") }];
-      return [
-        { value: "trumpoji", label: t("sides.short") },
-        { value: "ilgoji", label: t("sides.long") },
-      ];
+      if (isOver2m) return ["ilgoji"];
+      return ["trumpoji", "ilgoji"];
     }
 
     // PT5/PT10/PT15/PT20
-    if (!isOver2m) return [{ value: "trumpoji", label: t("sides.short") }];
+    if (!isOver2m) return ["trumpoji"];
     if (system === "PT5" || system === "PT20") return [];
-    return [{ value: "abi", label: t("sides.both") }];
+    return ["abi"];
   })();
+
+  const constructionOptions: Array<{ value: string; label: string }> = [
+    { value: "trumpoji", label: t("sides.short") },
+    { value: "ilgoji", label: t("sides.long") },
+    { value: "abi", label: t("sides.both") },
+  ].filter((opt) => allowedConstructionOptions.includes(opt.value));
+
+  useEffect(() => {
+    if (!system) {
+      if (moduleConstruction !== "") setModuleConstruction("");
+      return;
+    }
+
+    // Forced mappings
+    if (system === "RV10") {
+      const forced = isOver2m ? "abi" : "trumpoji";
+      if (moduleConstruction !== forced) setModuleConstruction(forced);
+      return;
+    }
+    if (system === "RV10-Z") {
+      if (moduleConstruction !== "trumpoji") setModuleConstruction("trumpoji");
+      return;
+    }
+    if (system === "PT15-L" && isOver2m) {
+      if (moduleConstruction !== "ilgoji") setModuleConstruction("ilgoji");
+      return;
+    }
+    if (
+      (system === "PT5" ||
+        system === "PT10" ||
+        system === "PT15" ||
+        system === "PT20") &&
+      !isOver2m
+    ) {
+      if (moduleConstruction !== "trumpoji") setModuleConstruction("trumpoji");
+      return;
+    }
+    if ((system === "PT10" || system === "PT15") && isOver2m) {
+      if (moduleConstruction !== "abi") setModuleConstruction("abi");
+      return;
+    }
+
+    if (
+      moduleConstruction !== "" &&
+      !allowedConstructionOptions.includes(moduleConstruction)
+    ) {
+      setModuleConstruction("");
+    }
+  }, [
+    system,
+    isOver2m,
+    moduleConstruction,
+    allowedConstructionOptions.join(","),
+  ]);
 
   // gapBetweenRows rules (PT + RV)
   const gapConfig:
@@ -281,9 +426,15 @@ export default function SolarRoofCalculator() {
           selected={batteryType === "ploksciasStogas"}
           onClick={() => setBatteryType("ploksciasStogas")}
         />
+        <ImageCard
+          title={t("batteryTypes.slaitinisStogas")}
+          image="/images/roof.jpg"
+          selected={batteryType === "slaitinisStogas"}
+          onClick={() => setBatteryType("slaitinisStogas")}
+        />
       </div>
 
-      {batteryType && (
+      {batteryType === "ploksciasStogas" && (
         <div className="solar-calculator__orientation_select">
           <h3>{t("sections.moduleOrientation")}</h3>
           {/* Orientation Radio Buttons */}
@@ -311,7 +462,7 @@ export default function SolarRoofCalculator() {
         </div>
       )}
 
-      {orientation === "PT" && (
+      {orientation === "PT" && batteryType === "ploksciasStogas" && (
         <div className="solar-calculator__content">
           <h3>{t("sections.modules")}</h3>
           {/* Module Input Fields */}
@@ -484,7 +635,7 @@ export default function SolarRoofCalculator() {
         </div>
       )}
 
-      {orientation === "RV" && (
+      {orientation === "RV" && batteryType === "ploksciasStogas" && (
         <div className="solar-calculator__content">
           <h3>{t("sections.modules")}</h3>
           <FormGrid columns={2}>
@@ -512,7 +663,7 @@ export default function SolarRoofCalculator() {
                 />
               </InputField>
             )}
-            
+
             <InputField label={t("system.systemTitle")}>
               <select
                 value={system ?? ""}
@@ -622,12 +773,138 @@ export default function SolarRoofCalculator() {
                 </select>
               )}
             </InputField>
-
-            
           </FormGrid>
-
         </div>
       )}
+
+      {batteryType === "slaitinisStogas" && (
+        <div className="solar-calculator__content">
+          <FormGrid columns={2}>
+            <InputField label={t("fields.roofMaterial")}>
+              <select
+                value={roofMaterial ?? ""}
+                onChange={(e) =>
+                  setRoofMaterial((e.target.value || null) as RoofMaterial)
+                }
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+
+                {roofMaterialEntries.map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </InputField>
+            <InputField label={t("fields.mountingMethod")}>
+              <select
+                value={mountingMethod ?? ""}
+                onChange={(e) => setMountingMethod(e.target.value)}
+                disabled={roofMountingMethodDisabled}
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+
+                {filteredRoofMountingMethodsEntries.map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </InputField>
+
+            <InputField label={t("sections.moduleOrientation")}>
+              <select
+                value={orientation ?? ""}
+                onChange={(e) => setOrientation(e.target.value as Orientation)}
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+                <option value="vertical">{t("orientation.vertical")}</option>
+                <option value="horizontal">
+                  {t("orientation.horizontal")}
+                </option>
+              </select>
+            </InputField>
+
+            <InputField label={t("fields.moduleLength")}>
+              <input
+                type="number"
+                min={1762}
+                max={2400}
+                onChange={(e) => setModuleLength(Number(e.target.value))}
+                value={moduleLength}
+              />
+            </InputField>
+
+            <InputField label={t("fields.moduleThickness")}>
+              <select
+                value={moduleThickness ?? ""}
+                onChange={(e) => setModuleThickness(30)}
+                disabled={true}
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+                <option value="30">30 mm</option>
+              </select>
+            </InputField>
+
+            <InputField label={t("fields.moduleColor")}>
+              <select
+                value={moduleColor ?? ""}
+                onChange={(e) => setModuleColor(e.target.value)}
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+                <option value="juoda">{t("color.black")}</option>
+                <option value="pilka">{t("color.grey")}</option>
+              </select>
+            </InputField>
+
+            <InputField label={t("fields.rowsCount")}>
+              <input
+                type="number"
+                min={1}
+                value={rowsCount}
+                onChange={(e) => setRowsCount(Number(e.target.value))}
+              />
+            </InputField>
+
+            <InputField label={t("fields.moduleCountRoof")}>
+              <div style={{ display: "grid", gap: 8 }}>
+                {rowModuleCounts.map((v, idx) => (
+                  <label key={idx} style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 12, alignItems: "center" }}>
+                    <span>{idx + 1} eilė</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={200}
+                      value={v}
+                      onChange={(e) => {
+                        const n = Math.max(0, Number(e.target.value));
+                        setRowModuleCounts((prev) => {
+                          const copy = [...prev];
+                          copy[idx] = n;
+                          return copy;
+                        });
+                        
+                        if (idx === 0) setModuleCount(n);
+                      }}
+                    />
+                  </label>
+                ))}
+              </div>
+            </InputField>
+          </FormGrid>
+        </div>
+      )}
+
       {showActions && (
         <div className="solar-calculator__actions-row">
           <button
@@ -653,6 +930,9 @@ export default function SolarRoofCalculator() {
                   moduleColor,
                   moduleConstruction,
                   gapBetweenRows,
+                  roofMaterial,
+                  mountingMethod,
+                  rowModuleCounts: batteryType === "slaitinisStogas" ? rowModuleCounts : undefined, // NEW
                 },
               })
             }
