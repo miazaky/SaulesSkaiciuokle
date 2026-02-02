@@ -37,9 +37,29 @@ function resolveLength(
   return Number.isFinite(n) ? n : null;
 }
 
+function resolveQuantity(input: CalculatorInput, key: string) {
+  const v = registry[key]?.(input);
+  if (v === null || v === undefined || v === "") return 0;
+
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function calculateSystemMaterials(
   input: CalculatorInput,
 ): CalculatedSystemMaterial[] {
+  // Ground systems (ezys, poline)
+  if (input.batteryType === "ezys" || input.batteryType === "poline") {
+    return solarGroundMaterials.map((row) => ({
+      code: resolveValue(input, row.code),
+      name: row.name,
+      quantity: resolveQuantity(input, row.qty),
+      length: resolveLength(input, row.length),
+      note: row.note ?? "",
+    }));
+  }
+
+  // Roof systems
   const materials =
     input.batteryType === "ploksciasStogas" ||
     input.batteryType === "slaitinisStogas"

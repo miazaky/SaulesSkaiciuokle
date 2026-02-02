@@ -18,6 +18,8 @@ const MATERIAL_KEYS = {
   railEDPM80: "materials.railEDPM80",
 };
 
+const clampG = 4;
+
 export type SystemMaterialDefinition = {
   code: string | ((input: CalculatorInput) => string);
   name: string;
@@ -643,7 +645,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * 2 * (i.rowsCount - 1), //priekinis laikiklis*2 *rowscount-1
+    calculateQuantity: (i) => (i.moduleCount + 1) * 2 * (i.rowsCount - 1), 
   },
   {
     systems: ["PT15-L"],
@@ -882,7 +884,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: MATERIAL_KEYS.clampG,
     length: null,
-    calculateQuantity: () => 4,
+    calculateQuantity: () => clampG,
   },
   {
     mountingMethods: [
@@ -896,7 +898,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: MATERIAL_KEYS.m8Screw20,
     length: null,
-    calculateQuantity: () => 4,
+    calculateQuantity: () => clampG,
   },
   {
     mountingMethods: [
