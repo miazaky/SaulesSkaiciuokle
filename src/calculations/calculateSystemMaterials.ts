@@ -19,7 +19,10 @@ function resolveValue(input: CalculatorInput, spec: string | { from: string }) {
   return v == null ? "" : String(v);
 }
 
-function resolveLength(input: CalculatorInput, spec: number | null | { from: string }) {
+function resolveLength(
+  input: CalculatorInput,
+  spec: number | null | { from: string },
+) {
   if (spec === null) {
     return null;
   }
@@ -34,38 +37,66 @@ function resolveLength(input: CalculatorInput, spec: number | null | { from: str
   return Number.isFinite(n) ? n : null;
 }
 
-export function calculateSystemMaterials(input: CalculatorInput): CalculatedSystemMaterial[] {
-  const materials = input.batteryType === "ploksciasStogas"
-      ? roofSystemMaterials
-      : groundSystemMaterials;
+function resolveQuantity(input: CalculatorInput, key: string) {
+  const v = registry[key]?.(input);
+  if (v === null || v === undefined || v === "") return 0;
 
-  if (materials == groundSystemMaterials){
-    return solarGroundMaterials
-    .map((m) => {
-      const qtyVal = registry[m.qty]?.(input);
-      const qty = Number(qtyVal);
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
 
-      if (!Number.isFinite(qty)) {
-        throw new Error(`Formula '${m.qty}' returned non-number: ${String(qtyVal)}`);
-      }
-
-      return {
-        code: resolveValue(input, m.code),
-        name: m.name,
-        quantity: qty,
-        length: resolveLength(input, m.length),
-        note: m.note ?? "",
-      };
-    })
-    .filter((row) => row.quantity !== 0);
-  }
-  else{
-    return materials.map((row) => ({
-      code: typeof row.code === "function" ? row.code(input) : row.code,
+export function calculateSystemMaterials(
+  input: CalculatorInput,
+): CalculatedSystemMaterial[] {
+  // Ground systems (ezys, poline)
+  if (input.batteryType === "ezys" || input.batteryType === "poline") {
+    return solarGroundMaterials.map((row) => ({
+      code: resolveValue(input, row.code),
       name: row.name,
-      quantity: row.calculateQuantity(input),
-      length: row.calculateLength ? row.calculateLength(input) : row.length ?? null,
+      quantity: resolveQuantity(input, row.qty),
+      length: resolveLength(input, row.length),
       note: row.note ?? "",
     }));
   }
+
+  // Roof systems
+  const materials =
+    input.batteryType === "ploksciasStogas" ||
+    input.batteryType === "slaitinisStogas"
+      ? roofSystemMaterials
+      : groundSystemMaterials;
+
+  const filtered = materials.filter((row) => {
+    if (input.batteryType === "slaitinisStogas") {
+      if (row.systems) return false;
+      return row.mountingMethods?.includes(input.mountingMethod) ?? false;
+    }
+
+    // Plokscias stogas
+    if (!row.systems) return false;
+
+    if (!row.systems.includes(input.system)) {
+      return false;
+    }
+
+    if (row.orientation && !row.orientation.includes(input.orientation)) {
+      return false;
+    }
+
+    if (row.construction) {
+      return row.construction.includes(input.moduleConstruction);
+    }
+
+    return true;
+  });
+
+  return filtered.map((row) => ({
+    code: typeof row.code === "function" ? row.code(input) : row.code,
+    name: row.name,
+    quantity: row.calculateQuantity ? row.calculateQuantity(input) : 0,
+    length: row.calculateLength
+      ? row.calculateLength(input)
+      : (row.length ?? null),
+    note: row.note ?? "",
+  }));
 }
