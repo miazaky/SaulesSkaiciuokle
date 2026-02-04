@@ -649,6 +649,8 @@ export default function SolarRoofCalculator() {
         <div className="solar-calculator__content">
           <h3>{t("sections.modules")}</h3>
           <FormGrid columns={2}>
+            
+
             {/* RV blocks/rows*/}
             {system === "RV10-Z" ? (
               <InputField label={t("fields.rowsCount")}>
@@ -673,6 +675,16 @@ export default function SolarRoofCalculator() {
                 />
               </InputField>
             )}
+
+            <InputField label={t("fields.moduleCountRoof")}>
+              <input
+                type="number"
+                min={0}
+                max={200}
+                onChange={(e) => setModuleCount(Number(e.target.value))}
+                value={moduleCount}
+              />
+            </InputField>
 
             <InputField label={t("system.systemTitle")}>
               <select
@@ -915,7 +927,7 @@ export default function SolarRoofCalculator() {
         </div>
       )}
 
-      {showActions && (
+      {showActions &&  (
         <div className="solar-calculator__actions-row">
           <button
             className="solar-calculator__actions"
@@ -924,10 +936,36 @@ export default function SolarRoofCalculator() {
             Grįžti atgal
           </button>
 
-          <button
+           {moduleCount%2!==0 && batteryType==="ploksciasStogas" && (<button
             className="solar-calculator__actions"
             onClick={() =>
               navigate("/canvasRoof", {
+                state: {
+                    batteryType,
+                  moduleCount,
+                  moduleLength,
+                  moduleWidth: MODULE_WIDTH,
+                  moduleThickness,
+                  rowsCount,
+                  orientation,
+                  system,
+                  moduleColor,
+                  moduleConstruction,
+                  gapBetweenRows,
+                  roofMaterial,
+                  mountingMethod,
+                  rowModuleCounts,
+                }
+              })
+            }
+          >
+            {t("actions.next")}
+          </button>
+          )}
+            {(moduleCount%2===0 ||  batteryType==="slaitinisStogas") && (<button
+            className="solar-calculator__actions"
+            onClick={() =>
+              navigate("/summaryRoof", {
                 state: {
                   batteryType,
                   moduleCount,
@@ -942,13 +980,14 @@ export default function SolarRoofCalculator() {
                   gapBetweenRows,
                   roofMaterial,
                   mountingMethod,
-                  rowModuleCounts: batteryType === "slaitinisStogas" ? rowModuleCounts : undefined, // NEW
-                },
+                  rowModuleCounts: batteryType === "slaitinisStogas" ? rowModuleCounts : undefined,
+                }
               })
             }
           >
             {t("actions.next")}
-          </button>
+            </button>
+            )}
         </div>
       )}
     </div>

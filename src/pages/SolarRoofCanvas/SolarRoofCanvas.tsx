@@ -205,7 +205,9 @@ export default function SolarRoofCanvas() {
 
   return (
     <div className="solar-canvas">
-      <h2 className="solar-canvas__title">MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT05/PT10/PT15/PT20</h2>
+      <h2 className="solar-canvas__title">
+        MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT05/PT10/PT15/PT20
+      </h2>
 
       <div
         ref={canvasRef}
@@ -365,10 +367,23 @@ export default function SolarRoofCanvas() {
       </div>
 
       <button
+        className="solar-summary__actions"
+        onClick={() => navigate("/roof", { state })}
+      >
+        Grįžti atgal
+      </button>
+      <button
         className="solar-calculator__actions"
         onClick={() =>
           navigate("/summaryRoof", {
-            state,
+            state: {
+              ...state,
+              clampGCount,
+              clampVCount,
+              holderGCount: GholderCount,
+              holderVCount: VholderCount,
+              holderPCount: PholderCount,
+            },
           })
         }
       >

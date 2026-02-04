@@ -23,4 +23,9 @@ export type CalculatorInput = {
     | "screwsEPDM80";
   materialRowCount: number;
   rowModuleCounts?: number[];
+  clampGCount?: number;
+  clampVCount?: number;
+  holderGCount?: number;
+  holderVCount?: number;
+  holderPCount?: number;
 };
