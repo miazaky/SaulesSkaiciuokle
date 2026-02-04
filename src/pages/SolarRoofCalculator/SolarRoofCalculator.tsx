@@ -148,6 +148,16 @@ export default function SolarRoofCalculator() {
       )
     : roofMountingMethodsEntries;
 
+  useEffect(() => {
+    if (batteryType === "slaitinisStogas") {
+      setOrientation(null);
+      setSystem(null);
+    } else if (batteryType === "ploksciasStogas") {
+      setRoofMaterial(null);
+      setMountingMethod("");
+    }
+  }, [batteryType]);
+
   // Auto-set / keep mountingMethod valid when roof material changes
   useEffect(() => {
     if (!roofMaterial) {
@@ -917,7 +927,7 @@ export default function SolarRoofCalculator() {
           <button
             className="solar-calculator__actions"
             onClick={() =>
-              navigate("/summaryRoof", {
+              navigate("/canvasRoof", {
                 state: {
                   batteryType,
                   moduleCount,

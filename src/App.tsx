@@ -6,6 +6,7 @@ import SolarGroundSummary from './pages/SolarGroundSummary/SolarGroundSummary.ts
 import SolarTypeSelect from './pages/SolarTypeSelect/SolarTypeSelect.tsx'
 import SolarRoofCalculator from './pages/SolarRoofCalculator/SolarRoofCalculator.tsx'
 import SolarRoofSummary from './pages/SolarRoofSummary/SolarRoofSummary.tsx'
+import SolarRoofCanvas from './pages/SolarRoofCanvas/SolarRoofCanvas.tsx'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/roof" element={<SolarRoofCalculator />} />
           <Route path="/summary" element={<SolarGroundSummary />} />
           <Route path="/summaryRoof" element={<SolarRoofSummary />} />
+          <Route path="/canvasRoof" element={<SolarRoofCanvas />} />
         </Routes>
       </div>
     </BrowserRouter>
