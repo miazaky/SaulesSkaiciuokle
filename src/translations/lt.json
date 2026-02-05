@@ -1,7 +1,9 @@
 {
   "title": {
     "selectBattery": "Pasirinkite saulės baterijos tipą",
-    "whereInstall": "Kur planuojate statyti saulės baterijas?"
+    "whereInstall": "Kur planuojate statyti saulės baterijas?",
+    "materialCount": "MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT05/PT10/PT15/PT20",
+    "materialCountPT15-L": "MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT15-L LAIKIKLIAI"
   },
   "batteryTypes": {
     "ezys": "Ežys",
@@ -96,7 +98,12 @@
     "rowsCount": "Modulių eilių kiekis, vnt.",
     "blockCount": "Modulių blokų kiekis, vnt.",
     "reserve": "Grebėsto rezervas (mm)",
-    "gap": "Tarpas tarp modulių prispaudėjams (mm)"
+    "gap": "Tarpas tarp modulių prispaudėjams (mm)",
+    "backHolder": "Galinis laikiklis",
+    "frontHolder": "Priekinis laikiklis",
+    "middleHolder": "Vidurinis laikiklis",
+    "frontClamps": "Priekiniai prispaudėjai",
+    "middleClamp": "Viduriniai prispaudėjai"
   },
   "actions": {
     "next": "Kitas žingsnis"

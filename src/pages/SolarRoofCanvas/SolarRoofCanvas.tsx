@@ -48,8 +48,8 @@ export default function SolarRoofCanvas() {
     const clamps: {
       row: number;
       col: number;
-      topHolder: "G" | "V";
-      bottomHolder: "P" | "V";
+      topHolder: "G" | "V" | "L";
+      bottomHolder: "P" | "V" | "L";
       clampType: "G" | "V";
       side: "left" | "right";
     }[] = [];
@@ -64,56 +64,116 @@ export default function SolarRoofCanvas() {
       const hasRight = has(row, col + STEP);
       const hasTop = has(row - STEP, col);
       const hasBottom = has(row + STEP, col);
-
       const isFirstInRow = !hasLeft;
       const isLastInRow = !hasRight;
+      const hasTopLeftDiagonal = has(row - STEP, col - STEP);
+      const hasBottomLeftDiagonal = has(row + STEP, col - STEP);
+      const hasTopRightDiagonal = has(row - STEP, col + STEP);
+      const hasBottomRightDiagonal = has(row + STEP, col + STEP);
 
-      // Left clamp (edge)
-      if (isFirstInRow) {
-        const topHolder: "G" | "V" = hasTop ? "V" : "G";
-        const bottomHolder: "P" | "V" = hasBottom ? "V" : "P";
+      if (state.system !== "PT15-L") {
+        // Left clamp (edge)
+        if (isFirstInRow) {
+          const topHolder: "G" | "V" = hasTop
+            ? "V"
+            : hasTopLeftDiagonal
+              ? "V"
+              : "G";
+          const bottomHolder: "P" | "V" = hasBottom
+            ? "V"
+            : hasBottomLeftDiagonal
+              ? "V"
+              : "P";
 
-        clamps.push({
-          row,
-          col: col - 0.5,
-          topHolder,
-          bottomHolder,
-          clampType: "G",
-          side: "left",
-        });
-      }
+          clamps.push({
+            row,
+            col: col - 0.5,
+            topHolder,
+            bottomHolder,
+            clampType: "G",
+            side: "left",
+          });
+        }
 
-      // Right clamp (edge)
-      if (isLastInRow) {
-        const topHolder: "G" | "V" = hasTop ? "V" : "G";
-        const bottomHolder: "P" | "V" = hasBottom ? "V" : "P";
+        // Right clamp (edge)
+        if (isLastInRow) {
+          const topHolder: "G" | "V" = hasTop
+            ? "V"
+            : hasTopRightDiagonal
+              ? "V"
+              : "G";
+          const bottomHolder: "P" | "V" = hasBottom
+            ? "V"
+            : hasBottomRightDiagonal
+              ? "V"
+              : "P";
 
-        clamps.push({
-          row,
-          col: col + 1.5,
-          topHolder,
-          bottomHolder,
-          clampType: "G",
-          side: "right",
-        });
-      }
+          clamps.push({
+            row,
+            col: col + 1.5,
+            topHolder,
+            bottomHolder,
+            clampType: "G",
+            side: "right",
+          });
+        }
 
-      // Between clamps (Clamp V)
-      if (hasLeft) {
-        const leftHasTop = has(row - STEP, col - STEP);
-        const leftHasBottom = has(row + STEP, col - STEP);
+        if (hasLeft) {
+          const leftHasTop = has(row - STEP, col - STEP);
+          const leftHasBottom = has(row + STEP, col - STEP);
+          const topHolder: "G" | "V" = hasTop || leftHasTop ? "V" : "G";
+          const bottomHolder: "P" | "V" =
+            hasBottom || leftHasBottom ? "V" : "P";
 
-        const topHolder: "G" | "V" = hasTop || leftHasTop ? "V" : "G";
-        const bottomHolder: "P" | "V" = hasBottom || leftHasBottom ? "V" : "P";
+          clamps.push({
+            row,
+            col: col - 0.5,
+            topHolder,
+            bottomHolder,
+            clampType: "V",
+            side: "left",
+          });
+        }
+      } else {
+        if (isFirstInRow) {
+          const topHolder = "L";
+          const bottomHolder = "L";
 
-        clamps.push({
-          row,
-          col: col - 0.5,
-          topHolder,
-          bottomHolder,
-          clampType: "V",
-          side: "left",
-        });
+          clamps.push({
+            row,
+            col: col - 0.5,
+            topHolder,
+            bottomHolder,
+            clampType: "G",
+            side: "left",
+          });
+        }
+        if (isLastInRow) {
+          const topHolder = "L";
+          const bottomHolder = "L";
+
+          clamps.push({
+            row,
+            col: col + 1.5,
+            topHolder,
+            bottomHolder,
+            clampType: "G",
+            side: "right",
+          });
+        }
+        if (hasLeft) {
+          const topHolder = "L";
+          const bottomHolder = "L";
+
+          clamps.push({
+            row,
+            col: col - 0.5,
+            topHolder,
+            bottomHolder,
+            clampType: "V",
+            side: "left",
+          });
+        }
       }
     });
 
@@ -198,16 +258,20 @@ export default function SolarRoofCanvas() {
   let PholderCount = 0;
 
   clamps.forEach((clamp) => {
-    if (clamp.topHolder === "G") GholderCount++;
+    if (clamp.topHolder === "G" || clamp.topHolder === "L") GholderCount++;
     if (clamp.topHolder === "V") VholderCount++;
     if (clamp.bottomHolder === "P") PholderCount++;
   });
 
   return (
     <div className="solar-canvas">
-      <h2 className="solar-canvas__title">
-        MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT05/PT10/PT15/PT20
-      </h2>
+      {state.system !== "PT15-L" ? (
+        <h2 className="solar-canvas__title">{t("title.materialCount")}</h2>
+      ) : (
+        <h2 className="solar-canvas__title">
+          {t("title.materialCountPT15-L")}
+        </h2>
+      )}
 
       <div
         ref={canvasRef}
@@ -251,48 +315,16 @@ export default function SolarRoofCanvas() {
             }}
           />
         ))}
-
         {/* Clamps (left/right only) */}
-        {clamps.map((clamp, idx) => (
-          <div
-            key={`clamp-${idx}`}
-            style={{
-              position: "absolute",
-              left: (clamp.col + 1) * CELL_SIZE - 25,
-              top: (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
-              width: 50,
-              height: 30,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "10px",
-              fontWeight: "bold",
-              color: "#333",
-              backgroundColor: "#e8f0fe",
-              border: "1px solid #4a90e2",
-              borderRadius: 3,
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            {`Clamp ${clamp.clampType}`}
-          </div>
-        ))}
-
-        {/* Holder letters */}
-        {clamps.map((clamp, idx) => {
-          const clampTop =
-            (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10;
-          const top = clampTop - CELL_SIZE;
-          const bottom = clampTop + CELL_SIZE;
-
-          return (
-            <div key={`holders-${idx}`}>
+        {state.system !== "PT15-L"
+          ? clamps.map((clamp, idx) => (
               <div
+                key={`clamp-${idx}`}
                 style={{
                   position: "absolute",
                   left: (clamp.col + 1) * CELL_SIZE - 25,
-                  top,
+                  top:
+                    (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
                   width: 50,
                   height: 30,
                   display: "flex",
@@ -308,36 +340,96 @@ export default function SolarRoofCanvas() {
                   zIndex: 1,
                 }}
               >
+                {`Clamp ${clamp.clampType}`}
+              </div>
+            ))
+          : clamps.map((clamp, idx) => (
+              <div
+                key={`clamp-${idx}`}
+                style={{
+                  position: "absolute",
+                  left: (clamp.col + 1) * CELL_SIZE - 25,
+                  top:
+                    (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
+                  width: 50,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "10px",
+                  fontWeight: "bold",
+                  color: "#333",
+                  backgroundColor: "#e8f0fe",
+                  border: "1px solid #4a90e2",
+                  borderRadius: 3,
+                  pointerEvents: "none",
+                  zIndex: 1,
+                }}
+              >
+                {`Clamp ${clamp.clampType}`} <br></br>
                 {clamp.topHolder}
               </div>
+            ))}
+        {/* Holder letters */}
+        {state.system !== "PT15-L"
+          ? clamps.map((clamp, idx) => {
+              const clampTop =
+                (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10;
+              const top = clampTop - CELL_SIZE;
+              const bottom = clampTop + CELL_SIZE;
 
-              <div
-                style={{
-                  position: "absolute",
-                  left: (clamp.col + 1) * CELL_SIZE - 25,
-                  top: bottom,
-                  width: 50,
-                  height: 30,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "10px",
-                  fontWeight: "bold",
-                  color: "#333",
-                  backgroundColor: "#e8f0fe",
-                  border: "1px solid #4a90e2",
-                  borderRadius: 3,
-                  pointerEvents: "none",
-                  zIndex: 1,
-                }}
-              >
-                {clamp.bottomHolder}
-              </div>
-            </div>
-          );
-        })}
+              return (
+                <div key={`holders-${idx}`}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: (clamp.col + 1) * CELL_SIZE - 25,
+                      top,
+                      width: 50,
+                      height: 30,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "10px",
+                      fontWeight: "bold",
+                      color: "#333",
+                      backgroundColor: "#e8f0fe",
+                      border: "1px solid #4a90e2",
+                      borderRadius: 3,
+                      pointerEvents: "none",
+                      zIndex: 1,
+                    }}
+                  >
+                    {clamp.topHolder}
+                  </div>
 
-        {/* Modules */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: (clamp.col + 1) * CELL_SIZE - 25,
+                      top: bottom,
+                      width: 50,
+                      height: 30,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "10px",
+                      fontWeight: "bold",
+                      color: "#333",
+                      backgroundColor: "#e8f0fe",
+                      border: "1px solid #4a90e2",
+                      borderRadius: 3,
+                      pointerEvents: "none",
+                      zIndex: 1,
+                    }}
+                  >
+                    {clamp.bottomHolder}
+                  </div>
+                </div>
+              );
+            })
+          : null}
+        ;{/* Modules */}
         {modules.map((module) => (
           <div
             key={module.id}
@@ -358,12 +450,24 @@ export default function SolarRoofCanvas() {
         ))}
       </div>
 
-      <div style={{ marginTop: 20 }}>
-        <p>Galinis Laikiklis (G): {GholderCount}</p>
-        <p>Priekinis Laikiklis (P): {PholderCount}</p>
-        <p>Vidurinis Laikiklis (V): {VholderCount}</p>
-        <p>Galiniai Prispaudejai (Clamp G): {clampGCount}</p>
-        <p>Viduriniai Prispaudejai (Clamp V): {clampVCount}</p>
+  {state.system !== "PT15-L" ? (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ marginBottom: 20 }}>
+        <p>
+          {t("fields.backHolder")} (G): {GholderCount}
+        </p>
+        <p>
+          {t("fields.frontHolder")} (P): {PholderCount}
+        </p>
+        <p>
+          {t("fields.middleHolder")} (V): {VholderCount}
+        </p>
+        <p>
+          {t("fields.frontClamps")} (Clamp G): {clampGCount}
+        </p>
+        <p>
+          {t("fields.middleClamp")} (Clamp V): {clampVCount}
+        </p>
       </div>
 
       <button
@@ -389,6 +493,42 @@ export default function SolarRoofCanvas() {
       >
         {t("actions.next")}
       </button>
+    </div>
+  ) : <div style={{ marginTop: 20 }}>
+      <div style={{ marginBottom: 20 }}>
+        <p>
+          {t("fields.backHolder")} (G): {GholderCount}
+        </p>
+        <p>
+          {t("fields.frontClamps")} (Clamp G): {clampGCount}
+        </p>
+        <p>
+          {t("fields.middleClamp")} (Clamp V): {clampVCount}
+        </p>
+      </div>
+
+      <button
+        className="solar-summary__actions"
+        onClick={() => navigate("/roof", { state })}
+      >
+        Grįžti atgal
+      </button>
+      <button
+        className="solar-calculator__actions"
+        onClick={() =>
+          navigate("/summaryRoof", {
+            state: {
+              ...state,
+              clampGCount,
+              clampVCount,
+              holderGCount: GholderCount,
+            },
+          })
+        }
+      >
+        {t("actions.next")}
+      </button>
+    </div>}
     </div>
   );
 }
