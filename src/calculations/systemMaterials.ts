@@ -34,6 +34,13 @@ export type SystemMaterialDefinition = {
   calculateLength?: (input: CalculatorInput) => number | null;
 };
 
+function isEqual(a: number): boolean {
+  if (a % 2 == 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
 // J5 / J6 – Priekinė / Galinė koja
 function calculateLegCount(constructionLength: number): number {
   if (constructionLength <= 4300) return 2;
@@ -220,6 +227,196 @@ function calcaulteSpecScrewQuantity(
       2
     );
   }
+}
+
+function calculateFrontHolderQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  holderPCount?: number,
+): number {
+  return isEqual(moduleCount) ? moduleCount + 1 : (holderPCount ?? 0);
+}
+
+function calculateBackHolderQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  holderGCount?: number,
+): number {
+  return isEqual(moduleCount) ? moduleCount + 1 : (holderGCount ?? 0);
+}
+function calculateMiddleHolderQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  holderVCount?: number,
+): number {
+  return isEqual(moduleCount)
+    ? (moduleCount + 1) * (rowsCount - 1)
+    : (holderVCount ?? 0);
+}
+
+function calculateHelperFrontHolderQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  moduleLength: number,
+): number {
+  return isEqual(moduleCount)
+    ? moduleLength < 2000
+      ? 0
+      : moduleCount * rowsCount
+    : moduleLength < 2000
+      ? 0
+      : moduleCount;
+}
+
+function calculateWindboardQuantity(
+  moduleCount: number,
+  rowsCount: number,
+): number {
+  return isEqual(moduleCount) ? moduleCount * rowsCount : moduleCount;
+}
+
+function calculateScrewsForWindboardsQuantity(
+  moduleCount: number,
+  rowsCount: number,
+): number {
+  return isEqual(moduleCount)
+    ? (moduleCount + 1) * 2 * (rowsCount - 1)
+    : moduleCount * 3;
+}
+
+function calculateClampBackQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  clampGCount?: number,
+): number {
+  return isEqual(moduleCount) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
+}
+
+function calculateClampInnerQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  clampVCount?: number,
+): number {
+  return isEqual(moduleCount)
+    ? (moduleCount - 1) * (rowsCount * 2)
+    : (clampVCount ?? 0);
+}
+
+function calculateM8x30ScrewQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  clampGCount?: number,
+  clampVCount?: number,
+): number {
+  return isEqual(moduleCount)
+    ? rowsCount * 2 * 2 + (moduleCount - 1) * (rowsCount * 2)
+    : (clampGCount ?? 0) + (clampVCount ?? 0);
+}
+
+function calculateSingleMountingHolder(
+  moduleCount: number,
+  rowsCount: number,
+  construction: string,
+): number {
+  if (isEqual(moduleCount) && construction === "ilgoji") {
+    return moduleCount * rowsCount * 2;
+  } else if(isEqual(moduleCount) && construction === "trumpoji") {
+    return (moduleCount + 1) * rowsCount;
+  } 
+    else if (!isEqual(moduleCount) && construction === "ilgoji") {
+    return moduleCount * 2;
+  } else {
+    return (rowsCount + 1) * moduleCount;
+  }
+}
+
+function calculatePT15WindboardQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  construction: string,
+): number {
+  if( isEqual(moduleCount) && construction === "ilgoji") {
+   return moduleCount * rowsCount;
+  }
+  else if(isEqual(moduleCount) && construction === "trumpoji") {
+    return moduleCount * rowsCount;
+  }
+  else if( !isEqual(moduleCount) && construction === "ilgoji") {
+    return moduleCount;
+  }
+  else{
+    return moduleCount * rowsCount;
+  }
+}
+
+function calculatePT15WindboardScrewsQuantity(
+    moduleCount: number,
+    rowsCount: number,
+    construction: string,
+): number {
+    if( isEqual(moduleCount) && construction === "ilgoji") {
+        return moduleCount * rowsCount * 4;
+    }
+    else if(isEqual(moduleCount) && construction === "trumpoji") {
+        return (moduleCount + 1) * 2 * (rowsCount - 1);
+    }
+    else if( !isEqual(moduleCount) && construction === "ilgoji") {
+        return calculatePT15WindboardQuantity(moduleCount, rowsCount, construction) * 4;
+    }
+    else{
+        return calculatePT15WindboardQuantity(moduleCount, rowsCount, construction) * 3;
+    }
+}
+
+function calculatePT15BackClampQuantity(
+    moduleCount: number,
+    rowsCount: number,
+    construction: string,
+    clampGCount?: number,
+): number {
+    if( isEqual(moduleCount) && construction === "ilgoji") {
+        return moduleCount * 2 * (rowsCount * 2);
+    }
+    else if(isEqual(moduleCount) && construction === "trumpoji") {
+       return rowsCount * 2 * 2;
+    }
+    else if( !isEqual(moduleCount) && construction === "ilgoji") {
+        return moduleCount*4;
+    }
+    else
+    {
+        return clampGCount ?? 0;
+    }
+}
+
+function calculatePT15InnerClampQuantity(
+    moduleCount: number,
+    rowsCount: number,
+    construction: string,
+    clampVCount?: number,
+): number {
+    if( isEqual(moduleCount) && construction === "trumpoji") {
+        return  (moduleCount - 1) * (rowsCount * 2);
+    }
+    if(!isEqual(moduleCount) && construction === "trumpoji") {
+        return clampVCount ?? 0;
+    }
+    return 0;
+}
+
+function calculatePT15M8x30ScrewQuantity(
+    moduleCount: number,
+    rowsCount: number,
+    construction: string,
+    clampGCount?: number,
+    clampVCount?: number,
+): number {
+    if(construction === "ilgoji") {
+        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount);
+    }
+    else{
+        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount) + calculatePT15InnerClampQuantity(moduleCount, rowsCount, construction, clampVCount);
+    }
 }
 
 // J8 – Ryšys R-1
@@ -487,21 +684,24 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "PT10-1",
     name: "Priekinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
   },
   {
     systems: ["PT10"],
     code: "PT10-4",
     name: "Galinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
   },
   {
     systems: ["PT10"],
     code: "PT10-2",
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+    calculateQuantity: (i) =>
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
   },
   {
     systems: ["PT10"],
@@ -509,7 +709,11 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount,
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+      ),
   },
   {
     systems: ["PT10"],
@@ -517,7 +721,11 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount,
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+      ),
   },
 
   // PT15
@@ -526,21 +734,24 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "PT15-1",
     name: "Priekinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
   },
   {
     systems: ["PT15"],
     code: "PT15-3",
     name: "Galinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
   },
   {
     systems: ["PT15"],
     code: "PT15-4",
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+    calculateQuantity: (i) =>
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
   },
   {
     systems: ["PT15"],
@@ -548,7 +759,11 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount,
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+      ),
   },
   {
     systems: ["PT15"],
@@ -556,7 +771,11 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount,
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+      ),
   },
 
   // PT20
@@ -565,21 +784,24 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "PT20-1",
     name: "Priekinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
   },
   {
     systems: ["PT20"],
     code: "PT20-3",
     name: "Galinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
   },
   {
     systems: ["PT20"],
     code: "PT20-2",
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+    calculateQuantity: (i) =>
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
   },
 
   {
@@ -588,7 +810,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "PT15-L",
     name: "Viengubo montavimo laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount * i.rowsCount * 2,
+    calculateQuantity: (i) => calculateSingleMountingHolder(i.moduleCount, i.rowsCount, i.moduleConstruction),
   },
   {
     systems: ["PT15-L"],
@@ -596,7 +818,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Vejalentė",
     length: null,
-    calculateQuantity: (i) => i.moduleCount * i.rowsCount,
+    calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
   },
   {
     systems: ["PT15-L"],
@@ -604,7 +826,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
-    calculateQuantity: (i) => i.moduleCount * i.rowsCount * 4,
+    calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
   },
   {
     systems: ["PT15-L"],
@@ -612,7 +834,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount * 2 * (i.rowsCount * 2),
+    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount),
   },
   {
     systems: ["PT15-L"],
@@ -620,7 +842,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "M8x30 varžtas",
     length: null,
-    calculateQuantity: (i) => i.moduleCount * 2 * (i.rowsCount * 2),
+    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount),
   },
 
   {
@@ -629,7 +851,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "PT15-L",
     name: "Viengubo montavimo laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * i.rowsCount,
+    calculateQuantity: (i) => calculateSingleMountingHolder(i.moduleCount, i.rowsCount, i.moduleConstruction),
   },
   {
     systems: ["PT15-L"],
@@ -637,7 +859,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Vejalentė",
     length: null,
-    calculateQuantity: (i) => i.moduleCount * i.rowsCount,
+    calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
   },
   {
     systems: ["PT15-L"],
@@ -645,7 +867,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * 2 * (i.rowsCount - 1), 
+    calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
   },
   {
     systems: ["PT15-L"],
@@ -653,7 +875,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => i.rowsCount * 2 * 2,
+    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount),
   },
   {
     systems: ["PT15-L"],
@@ -661,7 +883,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Prispaudėjas vidinis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount - 1) * (i.rowsCount * 2),
+    calculateQuantity: (i) => calculatePT15InnerClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampVCount),
   },
   {
     systems: ["PT15-L"],
@@ -670,28 +892,31 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
-      i.rowsCount * 2 * 2 + (i.moduleCount - 1) * (i.rowsCount * 2),
+     calculatePT15M8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.clampVCount),
   },
   {
     systems: ["PT5"],
     code: "PT5-1",
     name: "Priekinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
   },
   {
     systems: ["PT5"],
     code: "PT5-3",
     name: "Galinis laikiklis",
     length: null,
-    calculateQuantity: (i) => i.moduleCount + 1,
+    calculateQuantity: (i) =>
+      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
   },
   {
     systems: ["PT5"],
     code: "PT5-2",
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount - 1),
+    calculateQuantity: (i) =>
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
   },
   {
     systems: ["PT5", "PT20"],
@@ -699,7 +924,11 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount,
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+      ),
   },
   {
     systems: ["PT5", "PT20"],
@@ -707,35 +936,43 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount,
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+      ),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
     code: "",
     name: "Vejalentė",
     length: null,
-    calculateQuantity: (i) => i.moduleCount * i.rowsCount,
+    calculateQuantity: (i) =>
+      calculateWindboardQuantity(i.moduleCount, i.rowsCount),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
     code: "",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * 2 * (i.rowsCount - 1),
+    calculateQuantity: (i) =>
+      calculateScrewsForWindboardsQuantity(i.moduleCount, i.rowsCount),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => i.rowsCount * 2 * 2,
+    calculateQuantity: (i) =>
+      calculateClampBackQuantity(i.moduleCount, i.rowsCount, i.clampGCount),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
     code: "",
     name: "Prispaudėjas vidinis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount - 1) * (i.rowsCount * 2),
+    calculateQuantity: (i) =>
+      calculateClampInnerQuantity(i.moduleCount, i.rowsCount, i.clampVCount),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
@@ -743,7 +980,12 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
-      i.rowsCount * 2 * 2 + (i.moduleCount - 1) * (i.rowsCount * 2),
+      calculateM8x30ScrewQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.clampGCount,
+        i.clampVCount,
+      ),
   },
 
   /* ----------------- Slaitinis stogas MATERIALS ----------------- */
@@ -831,7 +1073,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: MATERIAL_KEYS.specScrew,
     length: null,
-    calculateQuantity: (i) => calculateEPDMMiniQuantity(i.moduleCount)*4,
+    calculateQuantity: (i) => calculateEPDMMiniQuantity(i.moduleCount) * 4,
   },
   {
     mountingMethods: ["screwsEPDM40"],

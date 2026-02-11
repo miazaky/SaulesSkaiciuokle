@@ -1,0 +1,16 @@
+.solar-canvas{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+    user-select: none;
+}
+.solar-canvas__title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.solar-calculator__actions {
+    margin-top: 40px;
+    margin-right: 10px;
+}
