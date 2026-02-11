@@ -1,5 +1,5 @@
 import { CalculatorInput } from "./types";
-import { solarGroundFurnitureMaterials } from "../config/solarGround/furnitureMaterials";
+import { solarGroundFurnitureMaterials } from "../config/furnitureMaterials";
 import { furnitureRegistry } from "./solarGround/furnitureRegistry";
 
 export type CalculatedFurnitureMaterial = {
