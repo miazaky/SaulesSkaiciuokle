@@ -3,7 +3,9 @@
     "selectBattery": "Pasirinkite saulės baterijos tipą",
     "whereInstall": "Kur planuojate statyti saulės baterijas?",
     "materialCount": "MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT05/PT10/PT15/PT20",
-    "materialCountPT15-L": "MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT15-L LAIKIKLIAI"
+    "materialCountPT15-L": "MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT15-L LAIKIKLIAI",
+    "materialCountRV10": "2 BLOKO MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA RV10",
+    "materialCountRV10-Z": "3 BLOKO MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA RV10-Z"
   },
   "batteryTypes": {
     "ezys": "Ežys",

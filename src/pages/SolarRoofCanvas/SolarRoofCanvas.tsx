@@ -11,18 +11,20 @@ type Module = {
 };
 
 const CELL_SIZE = 60;
-const STEP = 2;
+//1 jeigu moduliai prie pat, 2 jeigu norim matyt laikiklius(reikia atkomentuot)
+const STEP = 1;
 const ROW_OFFSET = 1;
 
 export default function SolarRoofCanvas() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { state } = useLocation() as { state: CalculatorInput };
-  let grid_cols = state.rowsCount * 3;
+  let grid_cols = state.rowsCount * 2;
 
   const [modules, setModules] = useState<Module[]>(() => {
     const initial: Module[] = [];
-    const spacing = 2;
+    //1 jeigu prie pat, 2 jeigu su laikikliais
+    const spacing = 1;
     const modulesPerRow = Math.ceil(state.moduleCount / state.rowsCount);
 
     for (let i = 0; i < state.moduleCount; i++) {
@@ -38,9 +40,9 @@ export default function SolarRoofCanvas() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const gridRows = state.rowsCount * 2 + ROW_OFFSET;
+  const gridRows = state.rowsCount + ROW_OFFSET;
   const maxCol = Math.max(0, ...modules.map((m) => m.col));
-  const gridCols = Math.max(grid_cols, maxCol + 3);
+  const gridCols = Math.max(grid_cols, maxCol + ROW_OFFSET);
 
   // Calculate clamps based on module positions
 
@@ -219,21 +221,21 @@ export default function SolarRoofCanvas() {
       (m) => m.id !== draggingModule && m.row === newRow && m.col === newCol,
     );
 
-    //Keep one tile space between modules,
-    const isAdjacent = modules.some(
-      (m) =>
-        m.id !== draggingModule &&
-        Math.abs(m.row - newRow) < STEP &&
-        Math.abs(m.col - newCol) < STEP,
-    );
+    // //Keep one tile space between modules,
+    // const isAdjacent = modules.some(
+    //   (m) =>
+    //     m.id !== draggingModule &&
+    //     Math.abs(m.row - newRow) < STEP &&
+    //     Math.abs(m.col - newCol) < STEP,
+    // );
 
-    if (isAdjacent) return;
+    // if (isAdjacent) return;
 
-    //Only move between even column and rows
-    const isEvenCol = newCol % STEP === 0;
-    const isEvenRow = newRow % STEP === 0;
+    // //Only move between even column and rows
+    // const isEvenCol = newCol % STEP === 0;
+    // const isEvenRow = newRow % STEP === 0;
 
-    if (!isEvenCol || !isEvenRow) return;
+    // if (!isEvenCol || !isEvenRow) return;
 
     if (!isOccupied) {
       setModules((prev) =>
@@ -265,270 +267,308 @@ export default function SolarRoofCanvas() {
 
   return (
     <div className="solar-canvas">
-      {state.system !== "PT15-L" ? (
-        <h2 className="solar-canvas__title">{t("title.materialCount")}</h2>
-      ) : (
+      {state.system === "PT15-L" ? (
         <h2 className="solar-canvas__title">
           {t("title.materialCountPT15-L")}
         </h2>
+      ) : state.system === "RV10" ? (
+        <h2 className="solar-canvas__title">{t("title.materialCountRV10")}</h2>
+      ) : (
+        <h2 className="solar-canvas__title">{t("title.materialCount")}</h2>
       )}
 
       <div
-        ref={canvasRef}
-        className="solar-canvas__grid"
+        className="solar-canvas__grid-scroll"
         style={{
-          width: gridCols * CELL_SIZE,
-          height: gridRows * CELL_SIZE,
-          position: "relative",
-          border: "2px solid #333",
-          backgroundColor: "#f5f5f5",
-          cursor: draggingModule !== null ? "grabbing" : "default",
+          overflowX: "auto",
+          overflowY: "hidden",
+          maxWidth: "100%",
         }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
       >
-        {/* Grid lines */}
-        {Array.from({ length: gridRows + 1 }).map((_, i) => (
-          <div
-            key={`h-${i}`}
-            style={{
-              position: "absolute",
-              top: i * CELL_SIZE,
-              left: 0,
-              right: 0,
-              height: 1,
-              backgroundColor: "#ddd",
-            }}
-          />
-        ))}
-        {Array.from({ length: gridCols + 1 }).map((_, i) => (
-          <div
-            key={`v-${i}`}
-            style={{
-              position: "absolute",
-              left: i * CELL_SIZE,
-              top: 0,
-              bottom: 0,
-              width: 1,
-              backgroundColor: "#ddd",
-            }}
-          />
-        ))}
-        {/* Clamps (left/right only) */}
-        {state.system !== "PT15-L"
-          ? clamps.map((clamp, idx) => (
-              <div
-                key={`clamp-${idx}`}
-                style={{
-                  position: "absolute",
-                  left: (clamp.col + 1) * CELL_SIZE - 25,
-                  top:
-                    (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
-                  width: 50,
-                  height: 30,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "10px",
-                  fontWeight: "bold",
-                  color: "#333",
-                  backgroundColor: "#e8f0fe",
-                  border: "1px solid #4a90e2",
-                  borderRadius: 3,
-                  pointerEvents: "none",
-                  zIndex: 1,
-                }}
-              >
-                {`Clamp ${clamp.clampType}`}
-              </div>
-            ))
-          : clamps.map((clamp, idx) => (
-              <div
-                key={`clamp-${idx}`}
-                style={{
-                  position: "absolute",
-                  left: (clamp.col + 1) * CELL_SIZE - 25,
-                  top:
-                    (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
-                  width: 50,
-                  height: 30,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "10px",
-                  fontWeight: "bold",
-                  color: "#333",
-                  backgroundColor: "#e8f0fe",
-                  border: "1px solid #4a90e2",
-                  borderRadius: 3,
-                  pointerEvents: "none",
-                  zIndex: 1,
-                }}
-              >
-                {`Clamp ${clamp.clampType}`} <br></br>
-                {clamp.topHolder}
-              </div>
-            ))}
-        {/* Holder letters */}
-        {state.system !== "PT15-L"
-          ? clamps.map((clamp, idx) => {
-              const clampTop =
-                (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10;
-              const top = clampTop - CELL_SIZE;
-              const bottom = clampTop + CELL_SIZE;
-
-              return (
-                <div key={`holders-${idx}`}>
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: (clamp.col + 1) * CELL_SIZE - 25,
-                      top,
-                      width: 50,
-                      height: 30,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "10px",
-                      fontWeight: "bold",
-                      color: "#333",
-                      backgroundColor: "#e8f0fe",
-                      border: "1px solid #4a90e2",
-                      borderRadius: 3,
-                      pointerEvents: "none",
-                      zIndex: 1,
-                    }}
-                  >
-                    {clamp.topHolder}
-                  </div>
-
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: (clamp.col + 1) * CELL_SIZE - 25,
-                      top: bottom,
-                      width: 50,
-                      height: 30,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "10px",
-                      fontWeight: "bold",
-                      color: "#333",
-                      backgroundColor: "#e8f0fe",
-                      border: "1px solid #4a90e2",
-                      borderRadius: 3,
-                      pointerEvents: "none",
-                      zIndex: 1,
-                    }}
-                  >
-                    {clamp.bottomHolder}
-                  </div>
+        <div
+          ref={canvasRef}
+          className="solar-canvas__grid"
+          style={{
+            width: gridCols * CELL_SIZE,
+            height: gridRows * CELL_SIZE,
+            position: "relative",
+            border: "2px solid #333",
+            backgroundColor: "#f5f5f5",
+            cursor: draggingModule !== null ? "grabbing" : "default",
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {/* Grid lines */}
+          {Array.from({ length: gridRows + 1 }).map((_, i) => (
+            <div
+              key={`h-${i}`}
+              style={{
+                position: "absolute",
+                top: i * CELL_SIZE,
+                left: 0,
+                right: 0,
+                height: 1,
+                backgroundColor: "#ddd",
+              }}
+            />
+          ))}
+          {Array.from({ length: gridCols + 1 }).map((_, i) => (
+            <div
+              key={`v-${i}`}
+              style={{
+                position: "absolute",
+                left: i * CELL_SIZE,
+                top: 0,
+                bottom: 0,
+                width: 1,
+                backgroundColor: "#ddd",
+              }}
+            />
+          ))}
+          {/* Clamps (left/right only)
+          {state.system !== "PT15-L"
+            ? clamps.map((clamp, idx) => (
+                <div
+                  key={`clamp-${idx}`}
+                  style={{
+                    position: "absolute",
+                    left: (clamp.col + 1) * CELL_SIZE - 25,
+                    top:
+                      (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
+                    width: 50,
+                    height: 30,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "10px",
+                    fontWeight: "bold",
+                    color: "#333",
+                    backgroundColor: "#e8f0fe",
+                    border: "1px solid #4a90e2",
+                    borderRadius: 3,
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                >
+                  {`Clamp ${clamp.clampType}`}
                 </div>
-              );
-            })
-          : null}
-        ;{/* Modules */}
-        {modules.map((module) => (
-          <div
-            key={module.id}
-            style={{
-              position: "absolute",
-              left: (module.col + 1) * CELL_SIZE + 5,
-              top: (module.row + ROW_OFFSET) * CELL_SIZE + 5,
-              width: CELL_SIZE - 10,
-              height: CELL_SIZE - 10,
-              backgroundColor: "#4a90e2",
-              border: "2px solid #2e5c8a",
-              borderRadius: 4,
-              zIndex: draggingModule === module.id ? 10 : 2,
-              opacity: draggingModule === module.id ? 0.7 : 1,
-            }}
-            onMouseDown={(e) => handleMouseDown(e, module.id)}
-          />
-        ))}
+              ))
+            : clamps.map((clamp, idx) => (
+                <div
+                  key={`clamp-${idx}`}
+                  style={{
+                    position: "absolute",
+                    left: (clamp.col + 1) * CELL_SIZE - 25,
+                    top:
+                      (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
+                    width: 50,
+                    height: 30,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "10px",
+                    fontWeight: "bold",
+                    color: "#333",
+                    backgroundColor: "#e8f0fe",
+                    border: "1px solid #4a90e2",
+                    borderRadius: 3,
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                >
+                  {`Clamp ${clamp.clampType}`} <br></br>
+                  {clamp.topHolder}
+                </div>
+              ))}
+          {/* Holder letters 
+          {state.system !== "PT15-L"
+            ? clamps.map((clamp, idx) => {
+                const clampTop =
+                  (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10;
+                const top = clampTop - CELL_SIZE;
+                const bottom = clampTop + CELL_SIZE;
+
+                return (
+                  <div key={`holders-${idx}`}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: (clamp.col + 1) * CELL_SIZE - 25,
+                        top,
+                        width: 50,
+                        height: 30,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "10px",
+                        fontWeight: "bold",
+                        color: "#333",
+                        backgroundColor: "#e8f0fe",
+                        border: "1px solid #4a90e2",
+                        borderRadius: 3,
+                        pointerEvents: "none",
+                        zIndex: 1,
+                      }}
+                    >
+                      {clamp.topHolder}
+                    </div> 
+
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: (clamp.col + 1) * CELL_SIZE - 25,
+                        top: bottom,
+                        width: 50,
+                        height: 30,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "10px",
+                        fontWeight: "bold",
+                        color: "#333",
+                        backgroundColor: "#e8f0fe",
+                        border: "1px solid #4a90e2",
+                        borderRadius: 3,
+                        pointerEvents: "none",
+                        zIndex: 1,
+                      }}
+                    >
+                      {clamp.bottomHolder}
+                    </div>
+                  </div>
+                );
+              })
+            : null}*/}
+
+          {/* Modules */}
+          {modules.map((module) => state.orientation !== "RV" ? (
+            <div
+              key={module.id}
+              style={{
+                position: "absolute",
+                //left: (module.col + 1),  top: (module.row + ROW_OFFSET), jei su laikikliais
+                left: (module.col) * CELL_SIZE + CELL_SIZE / 2 - 26,
+                top: (module.row) * CELL_SIZE + CELL_SIZE / 2 - 15,
+                width: 50,
+                height: 30,
+                backgroundColor: "#4a90e2",
+                border: "2px solid #2e5c8a",
+                borderRadius: 4,
+                zIndex: draggingModule === module.id ? 10 : 2,
+                opacity: draggingModule === module.id ? 0.7 : 1,
+              }}
+              onMouseDown={(e) => handleMouseDown(e, module.id)}
+            />
+          ) : (
+            <div
+              key={module.id}
+              style={{
+                position: "absolute",
+                left: (module.col) * CELL_SIZE + CELL_SIZE / 2 - 26,
+                top: (module.row) * CELL_SIZE + CELL_SIZE / 2 - 15,
+                width: 50,
+                height: 30,
+                backgroundColor: "#4a90e2",
+                border: "2px solid #2e5c8a",
+                borderRadius: 4,
+                zIndex: draggingModule === module.id ? 10 : 2,
+                opacity: draggingModule === module.id ? 0.7 : 1,
+              }}
+              onMouseDown={(e) => handleMouseDown(e, module.id)}
+            />
+          ))}
+        </div>
       </div>
 
-  {state.system !== "PT15-L" ? (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ marginBottom: 20 }}>
-        <p>
-          {t("fields.backHolder")} (G): {GholderCount}
-        </p>
-        <p>
-          {t("fields.frontHolder")} (P): {PholderCount}
-        </p>
-        <p>
-          {t("fields.middleHolder")} (V): {VholderCount}
-        </p>
-        <p>
-          {t("fields.frontClamps")} (Clamp G): {clampGCount}
-        </p>
-        <p>
-          {t("fields.middleClamp")} (Clamp V): {clampVCount}
-        </p>
-      </div>
 
-      <button
-        className="solar-summary__actions"
-        onClick={() => navigate("/roof", { state })}
-      >
-        Grįžti atgal
-      </button>
-      <button
-        className="solar-calculator__actions"
-        onClick={() =>
-          navigate("/summaryRoof", {
-            state: {
-              ...state,
-              clampGCount,
-              clampVCount,
-              holderGCount: GholderCount,
-              holderVCount: VholderCount,
-              holderPCount: PholderCount,
-            },
-          })
-        }
-      >
-        {t("actions.next")}
-      </button>
-    </div>
-  ) : <div style={{ marginTop: 20 }}>
-      <div style={{ marginBottom: 20 }}>
-        <p>
-          {t("fields.backHolder")} (G): {GholderCount}
-        </p>
-        <p>
-          {t("fields.frontClamps")} (Clamp G): {clampGCount}
-        </p>
-        <p>
-          {t("fields.middleClamp")} (Clamp V): {clampVCount}
-        </p>
-      </div>
 
-      <button
-        className="solar-summary__actions"
-        onClick={() => navigate("/roof", { state })}
-      >
-        Grįžti atgal
-      </button>
-      <button
-        className="solar-calculator__actions"
-        onClick={() =>
-          navigate("/summaryRoof", {
-            state: {
-              ...state,
-              clampGCount,
-              clampVCount,
-              holderGCount: GholderCount,
-            },
-          })
-        }
-      >
-        {t("actions.next")}
-      </button>
-    </div>}
+      {state.system !== "PT15-L" ? (
+        <>
+          <div style={{ marginTop: 20 }}>
+            <div style={{ marginBottom: 20 }}>
+              <p>
+                {t("fields.backHolder")} (G): {GholderCount}
+              </p>
+              <p>
+                {t("fields.frontHolder")} (P): {PholderCount}
+              </p>
+              <p>
+                {t("fields.middleHolder")} (V): {VholderCount}
+              </p>
+              <p>
+                {t("fields.frontClamps")} (Clamp G): {clampGCount}
+              </p>
+              <p>
+                {t("fields.middleClamp")} (Clamp V): {clampVCount}
+              </p>
+            </div>
+          </div>
+
+          <button
+            className="solar-summary__actions"
+            onClick={() => navigate("/roof", { state })}
+          >
+            Grįžti atgal
+          </button>
+          <button
+            className="solar-calculator__actions"
+            onClick={() =>
+              navigate("/summaryRoof", {
+                state: {
+                  ...state,
+                  clampGCount,
+                  clampVCount,
+                  holderGCount: GholderCount,
+                  holderVCount: VholderCount,
+                  holderPCount: PholderCount,
+                },
+              })
+            }
+          >
+            {t("actions.next")}
+          </button>
+        </>
+      ) : (
+        <>
+          <div style={{ marginTop: 20 }}>
+            <div style={{ marginBottom: 20 }}>
+              <p>
+                {t("fields.backHolder")} (G): {GholderCount}
+              </p>
+              <p>
+                {t("fields.frontClamps")} (Clamp G): {clampGCount}
+              </p>
+              <p>
+                {t("fields.middleClamp")} (Clamp V): {clampVCount}
+              </p>
+            </div>
+          </div>
+
+          <button
+            className="solar-summary__actions"
+            onClick={() => navigate("/roof", { state })}
+          >
+            Grįžti atgal
+          </button>
+          <button
+            className="solar-calculator__actions"
+            onClick={() =>
+              navigate("/summaryRoof", {
+                state: {
+                  ...state,
+                  clampGCount,
+                  clampVCount,
+                  holderGCount: GholderCount,
+                },
+              })
+            }
+          >
+            {t("actions.next")}
+          </button>
+        </>
+      )}
     </div>
   );
 }

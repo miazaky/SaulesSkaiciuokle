@@ -107,6 +107,15 @@ export default function SolarRoofCalculator() {
         : [0],
   );
 
+  const isRv =
+    batteryType === "ploksciasStogas" && orientation === "RV";
+
+  const rowsCountError =
+    isRv && rowsCount % 2 !== 0
+      ? "Eilučių skaičius turi būti lyginis."
+      : "";
+      
+
   const systemOptions = t("system", { returnObjects: true }) as Record<
     string,
     string
@@ -649,32 +658,22 @@ export default function SolarRoofCalculator() {
         <div className="solar-calculator__content">
           <h3>{t("sections.modules")}</h3>
           <FormGrid columns={2}>
-            
-
             {/* RV blocks/rows*/}
-            {system === "RV10-Z" ? (
-              <InputField label={t("fields.rowsCount")}>
-                <input
-                  type="number"
-                  min={2}
-                  value={rowsCount}
-                  onChange={(e) =>
-                    setRowsCount(Math.max(2, Number(e.target.value)))
-                  }
-                />
-              </InputField>
-            ) : (
-              <InputField label={t("fields.rowsCount")}>
-                <input
-                  type="number"
-                  min={2}
-                  value={rowsCount}
-                  onChange={(e) =>
-                    setRowsCount(Math.max(2, Number(e.target.value)))
-                  }
-                />
-              </InputField>
-            )}
+            <InputField label={t("fields.rowsCount")}>
+              <input
+                type="number"
+                min={2}
+                value={rowsCount}
+                onChange={(e) =>
+                  setRowsCount(Math.max(2, Number(e.target.value)))
+                }
+              />
+              {rowsCountError && (
+                <div style={{ color: "#b00020", marginTop: 6 }}>
+                  {rowsCountError}
+                </div>
+              )}
+            </InputField>
 
             <InputField label={t("fields.moduleCountRoof")}>
               <input
@@ -936,58 +935,65 @@ export default function SolarRoofCalculator() {
             Grįžti atgal
           </button>
 
-           {moduleCount%2!==0 && batteryType==="ploksciasStogas" && (<button
-            className="solar-calculator__actions"
-            onClick={() =>
-              navigate("/canvasRoof", {
-                state: {
+          {moduleCount % 2 !== 0 && batteryType === "ploksciasStogas" && (
+            <button
+              className="solar-calculator__actions"
+              disabled={Boolean(rowsCountError)}
+              onClick={() =>
+                navigate("/canvasRoof", {
+                  state: {
                     batteryType,
-                  moduleCount,
-                  moduleLength,
-                  moduleWidth: MODULE_WIDTH,
-                  moduleThickness,
-                  rowsCount,
-                  orientation,
-                  system,
-                  moduleColor,
-                  moduleConstruction,
-                  gapBetweenRows,
-                  roofMaterial,
-                  mountingMethod,
-                  rowModuleCounts,
-                }
-              })
-            }
-          >
-            {t("actions.next")}
-          </button>
-          )}
-            {(moduleCount%2===0 ||  batteryType==="slaitinisStogas") && (<button
-            className="solar-calculator__actions"
-            onClick={() =>
-              navigate("/summaryRoof", {
-                state: {
-                  batteryType,
-                  moduleCount,
-                  moduleLength,
-                  moduleWidth: MODULE_WIDTH,
-                  moduleThickness,
-                  rowsCount,
-                  orientation,
-                  system,
-                  moduleColor,
-                  moduleConstruction,
-                  gapBetweenRows,
-                  roofMaterial,
-                  mountingMethod,
-                  rowModuleCounts: batteryType === "slaitinisStogas" ? rowModuleCounts : undefined,
-                }
-              })
-            }
-          >
-            {t("actions.next")}
+                    moduleCount,
+                    moduleLength,
+                    moduleWidth: MODULE_WIDTH,
+                    moduleThickness,
+                    rowsCount,
+                    orientation,
+                    system,
+                    moduleColor,
+                    moduleConstruction,
+                    gapBetweenRows,
+                    roofMaterial,
+                    mountingMethod,
+                    rowModuleCounts,
+                  },
+                })
+              }
+            >
+              {t("actions.next")}
             </button>
-            )}
+          )}
+          {(moduleCount % 2 === 0 || batteryType === "slaitinisStogas") && (
+            <button
+              className="solar-calculator__actions"
+              disabled={Boolean(rowsCountError)}
+              onClick={() =>
+                navigate("/summaryRoof", {
+                  state: {
+                    batteryType,
+                    moduleCount,
+                    moduleLength,
+                    moduleWidth: MODULE_WIDTH,
+                    moduleThickness,
+                    rowsCount,
+                    orientation,
+                    system,
+                    moduleColor,
+                    moduleConstruction,
+                    gapBetweenRows,
+                    roofMaterial,
+                    mountingMethod,
+                    rowModuleCounts:
+                      batteryType === "slaitinisStogas"
+                        ? rowModuleCounts
+                        : undefined,
+                  },
+                })
+              }
+            >
+              {t("actions.next")}
+            </button>
+          )}
         </div>
       )}
     </div>
