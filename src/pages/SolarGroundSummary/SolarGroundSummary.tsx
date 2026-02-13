@@ -3,10 +3,12 @@ import { calculateSystemMaterials } from "../../calculations/calculateSystemMate
 import { CalculatorInput } from "../../calculations/types";
 import "./SolarGroundSummary.css";
 import { calculateFurnitureMaterials } from "../../calculations/calculateFurnitureMaterials";
+import { useTranslation } from "react-i18next";
 
 export default function SolarGroundSummary() {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: CalculatorInput };
+  const { t } = useTranslation();
 
   if (!state) {
     return <p>No data provided</p>;
@@ -76,7 +78,18 @@ export default function SolarGroundSummary() {
           })
         }
       >
-        Grįžti atgal
+        {t("actions.back")}
+      </button>
+
+      <button
+        className="solar-summary__actions"
+        onClick={() =>
+          navigate("/checkout", {
+            state,
+          })
+        }
+      >
+        {t("actions.next")}
       </button>
     </div>
   );

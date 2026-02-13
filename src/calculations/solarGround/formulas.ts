@@ -1,4 +1,4 @@
-import { gegneCodeRules, gegneLengthByCode, grebestasRules, grebestuJungtysRules, legCountRules, rysysRules } from "../../config/solarGround/rules";
+import { gegneCodeRules, gegneLengthByCode, grebestasRules, grebestuJungtysRules, legCountRules, rysysRules } from "../../config/rules";
 import { rangeLookup } from "../utils/rangeLookup";
 
 

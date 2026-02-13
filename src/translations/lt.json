@@ -110,6 +110,7 @@
     "middleClamp": "Viduriniai prispaudėjai"
   },
   "actions": {
-    "next": "Kitas žingsnis"
+    "next": "Kitas žingsnis",
+    "back": "Grįžti atgal"
   }
 }

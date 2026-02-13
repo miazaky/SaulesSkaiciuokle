@@ -1,4 +1,4 @@
-import { RangeRule } from "../../calculations/utils/rangeLookup";
+import { RangeRule } from "../calculations/utils/rangeLookup";
 
 /** J5/J6 – Kojų skaičius pagal konstrukcijos ilgį */
 export const legCountRules: RangeRule<number>[] = [

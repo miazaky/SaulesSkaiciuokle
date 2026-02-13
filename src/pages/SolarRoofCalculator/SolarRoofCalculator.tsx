@@ -454,7 +454,7 @@ export default function SolarRoofCalculator() {
       <div className="solar-calculator__battery-list">
         <ImageCard
           title={t("batteryTypes.ploksciasStogas")}
-          image="/images/roof.jpg"
+          image="/images/flat.jpg"
           selected={batteryType === "ploksciasStogas"}
           onClick={() => setBatteryType("ploksciasStogas")}
         />

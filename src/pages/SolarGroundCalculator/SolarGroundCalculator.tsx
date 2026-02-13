@@ -151,7 +151,7 @@ export default function SolarGroundCalculator() {
               })
             }
           >
-            Grįžti atgal
+            {t("actions.back")}
           </button>
           
           <button

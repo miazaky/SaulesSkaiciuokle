@@ -1,6 +1,6 @@
 import { groundSystemMaterials, roofSystemMaterials } from "./systemMaterials";
 import { CalculatorInput } from "./types";
-import { solarGroundMaterials } from "../config/solarGround/materials";
+import { solarGroundMaterials } from "../config/materials";
 import { registry } from "./solarGround/formulaRegistry";
 
 export type CalculatedSystemMaterial = {
