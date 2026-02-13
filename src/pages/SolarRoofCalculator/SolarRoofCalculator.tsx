@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImageCard } from "../../components/ui/ImageCard";
 import { InputField } from "../../components/ui/InputField";
 import { useTranslation } from "react-i18next";
@@ -61,6 +61,10 @@ export default function SolarRoofCalculator() {
 
   const [system, setSystem] = useState<SystemKey>(
     restoredState?.system ?? null,
+  );
+
+  const prevOrientationRef = useRef<Orientation>(
+    restoredState?.orientation ?? null,
   );
 
   const [roofMaterial, setRoofMaterial] = useState<RoofMaterial>(
@@ -166,6 +170,15 @@ export default function SolarRoofCalculator() {
       setMountingMethod("");
     }
   }, [batteryType]);
+
+  useEffect(() => {
+    if (prevOrientationRef.current !== orientation) {
+      if (prevOrientationRef.current !== null) {
+        setSystem(null);
+      }
+      prevOrientationRef.current = orientation;
+    }
+  }, [orientation]);
 
   // Auto-set / keep mountingMethod valid when roof material changes
   useEffect(() => {

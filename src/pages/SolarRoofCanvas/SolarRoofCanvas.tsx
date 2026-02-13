@@ -12,19 +12,19 @@ type Module = {
 
 const CELL_SIZE = 60;
 //1 jeigu moduliai prie pat, 2 jeigu norim matyt laikiklius(reikia atkomentuot)
-const STEP = 1;
+const STEP = 2;
 const ROW_OFFSET = 1;
 
 export default function SolarRoofCanvas() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { state } = useLocation() as { state: CalculatorInput };
-  let grid_cols = state.rowsCount * 2;
+  let grid_cols = state.rowsCount * 3;
 
   const [modules, setModules] = useState<Module[]>(() => {
     const initial: Module[] = [];
     //1 jeigu prie pat, 2 jeigu su laikikliais
-    const spacing = 1;
+    const spacing = 2;
     const modulesPerRow = Math.ceil(state.moduleCount / state.rowsCount);
 
     for (let i = 0; i < state.moduleCount; i++) {
@@ -40,9 +40,21 @@ export default function SolarRoofCanvas() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const gridRows = state.rowsCount + ROW_OFFSET;
+  //padidinam gridRows(*2) jei su laikikliais
+  const gridRows = state.rowsCount * 3 + ROW_OFFSET;
   const maxCol = Math.max(0, ...modules.map((m) => m.col));
   const gridCols = Math.max(grid_cols, maxCol + ROW_OFFSET);
+
+  const minCol = Math.min(...modules.map((m) => m.col));
+  const firstColumnClampCol = minCol - 0.5;
+
+  const isFirstColumnClamp = (clamp: { side: "left" | "right"; col: number }) =>
+    clamp.side === "left" && clamp.col === firstColumnClampCol;
+
+  const shouldHideRv10Holder = (
+    clamp: { side: "left" | "right"; col: number },
+    holder: "G" | "V" | "L" | "P" | "VA" | "VZ",
+  ) => state.system === "RV10" && (holder === "VA" || holder === "VZ") && isFirstColumnClamp(clamp);
 
   // Calculate clamps based on module positions
 
@@ -50,14 +62,63 @@ export default function SolarRoofCanvas() {
     const clamps: {
       row: number;
       col: number;
-      topHolder: "G" | "V" | "L";
-      bottomHolder: "P" | "V" | "L";
+      topHolder: "G" | "V" | "L" | "P" | "VA" | "VZ";
+      bottomHolder: "P" | "V" | "L" | "VA" | "VZ";
       clampType: "G" | "V";
       side: "left" | "right";
     }[] = [];
 
     const occ = new Set(modules.map((m) => `${m.row},${m.col}`));
     const has = (r: number, c: number) => occ.has(`${r},${c}`);
+
+    const rv10IndexInBlock = new Map<string, number>();
+    if (state.system === "RV10") {
+      const rowsByCol = new Map<number, number[]>();
+
+      modules.forEach((m) => {
+        const list = rowsByCol.get(m.col) ?? [];
+        list.push(m.row);
+        rowsByCol.set(m.col, list);
+      });
+
+      rowsByCol.forEach((rows, col) => {
+        rows.sort((a, b) => a - b);
+
+        let indexInBlock = 0;
+        for (let i = 0; i < rows.length; i++) {
+          indexInBlock =
+            i === 0 || rows[i] - rows[i - 1] !== STEP ? 0 : indexInBlock + 1;
+
+          rv10IndexInBlock.set(`${rows[i]},${col}`, indexInBlock);
+        }
+      });
+    }
+
+    const getRv10Holder = (
+      row: number,
+      col: number,
+      direction: "top" | "bottom",
+      adjacentCol?: number,
+    ): "P" | "VA" | "VZ" => {
+      const indexInBlock = rv10IndexInBlock.get(`${row},${col}`) ?? 0;
+
+      const r = direction === "top" ? row - STEP : row + STEP;
+      const hasCenter = has(r, col);
+      const hasAdjacent =
+        adjacentCol !== undefined ? has(r, adjacentCol) : false;
+
+      const shouldBeP = !hasCenter && !hasAdjacent;
+
+      if (shouldBeP) return "P";
+
+      return direction === "top"
+        ? (indexInBlock - 1) % 2 === 0
+          ? "VA"
+          : "VZ"
+        : indexInBlock % 2 === 0
+          ? "VA"
+          : "VZ";
+    };
 
     modules.forEach((module) => {
       const { row, col } = module;
@@ -73,7 +134,7 @@ export default function SolarRoofCanvas() {
       const hasTopRightDiagonal = has(row - STEP, col + STEP);
       const hasBottomRightDiagonal = has(row + STEP, col + STEP);
 
-      if (state.system !== "PT15-L") {
+      if (state.system !== "PT15-L" && state.orientation === "PT") {
         // Left clamp (edge)
         if (isFirstInRow) {
           const topHolder: "G" | "V" = hasTop
@@ -136,7 +197,7 @@ export default function SolarRoofCanvas() {
             side: "left",
           });
         }
-      } else {
+      } else if (state.system === "PT15-L" && state.orientation === "PT") {
         if (isFirstInRow) {
           const topHolder = "L";
           const bottomHolder = "L";
@@ -166,6 +227,64 @@ export default function SolarRoofCanvas() {
         if (hasLeft) {
           const topHolder = "L";
           const bottomHolder = "L";
+
+          clamps.push({
+            row,
+            col: col - 0.5,
+            topHolder,
+            bottomHolder,
+            clampType: "V",
+            side: "left",
+          });
+        }
+      } else {
+        if (isFirstInRow) {
+          const topHolder: "P" | "VA" | "VZ" = getRv10Holder(row, col, "top");
+          const bottomHolder: "P" | "VA" | "VZ" = getRv10Holder(
+            row,
+            col,
+            "bottom",
+          );
+
+          clamps.push({
+            row,
+            col: col - 0.5,
+            topHolder,
+            bottomHolder,
+            clampType: "G",
+            side: "left",
+          });
+        }
+        if (isLastInRow) {
+          const topHolder: "P" | "VA" | "VZ" = getRv10Holder(row, col, "top");
+          const bottomHolder: "P" | "VA" | "VZ" = getRv10Holder(
+            row,
+            col,
+            "bottom",
+          );
+
+          clamps.push({
+            row,
+            col: col + 1.5,
+            topHolder,
+            bottomHolder,
+            clampType: "G",
+            side: "right",
+          });
+        }
+        if (hasLeft) {
+          const topHolder: "P" | "VA" | "VZ" = getRv10Holder(
+            row,
+            col,
+            "top",
+            col - STEP,
+          );
+          const bottomHolder: "P" | "VA" | "VZ" = getRv10Holder(
+            row,
+            col,
+            "bottom",
+            col - STEP,
+          );
 
           clamps.push({
             row,
@@ -216,34 +335,68 @@ export default function SolarRoofCanvas() {
       ),
     );
 
-    // Check if position is occupied
-    const isOccupied = modules.some(
-      (m) => m.id !== draggingModule && m.row === newRow && m.col === newCol,
+    const dragged = modules.find((m) => m.id === draggingModule);
+    if (!dragged) return;
+
+    const paired = getPairedModule(draggingModule);
+    const deltaRow = newRow - dragged.row;
+    const deltaCol = newCol - dragged.col;
+
+    const targets = paired
+      ? [
+          { id: dragged.id, row: newRow, col: newCol },
+          {
+            id: paired.id,
+            row: paired.row + deltaRow,
+            col: paired.col + deltaCol,
+          },
+        ]
+      : [{ id: dragged.id, row: newRow, col: newCol }];
+
+    // Keep within bounds for paired move
+    const outOfBounds = targets.some(
+      (t) =>
+        t.col < 0 ||
+        t.row < 0 ||
+        t.col > grid_cols - 1 ||
+        t.row > gridRows - 1 - ROW_OFFSET,
     );
+    if (outOfBounds) return;
 
-    // //Keep one tile space between modules,
-    // const isAdjacent = modules.some(
-    //   (m) =>
-    //     m.id !== draggingModule &&
-    //     Math.abs(m.row - newRow) < STEP &&
-    //     Math.abs(m.col - newCol) < STEP,
+    // Only move between even column and rows
+    // const isEvenTarget = targets.every(
+    //   (t) => t.col % STEP === 0 && t.row % STEP === 0,
     // );
+    // if (!isEvenTarget) return;
 
+    // Check if any target position is occupied by other modules
+    const targetSet = new Set(targets.map((t) => `${t.row},${t.col}`));
+    const isOccupied = modules.some(
+      (m) =>
+        !targetSet.has(`${m.row},${m.col}`) &&
+        targets.some(
+          (t) => m.id !== t.id && m.row === t.row && m.col === t.col,
+        ),
+    );
+    if (isOccupied) return;
+
+    // Keep one tile space between modules
+    // const isAdjacent = modules.some((m) =>
+    //   targets.some(
+    //     (t) =>
+    //       m.id !== t.id &&
+    //       Math.abs(m.row - t.row) < STEP &&
+    //       Math.abs(m.col - t.col) < STEP,
+    //   ),
+    // );
     // if (isAdjacent) return;
 
-    // //Only move between even column and rows
-    // const isEvenCol = newCol % STEP === 0;
-    // const isEvenRow = newRow % STEP === 0;
-
-    // if (!isEvenCol || !isEvenRow) return;
-
-    if (!isOccupied) {
-      setModules((prev) =>
-        prev.map((m) =>
-          m.id === draggingModule ? { ...m, row: newRow, col: newCol } : m,
-        ),
-      );
-    }
+    setModules((prev) =>
+      prev.map((m) => {
+        const t = targets.find((x) => x.id === m.id);
+        return t ? { ...m, row: t.row, col: t.col } : m;
+      }),
+    );
   };
 
   const handleMouseUp = () => {
@@ -258,12 +411,49 @@ export default function SolarRoofCanvas() {
   let GholderCount = 0;
   let VholderCount = 0;
   let PholderCount = 0;
+  let VAHolderCount = 0;
+  let VZHolderCount = 0;
 
   clamps.forEach((clamp) => {
     if (clamp.topHolder === "G" || clamp.topHolder === "L") GholderCount++;
+    if (clamp.topHolder === "P") GholderCount += 2;
     if (clamp.topHolder === "V") VholderCount++;
     if (clamp.bottomHolder === "P") PholderCount++;
+    if (clamp.topHolder === "VA" && !shouldHideRv10Holder(clamp, "VA"))
+      VAHolderCount++;
+    if (clamp.topHolder === "VZ" && !shouldHideRv10Holder(clamp, "VZ"))
+      VZHolderCount++;
   });
+
+  const getPairedModule = (moduleId: number) => {
+    if (state.orientation !== "RV") return null;
+
+    const current = modules.find((m) => m.id === moduleId);
+    if (!current) return null;
+
+    const sameColumn = modules.filter(
+      (m) =>
+        m.id !== current.id &&
+        m.col === current.col &&
+        Math.abs(m.row - current.row) === STEP,
+    );
+
+    if (sameColumn.length === 0) return null;
+
+    // Prefer the closest module in the same column (expected STEP apart)
+    let closest = sameColumn[0];
+    let minDist = Math.abs(closest.row - current.row);
+
+    for (const m of sameColumn) {
+      const dist = Math.abs(m.row - current.row);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = m;
+      }
+    }
+
+    return closest;
+  };
 
   return (
     <div className="solar-canvas">
@@ -327,7 +517,7 @@ export default function SolarRoofCanvas() {
               }}
             />
           ))}
-          {/* Clamps (left/right only)
+          {/* Clamps (left/right only)*/}
           {state.system !== "PT15-L"
             ? clamps.map((clamp, idx) => (
                 <div
@@ -382,7 +572,7 @@ export default function SolarRoofCanvas() {
                   {clamp.topHolder}
                 </div>
               ))}
-          {/* Holder letters 
+          {/* Holder letters */}
           {state.system !== "PT15-L"
             ? clamps.map((clamp, idx) => {
                 const clampTop =
@@ -392,99 +582,189 @@ export default function SolarRoofCanvas() {
 
                 return (
                   <div key={`holders-${idx}`}>
-                    <div
-                      style={{
-                        position: "absolute",
-                        left: (clamp.col + 1) * CELL_SIZE - 25,
-                        top,
-                        width: 50,
-                        height: 30,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "10px",
-                        fontWeight: "bold",
-                        color: "#333",
-                        backgroundColor: "#e8f0fe",
-                        border: "1px solid #4a90e2",
-                        borderRadius: 3,
-                        pointerEvents: "none",
-                        zIndex: 1,
-                      }}
-                    >
-                      {clamp.topHolder}
-                    </div> 
+                    {!shouldHideRv10Holder(clamp, clamp.topHolder) && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: (clamp.col + 1) * CELL_SIZE - 25,
+                          top,
+                          width: 50,
+                          height: 30,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "10px",
+                          fontWeight: "bold",
+                          color: "#333",
+                          backgroundColor: "#e8f0fe",
+                          border: "1px solid #4a90e2",
+                          borderRadius: 3,
+                          pointerEvents: "none",
+                          zIndex: 1,
+                        }}
+                      >
+                        {clamp.topHolder}
+                      </div>
+                    )}
 
-                    <div
-                      style={{
-                        position: "absolute",
-                        left: (clamp.col + 1) * CELL_SIZE - 25,
-                        top: bottom,
-                        width: 50,
-                        height: 30,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "10px",
-                        fontWeight: "bold",
-                        color: "#333",
-                        backgroundColor: "#e8f0fe",
-                        border: "1px solid #4a90e2",
-                        borderRadius: 3,
-                        pointerEvents: "none",
-                        zIndex: 1,
-                      }}
-                    >
-                      {clamp.bottomHolder}
-                    </div>
+                    {!shouldHideRv10Holder(clamp, clamp.bottomHolder) && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: (clamp.col + 1) * CELL_SIZE - 25,
+                          top: bottom,
+                          width: 50,
+                          height: 30,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "10px",
+                          fontWeight: "bold",
+                          color: "#333",
+                          backgroundColor: "#e8f0fe",
+                          border: "1px solid #4a90e2",
+                          borderRadius: 3,
+                          pointerEvents: "none",
+                          zIndex: 1,
+                        }}
+                      >
+                        {clamp.bottomHolder}
+                      </div>
+                    )}
                   </div>
                 );
               })
-            : null}*/}
+            : null}
 
           {/* Modules */}
-          {modules.map((module) => state.orientation !== "RV" ? (
-            <div
-              key={module.id}
-              style={{
-                position: "absolute",
-                //left: (module.col + 1),  top: (module.row + ROW_OFFSET), jei su laikikliais
-                left: (module.col) * CELL_SIZE + CELL_SIZE / 2 - 26,
-                top: (module.row) * CELL_SIZE + CELL_SIZE / 2 - 15,
-                width: 50,
-                height: 30,
-                backgroundColor: "#4a90e2",
-                border: "2px solid #2e5c8a",
-                borderRadius: 4,
-                zIndex: draggingModule === module.id ? 10 : 2,
-                opacity: draggingModule === module.id ? 0.7 : 1,
-              }}
-              onMouseDown={(e) => handleMouseDown(e, module.id)}
-            />
-          ) : (
-            <div
-              key={module.id}
-              style={{
-                position: "absolute",
-                left: (module.col) * CELL_SIZE + CELL_SIZE / 2 - 26,
-                top: (module.row) * CELL_SIZE + CELL_SIZE / 2 - 15,
-                width: 50,
-                height: 30,
-                backgroundColor: "#4a90e2",
-                border: "2px solid #2e5c8a",
-                borderRadius: 4,
-                zIndex: draggingModule === module.id ? 10 : 2,
-                opacity: draggingModule === module.id ? 0.7 : 1,
-              }}
-              onMouseDown={(e) => handleMouseDown(e, module.id)}
-            />
-          ))}
+          {modules.map((module) =>
+            state.orientation !== "RV" ? (
+              <div
+                key={module.id}
+                style={{
+                  position: "absolute",
+                  //left: (module.col + 1),  top: (module.row + ROW_OFFSET), jei su laikikliais
+                  left: (module.col + 1) * CELL_SIZE + CELL_SIZE / 2 - 26,
+                  top:
+                    (module.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 15,
+                  width: 50,
+                  height: 30,
+                  backgroundColor: "#4a90e2",
+                  border: "2px solid #2e5c8a",
+                  borderRadius: 4,
+                  zIndex: draggingModule === module.id ? 10 : 2,
+                  opacity: draggingModule === module.id ? 0.7 : 1,
+                }}
+                onMouseDown={(e) => handleMouseDown(e, module.id)}
+              />
+            ) : (
+              <div
+                key={module.id}
+                style={{
+                  position: "absolute",
+                  left: (module.col + 1) * CELL_SIZE + CELL_SIZE / 2 - 26,
+                  top:
+                    (module.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 15,
+                  width: 50,
+                  height: 30,
+                  backgroundColor: "#4a90e2",
+                  border: "2px solid #2e5c8a",
+                  borderRadius: 4,
+                  zIndex: draggingModule === module.id ? 10 : 2,
+                  opacity: draggingModule === module.id ? 0.7 : 1,
+                }}
+                onMouseDown={(e) => handleMouseDown(e, module.id)}
+              />
+            ),
+          )}
         </div>
       </div>
 
+      {state.system === "PT15-L" ? (
+        <>
+          <div style={{ marginTop: 20 }}>
+            <div style={{ marginBottom: 20 }}>
+              <p>
+                {t("fields.backHolder")} (G): {GholderCount}
+              </p>
+              <p>
+                {t("fields.frontClamps")} (Clamp G): {clampGCount}
+              </p>
+              <p>
+                {t("fields.middleClamp")} (Clamp V): {clampVCount}
+              </p>
+            </div>
+          </div>
 
+          <button
+            className="solar-summary__actions"
+            onClick={() => navigate("/roof", { state })}
+          >
+            Grįžti atgal
+          </button>
+          <button
+            className="solar-calculator__actions"
+            onClick={() =>
+              navigate("/summaryRoof", {
+                state: {
+                  ...state,
+                  clampGCount,
+                  clampVCount,
+                  holderGCount: GholderCount,
+                },
+              })
+            }
+          >
+            {t("actions.next")}
+          </button>
+        </>
+      ) : state.system === "RV10" ? (
+        <>
+          <div style={{ marginTop: 20 }}>
+            <div style={{ marginBottom: 20 }}>
+              <p>
+                {t("fields.backHolder")} (G): {GholderCount}
+              </p>
+              <p>
+                {t("fields.frontClamps")} (Clamp G): {clampGCount}
+              </p>
+              <p>
+                {t("fields.middleClamp")} (Clamp V): {clampVCount}
+              </p>
+              <p>
+                {t("fields.middleRVHolderA")} : {VAHolderCount}
+              </p>
+              <p>
+                {t("fields.middleRVHolderZ")}: {VZHolderCount}
+              </p>
+            </div>
+          </div>
 
-      {state.system !== "PT15-L" ? (
+          <button
+            className="solar-summary__actions"
+            onClick={() => navigate("/roof", { state })}
+          >
+            Grįžti atgal
+          </button>
+          <button
+            className="solar-calculator__actions"
+            onClick={() =>
+              navigate("/summaryRoof", {
+                state: {
+                  ...state,
+                  clampGCount,
+                  clampVCount,
+                  holderGCount: GholderCount,
+                  holderVAcount: VAHolderCount,
+                  holderVZcount: VZHolderCount,
+                },
+              })
+            }
+          >
+            {t("actions.next")}
+          </button>
+        </>
+      ) : (
         <>
           <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
@@ -523,44 +803,6 @@ export default function SolarRoofCanvas() {
                   holderGCount: GholderCount,
                   holderVCount: VholderCount,
                   holderPCount: PholderCount,
-                },
-              })
-            }
-          >
-            {t("actions.next")}
-          </button>
-        </>
-      ) : (
-        <>
-          <div style={{ marginTop: 20 }}>
-            <div style={{ marginBottom: 20 }}>
-              <p>
-                {t("fields.backHolder")} (G): {GholderCount}
-              </p>
-              <p>
-                {t("fields.frontClamps")} (Clamp G): {clampGCount}
-              </p>
-              <p>
-                {t("fields.middleClamp")} (Clamp V): {clampVCount}
-              </p>
-            </div>
-          </div>
-
-          <button
-            className="solar-summary__actions"
-            onClick={() => navigate("/roof", { state })}
-          >
-            Grįžti atgal
-          </button>
-          <button
-            className="solar-calculator__actions"
-            onClick={() =>
-              navigate("/summaryRoof", {
-                state: {
-                  ...state,
-                  clampGCount,
-                  clampVCount,
-                  holderGCount: GholderCount,
                 },
               })
             }

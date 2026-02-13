@@ -104,6 +104,8 @@
     "backHolder": "Galinis laikiklis",
     "frontHolder": "Priekinis laikiklis",
     "middleHolder": "Vidurinis laikiklis",
+    "middleRVHolderA": "Vidurinis laikiklis aukštas",
+    "middleRVHolderZ": "Vidurinis laikiklis žemas",
     "frontClamps": "Priekiniai prispaudėjai",
     "middleClamp": "Viduriniai prispaudėjai"
   },
