@@ -289,7 +289,7 @@ function calculateClampBackQuantity(
   rowsCount: number,
   clampGCount?: number,
 ): number {
-  return isEqual(moduleCount) ? rowsCount * 2 * 2 : (clampGCount ?? 0)*2;
+  return isEqual(moduleCount) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
 }
 
 function calculateClampInnerQuantity(
