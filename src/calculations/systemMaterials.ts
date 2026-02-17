@@ -30,12 +30,13 @@ export type SystemMaterialDefinition = {
   construction?: CalculatorInput["moduleConstruction"][];
   mountingMethods?: CalculatorInput["mountingMethod"][];
   materialRowCount?: CalculatorInput["materialRowCount"][];
+  isEvenModules?: CalculatorInput["isEvenModules"];
   calculateQuantity: (input: CalculatorInput) => number;
   calculateLength?: (input: CalculatorInput) => number | null;
 };
 
-function isEqual(a: number): boolean {
-  if (a % 2 == 0) {
+function isEqual(a: string): boolean {
+  if (a === "true") {
     return true;
   } else {
     return false;
@@ -233,23 +234,25 @@ function calculateFrontHolderQuantity(
   moduleCount: number,
   rowsCount: number,
   holderPCount?: number,
+  isEvenModules?:string,
 ): number {
-  return isEqual(moduleCount) ? moduleCount + 1 : (holderPCount ?? 0);
+  return isEqual(String(isEvenModules)) ? moduleCount + 1 : (holderPCount ?? 0);
 }
 
 function calculateBackHolderQuantity(
   moduleCount: number,
-  rowsCount: number,
   holderGCount?: number,
+    isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount) ? moduleCount + 1 : (holderGCount ?? 0);
+  return isEqual(String(isEvenModules)) ? moduleCount + 1 : (holderGCount ?? 0);
 }
 function calculateMiddleHolderQuantity(
   moduleCount: number,
   rowsCount: number,
   holderVCount?: number,
+    isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount)
+  return isEqual(String(isEvenModules))
     ? (moduleCount + 1) * (rowsCount - 1)
     : (holderVCount ?? 0);
 }
@@ -258,8 +261,9 @@ function calculateHelperFrontHolderQuantity(
   moduleCount: number,
   rowsCount: number,
   moduleLength: number,
+    isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount)
+  return isEqual(String(isEvenModules))
     ? moduleLength < 2000
       ? 0
       : moduleCount * rowsCount
@@ -271,33 +275,36 @@ function calculateHelperFrontHolderQuantity(
 function calculateWindboardQuantity(
   moduleCount: number,
   rowsCount: number,
+  isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount) ? moduleCount * rowsCount : moduleCount;
+  return isEqual(String(isEvenModules)) ? moduleCount * rowsCount : moduleCount;
 }
 
 function calculateScrewsForWindboardsQuantity(
   moduleCount: number,
   rowsCount: number,
+  isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount)
+  return isEqual(String(isEvenModules))
     ? (moduleCount + 1) * 2 * (rowsCount - 1)
     : moduleCount * 3;
 }
 
 function calculateClampBackQuantity(
-  moduleCount: number,
   rowsCount: number,
   clampGCount?: number,
+    isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
+  return isEqual(String(isEvenModules)) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
 }
 
 function calculateClampInnerQuantity(
   moduleCount: number,
   rowsCount: number,
   clampVCount?: number,
+  isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount)
+  return isEqual(String(isEvenModules))
     ? (moduleCount - 1) * (rowsCount * 2)
     : (clampVCount ?? 0);
 }
@@ -307,8 +314,9 @@ function calculateM8x30ScrewQuantity(
   rowsCount: number,
   clampGCount?: number,
   clampVCount?: number,
+    isEvenModules?: string,
 ): number {
-  return isEqual(moduleCount)
+  return isEqual(String(isEvenModules))
     ? rowsCount * 2 * 2 + (moduleCount - 1) * (rowsCount * 2)
     : (clampGCount ?? 0) + (clampVCount ?? 0);
 }
@@ -317,13 +325,14 @@ function calculateSingleMountingHolder(
   moduleCount: number,
   rowsCount: number,
   construction: string,
+    isEvenModules?: string,
 ): number {
-  if (isEqual(moduleCount) && construction === "ilgoji") {
+  if (isEqual(String(isEvenModules)) && construction === "ilgoji") {
     return moduleCount * rowsCount * 2;
-  } else if(isEqual(moduleCount) && construction === "trumpoji") {
+  } else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
     return (moduleCount + 1) * rowsCount;
   } 
-    else if (!isEqual(moduleCount) && construction === "ilgoji") {
+    else if (!isEqual(String(isEvenModules)) && construction === "ilgoji") {
     return moduleCount * 2;
   } else {
     return (rowsCount + 1) * moduleCount;
@@ -334,14 +343,15 @@ function calculatePT15WindboardQuantity(
   moduleCount: number,
   rowsCount: number,
   construction: string,
+  isEvenModules?: string,
 ): number {
-  if( isEqual(moduleCount) && construction === "ilgoji") {
+  if( isEqual(String(isEvenModules)) && construction === "ilgoji") {
    return moduleCount * rowsCount;
   }
-  else if(isEqual(moduleCount) && construction === "trumpoji") {
+  else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
     return moduleCount * rowsCount;
   }
-  else if( !isEqual(moduleCount) && construction === "ilgoji") {
+  else if( !isEqual(String(isEvenModules)) && construction === "ilgoji") {
     return moduleCount;
   }
   else{
@@ -353,14 +363,15 @@ function calculatePT15WindboardScrewsQuantity(
     moduleCount: number,
     rowsCount: number,
     construction: string,
+    isEvenModules?: string,
 ): number {
-    if( isEqual(moduleCount) && construction === "ilgoji") {
+    if( isEqual(String(isEvenModules)) && construction === "ilgoji") {
         return moduleCount * rowsCount * 4;
     }
-    else if(isEqual(moduleCount) && construction === "trumpoji") {
+    else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
         return (moduleCount + 1) * 2 * (rowsCount - 1);
     }
-    else if( !isEqual(moduleCount) && construction === "ilgoji") {
+    else if( !isEqual(String(isEvenModules)) && construction === "ilgoji") {
         return calculatePT15WindboardQuantity(moduleCount, rowsCount, construction) * 4;
     }
     else{
@@ -373,14 +384,15 @@ function calculatePT15BackClampQuantity(
     rowsCount: number,
     construction: string,
     clampGCount?: number,
+    isEvenModules?: string,
 ): number {
-    if( isEqual(moduleCount) && construction === "ilgoji") {
+    if( isEqual(String(isEvenModules)) && construction === "ilgoji") {
         return moduleCount * 2 * (rowsCount * 2);
     }
-    else if(isEqual(moduleCount) && construction === "trumpoji") {
+    else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
        return rowsCount * 2 * 2;
     }
-    else if( !isEqual(moduleCount) && construction === "ilgoji") {
+    else if( !isEqual(String(isEvenModules)) && construction === "ilgoji") {
         return moduleCount*4;
     }
     else
@@ -394,11 +406,12 @@ function calculatePT15InnerClampQuantity(
     rowsCount: number,
     construction: string,
     clampVCount?: number,
+    isEvenModules?: string,
 ): number {
-    if( isEqual(moduleCount) && construction === "trumpoji") {
+    if( isEqual(String(isEvenModules)) && construction === "trumpoji") {
         return  (moduleCount - 1) * (rowsCount * 2);
     }
-    if(!isEqual(moduleCount) && construction === "trumpoji") {
+    if(!isEqual(String(isEvenModules)) && construction === "trumpoji") {
         return clampVCount ?? 0;
     }
     return 0;
@@ -410,12 +423,13 @@ function calculatePT15M8x30ScrewQuantity(
     construction: string,
     clampGCount?: number,
     clampVCount?: number,
+    isEvenModules?: string,
 ): number {
     if(construction === "ilgoji") {
-        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount);
+        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount, isEvenModules);
     }
     else{
-        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount) + calculatePT15InnerClampQuantity(moduleCount, rowsCount, construction, clampVCount);
+        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount, isEvenModules) + calculatePT15InnerClampQuantity(moduleCount, rowsCount, construction, clampVCount, isEvenModules);
     }
 }
 
@@ -424,51 +438,52 @@ function calculateFrontBackRVHolderQuantity(
   rowsCount: number,
   holderPCount?: number,
   holderGCount?: number,
+    isEvenModules?: string,
 ): number {
-  if (isEqual(moduleCount)) {
+  if (isEqual(String(isEvenModules))) {
     return (moduleCount + 1) * 2;
   } else {
     return (holderPCount ?? 0) + (holderGCount ?? 0);
   }
 }
 
-function calcualteClampInnerJointAQuantity(moduleCount: number, rowsCount: number, holderVACount?: number): number {
-  if (isEqual(moduleCount)) {
+function calcualteClampInnerJointAQuantity(moduleCount: number, rowsCount: number, holderVACount?: number, isEvenModules?: string): number {
+  if (isEqual(String(isEvenModules))) {
     return (moduleCount + 1) * (rowsCount / 2);
   } else {
     return holderVACount ?? 0;
   }
 }
-function calcualteClampInnerJointZQuantity(moduleCount: number, rowsCount: number, holderVZCount?: number): number {
-  if (isEqual(moduleCount)) {
+function calcualteClampInnerJointZQuantity(moduleCount: number, rowsCount: number, holderVZCount?: number, isEvenModules?: string): number {
+  if (isEqual(String(isEvenModules))) {
     return (moduleCount + 1) * (rowsCount / 2 - 1);
   } else {
     return holderVZCount ?? 0;
   }
 }
-function calculateClampFrontHelperQuantity(moduleLength: number, moduleCount: number, rowsCount: number): number {
-  if (isEqual(moduleCount)) {
+function calculateClampFrontHelperQuantity(moduleLength: number, moduleCount: number, rowsCount: number, isEvenModules?: string): number {
+  if (isEqual(String(isEvenModules))) {
     return moduleLength < 2000 ? 0 : moduleCount * rowsCount;
   } else {
     return moduleLength < 2000 ? 0 : moduleCount;
   }
 }
 
-function calculateClampInnerHelperQuantity(moduleLength: number, moduleCount: number, rowsCount: number, holderVZCount?: number): number {
-  if (isEqual(moduleCount)) {
+function calculateClampInnerHelperQuantity(moduleLength: number, moduleCount: number, rowsCount: number, holderVZCount?: number, isEvenModules?: string): number {
+  if (isEqual(String(isEvenModules))) {
     return moduleLength < 2000 ? 0 : (moduleCount * rowsCount) / 2;
   } else {
     return moduleLength < 2000 ? 0 : moduleCount/2;
   }
 }
 
-function calculateRVClampInnerQuantity(moduleCount: number, rowsCount: number, clampVCount?: number): number {
-  return isEqual(moduleCount)    ? (moduleCount - 1) * (rowsCount * 2)
+function calculateRVClampInnerQuantity(moduleCount: number, rowsCount: number, clampVCount?: number, isEvenModules?: string): number {
+  return isEqual(String(isEvenModules))    ? (moduleCount - 1) * (rowsCount * 2)
     : (clampVCount ?? 0);
 }
 
-function calculateRVClampBackQuantity(moduleCount: number, rowsCount: number, clampGCount?: number): number {
-  return isEqual(moduleCount) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
+function calculateRVClampBackQuantity(moduleCount: number, rowsCount: number, clampGCount?: number, isEvenModules?: string): number {
+  return isEqual(String(isEvenModules)) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
 }
 
 // J8 – Ryšys R-1
@@ -667,21 +682,21 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "RV10-1",
     name: "Priekinis/galinis laikiklis",
     length: null,
-    calculateQuantity: (i) => calculateFrontBackRVHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount, i.holderGCount),
+    calculateQuantity: (i) => calculateFrontBackRVHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount, i.holderGCount, i.isEvenModules),
   },
   {
     systems: ["RV10"],
     code: "RV10-2",
     name: "Vidurinis (jungiamasis) laikiklis aukštas",
     length: null,
-    calculateQuantity: (i) => calcualteClampInnerJointAQuantity(i.moduleCount, i.rowsCount, i.holderVACount),
+    calculateQuantity: (i) => calcualteClampInnerJointAQuantity(i.moduleCount, i.rowsCount, i.holderVACount, i.isEvenModules),
   },
   {
     systems: ["RV10"],
     code: "RV10-4",
     name: "Vidurinis (jungiamasis) laikiklis žemas",
     length: null,
-    calculateQuantity: (i) => calcualteClampInnerJointZQuantity(i.moduleCount, i.rowsCount, i.holderVZCount),
+    calculateQuantity: (i) => calcualteClampInnerJointZQuantity(i.moduleCount, i.rowsCount, i.holderVZCount, i.isEvenModules),
   },
   {
     systems: ["RV10"],
@@ -689,7 +704,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateClampFrontHelperQuantity(i.moduleLength, i.moduleCount, i.rowsCount),
+      calculateClampFrontHelperQuantity(i.moduleLength, i.moduleCount, i.rowsCount, i.isEvenModules),
   },
   {
     systems: ["RV10"],
@@ -697,21 +712,21 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis vidurinis (jungiamasis) laikiklis aukštas",
     length: null,
     calculateQuantity: (i) =>
-      calculateClampInnerHelperQuantity(i.moduleLength, i.moduleCount, i.rowsCount, i.holderVZCount),
+      calculateClampInnerHelperQuantity(i.moduleLength, i.moduleCount, i.rowsCount, i.holderVZCount, i.isEvenModules),
   },
   {
     systems: ["RV10", "RV10-Z"],
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => calculateRVClampBackQuantity(i.moduleCount, i.rowsCount, i.clampGCount),
+    calculateQuantity: (i) => calculateRVClampBackQuantity(i.moduleCount, i.rowsCount, i.clampGCount, i.isEvenModules),
   },
   {
     systems: ["RV10", "RV10-Z"],
     code: "",
     name: "Prispaudėjas vidinis",
     length: null,
-    calculateQuantity: (i) => calculateRVClampInnerQuantity(i.moduleCount, i.rowsCount, i.clampVCount),
+    calculateQuantity: (i) => calculateRVClampInnerQuantity(i.moduleCount, i.rowsCount, i.clampVCount, i.isEvenModules),
   },
   {
     systems: ["RV10", "RV10-Z"],
@@ -719,7 +734,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
-      calculateM8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.clampGCount, i.clampVCount),
+      calculateM8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.clampGCount, i.clampVCount, i.isEvenModules),
   },
   {
     systems: ["RV10-Z"],
@@ -737,7 +752,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount, i.isEvenModules),
   },
   {
     systems: ["PT10"],
@@ -745,7 +760,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
+      calculateBackHolderQuantity(i.moduleCount, i.holderGCount, i.isEvenModules),
   },
   {
     systems: ["PT10"],
@@ -753,7 +768,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount, i.isEvenModules),
   },
   {
     systems: ["PT10"],
@@ -765,6 +780,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.moduleCount,
         i.rowsCount,
         i.moduleLength,
+        i.isEvenModules,
       ),
   },
   {
@@ -777,6 +793,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.moduleCount,
         i.rowsCount,
         i.moduleLength,
+        i.isEvenModules,
       ),
   },
 
@@ -787,7 +804,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount, i.isEvenModules),
   },
   {
     systems: ["PT15"],
@@ -795,7 +812,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
+      calculateBackHolderQuantity(i.moduleCount, i.holderGCount, i.isEvenModules),
   },
   {
     systems: ["PT15"],
@@ -803,7 +820,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount, i.isEvenModules),
   },
   {
     systems: ["PT15"],
@@ -815,6 +832,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.moduleCount,
         i.rowsCount,
         i.moduleLength,
+        i.isEvenModules,
       ),
   },
   {
@@ -827,6 +845,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.moduleCount,
         i.rowsCount,
         i.moduleLength,
+        i.isEvenModules,
       ),
   },
 
@@ -837,7 +856,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount, i.isEvenModules),
   },
   {
     systems: ["PT20"],
@@ -845,7 +864,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
+      calculateBackHolderQuantity(i.moduleCount, i.holderGCount, i.isEvenModules),
   },
   {
     systems: ["PT20"],
@@ -853,7 +872,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount, i.isEvenModules),
   },
 
   {
@@ -862,7 +881,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "PT15-L",
     name: "Viengubo montavimo laikiklis",
     length: null,
-    calculateQuantity: (i) => calculateSingleMountingHolder(i.moduleCount, i.rowsCount, i.moduleConstruction),
+    calculateQuantity: (i) => calculateSingleMountingHolder(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -870,7 +889,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Vejalentė",
     length: null,
-    calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
+    calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -878,7 +897,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
-    calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
+    calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -886,7 +905,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount),
+    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -894,7 +913,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "M8x30 varžtas",
     length: null,
-    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount),
+    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.isEvenModules),
   },
 
   {
@@ -903,7 +922,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "PT15-L",
     name: "Viengubo montavimo laikiklis",
     length: null,
-    calculateQuantity: (i) => calculateSingleMountingHolder(i.moduleCount, i.rowsCount, i.moduleConstruction),
+    calculateQuantity: (i) => calculateSingleMountingHolder(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -911,7 +930,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Vejalentė",
     length: null,
-    calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
+    calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -919,7 +938,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
-    calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction),
+    calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -927,7 +946,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount),
+    calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -935,7 +954,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: "Prispaudėjas vidinis",
     length: null,
-    calculateQuantity: (i) => calculatePT15InnerClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampVCount),
+    calculateQuantity: (i) => calculatePT15InnerClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampVCount, i.isEvenModules),
   },
   {
     systems: ["PT15-L"],
@@ -944,7 +963,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
-     calculatePT15M8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.clampVCount),
+     calculatePT15M8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.clampVCount, i.isEvenModules),
   },
   {
     systems: ["PT5"],
@@ -952,7 +971,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount),
+      calculateFrontHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount, i.isEvenModules),
   },
   {
     systems: ["PT5"],
@@ -960,7 +979,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateBackHolderQuantity(i.moduleCount, i.rowsCount, i.holderGCount),
+      calculateBackHolderQuantity(i.moduleCount, i.holderGCount, i.isEvenModules),
   },
   {
     systems: ["PT5"],
@@ -968,7 +987,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount),
+      calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount, i.isEvenModules),
   },
   {
     systems: ["PT5", "PT20"],
@@ -980,6 +999,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.moduleCount,
         i.rowsCount,
         i.moduleLength,
+        i.isEvenModules,
       ),
   },
   {
@@ -992,6 +1012,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.moduleCount,
         i.rowsCount,
         i.moduleLength,
+        i.isEvenModules,
       ),
   },
   {
@@ -1000,7 +1021,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Vejalentė",
     length: null,
     calculateQuantity: (i) =>
-      calculateWindboardQuantity(i.moduleCount, i.rowsCount),
+      calculateWindboardQuantity(i.moduleCount, i.rowsCount, i.isEvenModules),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
@@ -1008,7 +1029,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
     calculateQuantity: (i) =>
-      calculateScrewsForWindboardsQuantity(i.moduleCount, i.rowsCount),
+      calculateScrewsForWindboardsQuantity(i.moduleCount, i.rowsCount, i.isEvenModules),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
@@ -1016,7 +1037,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Prispaudėjas galinis",
     length: null,
     calculateQuantity: (i) =>
-      calculateClampBackQuantity(i.moduleCount, i.rowsCount, i.clampGCount),
+      calculateClampBackQuantity(i.moduleCount, i.clampGCount, i.isEvenModules),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
@@ -1024,7 +1045,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Prispaudėjas vidinis",
     length: null,
     calculateQuantity: (i) =>
-      calculateClampInnerQuantity(i.moduleCount, i.rowsCount, i.clampVCount),
+      calculateClampInnerQuantity(i.moduleCount, i.rowsCount, i.clampVCount, i.isEvenModules),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
@@ -1037,6 +1058,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.rowsCount,
         i.clampGCount,
         i.clampVCount,
+        i.isEvenModules,
       ),
   },
 

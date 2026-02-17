@@ -30,4 +30,5 @@ export type CalculatorInput = {
   holderPCount?: number;
   holderVACount?: number;
   holderVZCount?: number;
+  isEvenModules?: string;
 };
