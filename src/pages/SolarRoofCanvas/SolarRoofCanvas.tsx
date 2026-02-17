@@ -28,8 +28,8 @@ export default function SolarRoofCanvas() {
     const modulesPerRow = Math.ceil(state.moduleCount / state.rowsCount);
 
     for (let i = 0; i < state.moduleCount; i++) {
-      const row = Math.floor(i / modulesPerRow);
-      const col = i % modulesPerRow;
+      const col = Math.floor(i / state.rowsCount);
+      const row = i % state.rowsCount;
       initial.push({ id: i, row: row * spacing, col: col * spacing });
     }
 
