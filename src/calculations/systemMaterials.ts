@@ -419,6 +419,58 @@ function calculatePT15M8x30ScrewQuantity(
     }
 }
 
+function calculateFrontBackRVHolderQuantity(
+  moduleCount: number,
+  rowsCount: number,
+  holderPCount?: number,
+  holderGCount?: number,
+): number {
+  if (isEqual(moduleCount)) {
+    return (moduleCount + 1) * 2;
+  } else {
+    return (holderPCount ?? 0) + (holderGCount ?? 0);
+  }
+}
+
+function calcualteClampInnerJointAQuantity(moduleCount: number, rowsCount: number, holderVACount?: number): number {
+  if (isEqual(moduleCount)) {
+    return (moduleCount + 1) * (rowsCount / 2);
+  } else {
+    return holderVACount ?? 0;
+  }
+}
+function calcualteClampInnerJointZQuantity(moduleCount: number, rowsCount: number, holderVZCount?: number): number {
+  if (isEqual(moduleCount)) {
+    return (moduleCount + 1) * (rowsCount / 2 - 1);
+  } else {
+    return holderVZCount ?? 0;
+  }
+}
+function calculateClampFrontHelperQuantity(moduleLength: number, moduleCount: number, rowsCount: number): number {
+  if (isEqual(moduleCount)) {
+    return moduleLength < 2000 ? 0 : moduleCount * rowsCount;
+  } else {
+    return moduleLength < 2000 ? 0 : moduleCount;
+  }
+}
+
+function calculateClampInnerHelperQuantity(moduleLength: number, moduleCount: number, rowsCount: number, holderVZCount?: number): number {
+  if (isEqual(moduleCount)) {
+    return moduleLength < 2000 ? 0 : (moduleCount * rowsCount) / 2;
+  } else {
+    return moduleLength < 2000 ? 0 : moduleCount/2;
+  }
+}
+
+function calculateRVClampInnerQuantity(moduleCount: number, rowsCount: number, clampVCount?: number): number {
+  return isEqual(moduleCount)    ? (moduleCount - 1) * (rowsCount * 2)
+    : (clampVCount ?? 0);
+}
+
+function calculateRVClampBackQuantity(moduleCount: number, rowsCount: number, clampGCount?: number): number {
+  return isEqual(moduleCount) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
+}
+
 // J8 – Ryšys R-1
 function calculateRysys(moduleCount: number): number {
   if (moduleCount <= 32) return 2;
@@ -615,21 +667,21 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "RV10-1",
     name: "Priekinis/galinis laikiklis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * 2,
+    calculateQuantity: (i) => calculateFrontBackRVHolderQuantity(i.moduleCount, i.rowsCount, i.holderPCount, i.holderGCount),
   },
   {
     systems: ["RV10"],
     code: "RV10-2",
     name: "Vidurinis (jungiamasis) laikiklis aukštas",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount / 2),
+    calculateQuantity: (i) => calcualteClampInnerJointAQuantity(i.moduleCount, i.rowsCount, i.holderVACount),
   },
   {
     systems: ["RV10"],
     code: "RV10-4",
     name: "Vidurinis (jungiamasis) laikiklis žemas",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount + 1) * (i.rowsCount / 2 - 1),
+    calculateQuantity: (i) => calcualteClampInnerJointZQuantity(i.moduleCount, i.rowsCount, i.holderVZCount),
   },
   {
     systems: ["RV10"],
@@ -637,7 +689,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : i.moduleCount * i.rowsCount,
+      calculateClampFrontHelperQuantity(i.moduleLength, i.moduleCount, i.rowsCount),
   },
   {
     systems: ["RV10"],
@@ -645,21 +697,21 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Pagalbinis vidurinis (jungiamasis) laikiklis aukštas",
     length: null,
     calculateQuantity: (i) =>
-      i.moduleLength < 2000 ? 0 : (i.moduleCount * i.rowsCount) / 2,
+      calculateClampInnerHelperQuantity(i.moduleLength, i.moduleCount, i.rowsCount, i.holderVZCount),
   },
   {
     systems: ["RV10", "RV10-Z"],
     code: "",
     name: "Prispaudėjas galinis",
     length: null,
-    calculateQuantity: (i) => i.rowsCount * 2 * 2,
+    calculateQuantity: (i) => calculateRVClampBackQuantity(i.moduleCount, i.rowsCount, i.clampGCount),
   },
   {
     systems: ["RV10", "RV10-Z"],
     code: "",
     name: "Prispaudėjas vidinis",
     length: null,
-    calculateQuantity: (i) => (i.moduleCount - 1) * (i.rowsCount * 2),
+    calculateQuantity: (i) => calculateRVClampInnerQuantity(i.moduleCount, i.rowsCount, i.clampVCount),
   },
   {
     systems: ["RV10", "RV10-Z"],
@@ -667,7 +719,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
-      i.rowsCount * 2 * 2 + (i.moduleCount - 1) * (i.rowsCount * 2),
+      calculateM8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.clampGCount, i.clampVCount),
   },
   {
     systems: ["RV10-Z"],

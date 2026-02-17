@@ -28,4 +28,6 @@ export type CalculatorInput = {
   holderGCount?: number;
   holderVCount?: number;
   holderPCount?: number;
+  holderVACount?: number;
+  holderVZCount?: number;
 };
