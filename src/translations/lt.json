@@ -107,7 +107,10 @@
     "middleRVHolderA": "Vidurinis laikiklis aukštas",
     "middleRVHolderZ": "Vidurinis laikiklis žemas",
     "frontClamps": "Priekiniai prispaudėjai",
-    "middleClamp": "Viduriniai prispaudėjai"
+    "middleClamp": "Viduriniai prispaudėjai",
+    "isEvenModules": "Ar modulių skaičius eilėse vienodas?",
+    "yes": "Taip",
+    "no": "Ne"
   },
   "actions": {
     "next": "Kitas žingsnis",

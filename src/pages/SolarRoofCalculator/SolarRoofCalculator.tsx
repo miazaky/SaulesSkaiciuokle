@@ -48,6 +48,7 @@ export default function SolarRoofCalculator() {
         roofMaterial: RoofMaterial;
         mountingMethod: string;
         rowModuleCounts?: number[];
+        isEvenModules: string;
       }
     | undefined;
 
@@ -62,6 +63,10 @@ export default function SolarRoofCalculator() {
   const [system, setSystem] = useState<SystemKey>(
     restoredState?.system ?? null,
   );
+
+  const [isEvenModules, setIsEvenModules] = useState<string | null>(
+    restoredState?.isEvenModules ?? null,
+    );
 
   const prevOrientationRef = useRef<Orientation>(
     restoredState?.orientation ?? null,
@@ -118,7 +123,11 @@ export default function SolarRoofCalculator() {
     isRv && rowsCount % 2 !== 0
       ? "Eilučių skaičius turi būti lyginis."
       : "";
-      
+
+    const modulesCountError =
+    isRv && moduleCount % 2 !== 0
+      ? "Modulių skaičius turi būti lyginis."
+      : "";
 
   const systemOptions = t("system", { returnObjects: true }) as Record<
     string,
@@ -500,39 +509,47 @@ export default function SolarRoofCalculator() {
           {/* Module Input Fields */}
           <FormGrid columns={2}>
             {/* Block/Row count */}
-            {system === "PT15-L" ? (
               <InputField label={t("fields.rowsCount")}>
                 <input
                   type="number"
                   min={2}
-                  value={rowsCount}
-                  onChange={(e) =>
-                    setRowsCount(Math.max(2, Number(e.target.value)))
+                    max={50}
+                    value={rowsCount}
+                    onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setRowsCount(Math.max(2, Math.min(50, value)));
+                }
                   }
                 />
               </InputField>
-            ) : (
-              <InputField label={t("fields.rowsCount")}>
-                <input
-                  type="number"
-                  min={2}
-                  value={rowsCount}
-                  onChange={(e) =>
-                    setRowsCount(Math.max(2, Number(e.target.value)))
-                  }
-                />
-              </InputField>
-            )}
+            
 
             <InputField label={t("fields.moduleCountRoof")}>
               <input
                 type="number"
                 min={0}
                 max={200}
-                onChange={(e) => setModuleCount(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setModuleCount(Math.max(0, Math.min(200, value)));
+                }}
                 value={moduleCount}
               />
             </InputField>
+
+            <InputField label={t("fields.isEvenModules")}>
+              <select
+                value={isEvenModules ?? ""}
+                onChange={(e) => setIsEvenModules(e.target.value)}
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+                <option value="true">{t("fields.yes")}</option>
+                <option value="false">{t("fields.no")}</option>
+              </select>
+            </InputField>
+
 
             <InputField label={t("system.systemTitle")}>
               <select
@@ -559,7 +576,10 @@ export default function SolarRoofCalculator() {
                 type="number"
                 min={1762}
                 max={9999}
-                onChange={(e) => setModuleLength(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setModuleLength(Math.max(1762, Math.min(9999, value)));
+                }}
                 value={moduleLength}
               />
             </InputField>
@@ -676,10 +696,12 @@ export default function SolarRoofCalculator() {
               <input
                 type="number"
                 min={2}
+                max={50}
                 value={rowsCount}
-                onChange={(e) =>
-                  setRowsCount(Math.max(2, Number(e.target.value)))
-                }
+               onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setRowsCount(Math.max(2, Math.min(50, value)));
+                }}
               />
               {rowsCountError && (
                 <div style={{ color: "#b00020", marginTop: 6 }}>
@@ -693,9 +715,30 @@ export default function SolarRoofCalculator() {
                 type="number"
                 min={0}
                 max={200}
-                onChange={(e) => setModuleCount(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setModuleCount(Math.max(0, Math.min(200, value)));
+                }}
                 value={moduleCount}
               />
+              {modulesCountError && (
+                <div style={{ color: "#b00020", marginTop: 6 }}>
+                  {modulesCountError}
+                </div>
+              )}
+            </InputField>
+
+            <InputField label={t("fields.isEvenModules")}>
+              <select
+                value={isEvenModules ?? ""}
+                onChange={(e) => setIsEvenModules(e.target.value)}
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+                <option value="true">{t("fields.yes")}</option>
+                <option value="false">{t("fields.no")}</option>
+              </select>
             </InputField>
 
             <InputField label={t("system.systemTitle")}>
@@ -723,7 +766,10 @@ export default function SolarRoofCalculator() {
                 type="number"
                 min={1762}
                 max={9999}
-                onChange={(e) => setModuleLength(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setModuleLength(Math.max(1762, Math.min(9999, value)));
+                }}
                 value={moduleLength}
               />
             </InputField>
@@ -921,7 +967,8 @@ export default function SolarRoofCalculator() {
                       max={200}
                       value={v}
                       onChange={(e) => {
-                        const n = Math.max(0, Number(e.target.value));
+                        const value = Number(e.target.value);
+                        const n = Math.max(0, Math.min(200, value));
                         setRowModuleCounts((prev) => {
                           const copy = [...prev];
                           copy[idx] = n;
@@ -948,10 +995,10 @@ export default function SolarRoofCalculator() {
             Grįžti atgal
           </button>
 
-          {moduleCount % 2 !== 0 && batteryType === "ploksciasStogas" && (
+          {isEvenModules === "false" && batteryType === "ploksciasStogas" && (
             <button
               className="solar-calculator__actions"
-              disabled={Boolean(rowsCountError)}
+              disabled={Boolean(rowsCountError) || Boolean(modulesCountError)}
               onClick={() =>
                 navigate("/canvasRoof", {
                   state: {
@@ -969,6 +1016,7 @@ export default function SolarRoofCalculator() {
                     roofMaterial,
                     mountingMethod,
                     rowModuleCounts,
+                    isEvenModules
                   },
                 })
               }
@@ -976,10 +1024,10 @@ export default function SolarRoofCalculator() {
               {t("actions.next")}
             </button>
           )}
-          {(moduleCount % 2 === 0 || batteryType === "slaitinisStogas") && (
+          {(isEvenModules === "true" || batteryType === "slaitinisStogas") && (
             <button
               className="solar-calculator__actions"
-              disabled={Boolean(rowsCountError)}
+              disabled={Boolean(rowsCountError) || Boolean(modulesCountError)}
               onClick={() =>
                 navigate("/summaryRoof", {
                   state: {
@@ -1000,6 +1048,7 @@ export default function SolarRoofCalculator() {
                       batteryType === "slaitinisStogas"
                         ? rowModuleCounts
                         : undefined,
+                    isEvenModules
                   },
                 })
               }
