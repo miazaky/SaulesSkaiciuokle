@@ -89,7 +89,7 @@ export default function SolarRoofCalculator() {
   );
 
   const [moduleColor, setModuleColor] = useState<string>(
-    restoredState?.moduleColor ?? "",
+    restoredState?.moduleColor ?? "juoda",
   );
 
   const [mountingMethod, setMountingMethod] = useState<string>(
@@ -995,7 +995,7 @@ export default function SolarRoofCalculator() {
             Grįžti atgal
           </button>
 
-          {isEvenModules === "false" && batteryType === "ploksciasStogas" && (
+          {isEvenModules === "false" && moduleCount!==0 && batteryType === "ploksciasStogas" && (
             <button
               className="solar-calculator__actions"
               disabled={Boolean(rowsCountError) || Boolean(modulesCountError)}
@@ -1024,7 +1024,7 @@ export default function SolarRoofCalculator() {
               {t("actions.next")}
             </button>
           )}
-          {(isEvenModules === "true" || batteryType === "slaitinisStogas") && (
+          {(isEvenModules === "true" && moduleCount!==0 || (batteryType === "slaitinisStogas" && moduleCount!==0)) && (
             <button
               className="solar-calculator__actions"
               disabled={Boolean(rowsCountError) || Boolean(modulesCountError)}
