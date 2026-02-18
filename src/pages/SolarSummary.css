@@ -1,0 +1,142 @@
+.solar-summary {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.solar-summary__title {
+  font-family: 'Hind', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #292929;
+  margin: 40px 0 0;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #fe7d0b;
+  display: inline-block;
+}
+
+.solar-summary__title:first-child {
+  margin-top: 0;
+}
+
+.solar-summary__table {
+  width: 100%;
+  margin-top: 16px;
+  border-collapse: collapse;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+}
+
+.solar-summary__table th {
+  background-color: #292929;
+  color: #ffffff;
+  font-family: 'Hind', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 12px;
+  text-align: left;
+  letter-spacing: 0.3px;
+  border: 1px solid #292929;
+}
+
+.solar-summary__table td {
+  padding: 9px 12px;
+  text-align: left;
+  border: 1px solid #e8e8e8;
+  color: #5f656d;
+}
+
+.solar-summary__table tbody tr:nth-child(even) td {
+  background-color: #f8f8f8;
+}
+
+.solar-summary__table tbody tr:hover td {
+  background-color: #fff5ec;
+}
+
+.solar-summary__table td:nth-child(3),
+.solar-summary__table td:nth-child(4),
+.solar-summary__table th:nth-child(3),
+.solar-summary__table th:nth-child(4) {
+  text-align: center;
+}
+
+.solar-summary__table td:nth-child(3),
+.solar-summary__table td:nth-child(4) {
+  font-family: 'Hind', sans-serif;
+  font-weight: 600;
+  color: #292929;
+}
+
+.solar-summary__empty {
+  padding: 24px;
+  text-align: center;
+  color: #5f656d;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.solar-summary__actions {
+  display: inline-block;
+  margin: 32px 12px 0 0;
+  padding: 12px 28px;
+  font-family: 'Hind', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffffff;
+  background-color: #fe7d0b;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  line-height: 1;
+}
+
+.solar-summary__actions_back {
+  display: inline-block;
+  margin: 32px 12px 0 0;
+  padding: 12px 28px;
+  font-family: 'Hind', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffffff;
+  background-color: #5f656d;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  line-height: 1;
+}
+
+.solar-summary__actions:hover {
+  background-color: #ffa331;
+}
+
+.solar-summary__actions_back:hover {
+  background-color: #292929;
+}
+
+@media (max-width: 767px) {
+  .solar-summary {
+    padding: 24px 16px;
+  }
+
+  .solar-summary__table {
+    font-size: 13px;
+  }
+
+  .solar-summary__table th,
+  .solar-summary__table td {
+    padding: 7px 8px;
+  }
+
+  .solar-summary__actions {
+    width: 100%;
+    text-align: center;
+    margin-right: 0;
+    display: block;
+  }
+}

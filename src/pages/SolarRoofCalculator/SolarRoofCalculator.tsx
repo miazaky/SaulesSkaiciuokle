@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { FormGrid } from "../../components/layout/FormGrid";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import "./SolarRoofCalculator.css";
+import "../SolarCalculator.css";
 
 const MODULE_WIDTH = 1134;
 
@@ -989,7 +989,7 @@ export default function SolarRoofCalculator() {
       {showActions &&  (
         <div className="solar-calculator__actions-row">
           <button
-            className="solar-calculator__actions"
+            className="solar-calculator__actions_back"
             onClick={() => navigate("/", {})}
           >
             Grįžti atgal

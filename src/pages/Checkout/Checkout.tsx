@@ -34,7 +34,7 @@ export default function Checkout() {
             <div key={key} className="input-group">
               <label className="input-label">{placeholder}</label>
               <input
-                className={`invoice-input ${highlight ? 'highlight' : ''}`}
+                className={`invoice-input ${highlight}`}
                 placeholder={placeholder}
                 value={buyer[key as keyof typeof buyer]}
                 onChange={(e) => updateBuyer(key, e.target.value)}

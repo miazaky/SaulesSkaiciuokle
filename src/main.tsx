@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import "./translations/index.ts";
+// import "./wirepro-theme.css"
 
 const rootElement = document.getElementById('root')
 

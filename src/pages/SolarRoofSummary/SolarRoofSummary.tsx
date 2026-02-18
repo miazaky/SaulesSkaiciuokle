@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { calculateSystemMaterials } from "../../calculations/calculateSystemMaterials";
 import { CalculatorInput } from "../../calculations/types";
-import "./SolarRoofSummary.css";
+import "../SolarSummary.css";
 import { useTranslation } from "react-i18next";
 
 export default function SolarRoofSummary() {
@@ -94,7 +94,7 @@ export default function SolarRoofSummary() {
         </table>
       )}
 
-      <button className="solar-summary__actions" onClick={() => navigate("/roof", { state })}>
+      <button className="solar-summary__actions_back" onClick={() => navigate("/roof", { state })}>
         {t("actions.back")}
       </button>
 

@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #5f656d;
+  background-color: #f8f8f8;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Hind', sans-serif;
+  color: #292929;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: #292929;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  border-color: #fe7d0b;
+  box-shadow: 0 0 0 2px rgba(254, 125, 11, 0.12);
+}
+
+input[type="number"]:disabled,
+input[type="text"]:disabled,
+select:disabled {
+  background-color: #f5f5f5;
+  color: #9a9ea3;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+input[type="number"]::placeholder {
+  color: #cecfd0;
+}
+
+input[type="radio"] {
+  accent-color: #fe7d0b;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  color: #5f656d;
+}
