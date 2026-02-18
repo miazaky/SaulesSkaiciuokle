@@ -664,11 +664,11 @@ export default function SolarRoofCanvas() {
                 style={{
                   position: "absolute",
                   //left: (module.col + 1),  top: (module.row + ROW_OFFSET), jei su laikikliais
-                  left: module.col * CELL_SIZE + CELL_SIZE / 2 - 26,
+                  left: module.col * CELL_SIZE + CELL_SIZE / 2 - 17,
                   top:
-                    module.row  * CELL_SIZE + CELL_SIZE / 2 - 15,
-                  width: 50,
-                  height: 30,
+                    module.row  * CELL_SIZE + CELL_SIZE / 2 - 26,
+                  width: 30,
+                  height: 50,
                   backgroundColor: "#4a90e2",
                   border: "2px solid #2e5c8a",
                   borderRadius: 4,
