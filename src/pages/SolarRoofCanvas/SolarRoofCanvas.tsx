@@ -658,7 +658,6 @@ export default function SolarRoofCanvas() {
 
           {/* Modules */}
           {modules.map((module) =>
-            state.orientation !== "RV" ? (
               <div
                 key={module.id}
                 style={{
@@ -677,26 +676,7 @@ export default function SolarRoofCanvas() {
                 }}
                 onMouseDown={(e) => handleMouseDown(e, module.id)}
               />
-            ) : (
-              <div
-                key={module.id}
-                style={{
-                  position: "absolute",
-                  // left: (module.col + 1) * CELL_SIZE, top: (module.row + ROW_OFFSET) * CELL_SIZE, jei su laikikliais
-                  left: module.col * CELL_SIZE + CELL_SIZE / 2 - 26,
-                  top:
-                    module.row  * CELL_SIZE + CELL_SIZE / 2 - 15,
-                  width: 50,
-                  height: 30,
-                  backgroundColor: "#4a90e2",
-                  border: "2px solid #2e5c8a",
-                  borderRadius: 4,
-                  zIndex: draggingModule === module.id ? 10 : 2,
-                  opacity: draggingModule === module.id ? 0.7 : 1,
-                }}
-                onMouseDown={(e) => handleMouseDown(e, module.id)}
-              />
-            ),
+            
           )}
         </div>
       </div>
