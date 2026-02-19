@@ -1037,7 +1037,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Prispaudėjas galinis",
     length: null,
     calculateQuantity: (i) =>
-      calculateClampBackQuantity(i.moduleCount, i.clampGCount, i.isEvenModules),
+      calculateClampBackQuantity(i.rowsCount, i.clampGCount, i.isEvenModules),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],

@@ -13,16 +13,16 @@
     "ploksciasStogas": "Plokščio stogo modulis",
     "slaitinisStogas": "Šlaitinio stogo modulis"
   },
-    "solarTypes": {
+  "solarTypes": {
     "ground": "Ant žemės",
     "roof": "Ant stogo"
   },
   "sections": {
     "modules": "Modulių duomenys",
-    "moduleOrientation": "Sistemos orientacija",
+    "moduleOrientation": "Modulio orientacija",
     "construction": "Konstrukcijos duomenys"
   },
-  "orientation":{
+  "orientation": {
     "PT": "Pietų",
     "RV": "Rytų-Vakarų",
     "vertical": "Vertikalus",
@@ -35,7 +35,7 @@
     "bitumine": "Bituminių čerpių",
     "skarda": "Trapecinė/banguota skardinė"
   },
-  "system":{
+  "system": {
     "systemTitle": "Sistema",
     "PT5": "PT5",
     "PT10": "PT10",
@@ -45,16 +45,15 @@
     "RV10": "RV10",
     "RV10-Z": "RV10-Z"
   },
-  "mountingMethods":{
+  "mountingMethods": {
     "studs": "Smeigės",
     "clamps": "Spaustukai",
     "hooks": "Kabliai",
     "screwsR": "Savisriegiais varžtais per mini bėgelį",
     "screwsEPDM40": "Savisriegiais varžtais per bėgelį EPDM guma 40",
     "screwsEPDM80": "Savisriegiais varžtais per bėgelį EPDM guma 80"
-
   },
-  "materials":{
+  "materials": {
     "squareRail": "Kvadratinis bėgelis",
     "squareRailJoint": "Kvadratinio bėgelio jungtis",
     "squareRailFinish": "Kvadratinio bėgelio past. užbaigimas",
@@ -71,22 +70,22 @@
     "railEDPM40": "Bėgelis su EPDM guma 40",
     "railEDPM80": "Bėgelis su EPDM guma 80"
   },
-  "sides":{
+  "sides": {
     "short": "Trumpoji kraštinė",
     "long": "Ilgoji kraštinė",
     "both": "Abi kraštinės"
   },
-  "color":{
+  "color": {
     "black": "Juoda",
     "grey": "Pilka"
   },
-  "select":{
+  "select": {
     "placeholder": "Pasirinkti..."
   },
   "fields": {
     "moduleCount": "Modulių kiekis, vnt. (lyg. sk., min 8, max 54)",
     "moduleCountRoof": "Modulių kiekis, vnt.",
-    "mountingMethod":"Montavimo būdas",
+    "mountingMethod": "Montavimo būdas",
     "moduleLength": "Modulio ilgis, mm (1700-2400)",
     "roofMaterial": "Stogo danga",
     "moduleLengthRoof": "Modulio ilgis, mm (nuo 1762)",
@@ -114,6 +113,8 @@
   },
   "actions": {
     "next": "Kitas žingsnis",
-    "back": "Grįžti atgal"
+    "back": "Grįžti atgal",
+    "calculate": "Skaičiuoti",
+    "draw": "Brėžinys"
   }
 }
