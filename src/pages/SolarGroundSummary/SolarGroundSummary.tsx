@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { calculateSystemMaterials } from "../../calculations/calculateSystemMaterials";
 import { CalculatorInput } from "../../calculations/types";
-import "./SolarGroundSummary.css";
+import "../SolarSummary.css";
 import { calculateFurnitureMaterials } from "../../calculations/calculateFurnitureMaterials";
 import { useTranslation } from "react-i18next";
 
@@ -71,7 +71,7 @@ export default function SolarGroundSummary() {
       </table>
 
       <button
-        className="solar-summary__actions"
+        className="solar-summary__actions_back"
         onClick={() =>
           navigate("/ground", {
             state,

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { FormGrid } from "../../components/layout/FormGrid";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import "./SolarGroundCalculator.css";
+import "../SolarCalculator.css";
 
 const MODULE_WIDTH = 1134;
 const GAP_MM = 20;
@@ -145,7 +145,7 @@ export default function SolarGroundCalculator() {
           </FormGrid>
 
           <button
-            className="solar-calculator__actions"
+            className="solar-calculator__actions_back"
             onClick={() =>
               navigate("/", {
               })

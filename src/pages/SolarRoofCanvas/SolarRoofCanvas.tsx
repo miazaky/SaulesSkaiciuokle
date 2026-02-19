@@ -502,7 +502,7 @@ export default function SolarRoofCanvas() {
             width: gridCols * CELL_SIZE,
             height: gridRows * CELL_SIZE,
             position: "relative",
-            border: "2px solid #333",
+            // border: "2px solid #333",
             backgroundColor: "#f5f5f5",
             cursor: draggingModule !== null ? "grabbing" : "default",
           }}
@@ -660,6 +660,7 @@ export default function SolarRoofCanvas() {
           {modules.map((module) =>
               <div
                 key={module.id}
+                className={`solar-canvas__module${draggingModule === module.id ? ' solar-canvas__module--dragging' : ''}`}
                 style={{
                   position: "absolute",
                   //left: (module.col + 1),  top: (module.row + ROW_OFFSET), jei su laikikliais
@@ -672,7 +673,6 @@ export default function SolarRoofCanvas() {
                   border: "2px solid #2e5c8a",
                   borderRadius: 4,
                   zIndex: draggingModule === module.id ? 10 : 2,
-                  opacity: draggingModule === module.id ? 0.7 : 1,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, module.id)}
               />
@@ -698,7 +698,7 @@ export default function SolarRoofCanvas() {
           </div>
 
           <button
-            className="solar-summary__actions"
+            className="solar-summary__actions_back"
             onClick={() => navigate("/roof", { state })}
           >
             Grįžti atgal
@@ -742,7 +742,7 @@ export default function SolarRoofCanvas() {
           </div>
 
           <button
-            className="solar-summary__actions"
+            className="solar-summary__actions_back"
             onClick={() => navigate("/roof", { state })}
           >
             Grįžti atgal
@@ -782,7 +782,7 @@ export default function SolarRoofCanvas() {
           </div>
 
           <button
-            className="solar-summary__actions"
+            className="solar-summary__actions_back"
             onClick={() => navigate("/roof", { state })}
           >
             Grįžti atgal
@@ -830,7 +830,7 @@ export default function SolarRoofCanvas() {
           </div>
 
           <button
-            className="solar-summary__actions"
+            className="solar-summary__actions_back"
             onClick={() => navigate("/roof", { state })}
           >
             Grįžti atgal
