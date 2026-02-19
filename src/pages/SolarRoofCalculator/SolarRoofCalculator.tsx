@@ -10,7 +10,7 @@ import "../SolarCalculator.css";
 const MODULE_WIDTH = 1134;
 
 type BatteryType = "ploksciasStogas" | "slaitinisStogas" | null;
-type Orientation = "PT" | "RV" | null;
+type Orientation = "PT" | "RV" | "vertical" |"horizontal" | null;
 type SystemKey =
   | "PT5"
   | "PT10"
@@ -79,9 +79,15 @@ export default function SolarRoofCalculator() {
   const [moduleLength, setModuleLength] = useState<number>(
     restoredState?.moduleLength ?? 1762,
   );
+  const [moduleLengthInput, setModuleLengthInput] = useState<string>(
+    String(restoredState?.moduleLength ?? 1762),
+  );
 
   const [moduleCount, setModuleCount] = useState<number>(
     restoredState?.moduleCount ?? 0,
+  );
+  const [moduleCountInput, setModuleCountInput] = useState<string>(
+    String(restoredState?.moduleCount ?? 0),
   );
 
   const [moduleThickness, setModuleThickness] = useState<number>(
@@ -114,6 +120,10 @@ export default function SolarRoofCalculator() {
       : restoredState?.moduleCount
         ? [restoredState.moduleCount]
         : [0],
+  );
+
+  const [rowsCountInput, setRowsCountInput] = useState<string>(
+    String(restoredState?.rowsCount ?? 2),
   );
 
   const isRv =
@@ -513,27 +523,31 @@ export default function SolarRoofCalculator() {
                 <input
                   type="number"
                   min={2}
-                    max={50}
-                    value={rowsCount}
-                    onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setRowsCount(Math.max(2, Math.min(50, value)));
-                }
-                  }
+                  max={50}
+                  value={rowsCountInput}
+                  onChange={(e) => setRowsCountInput(e.target.value)}
+                  onBlur={() => {
+                    const value = Number(rowsCountInput);
+                    const clamped = Math.max(2, Math.min(50, isNaN(value) ? 2 : value));
+                    setRowsCount(clamped);
+                    setRowsCountInput(String(clamped));
+                  }}
                 />
               </InputField>
-            
 
             <InputField label={t("fields.moduleCountRoof")}>
               <input
                 type="number"
                 min={0}
                 max={200}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setModuleCount(Math.max(0, Math.min(200, value)));
+                value={moduleCountInput}
+                onChange={(e) => setModuleCountInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(moduleCountInput);
+                  const clamped = Math.max(0, Math.min(200, isNaN(value) ? 0 : value));
+                  setModuleCount(clamped);
+                  setModuleCountInput(String(clamped));
                 }}
-                value={moduleCount}
               />
             </InputField>
 
@@ -549,7 +563,6 @@ export default function SolarRoofCalculator() {
                 <option value="false">{t("fields.no")}</option>
               </select>
             </InputField>
-
 
             <InputField label={t("system.systemTitle")}>
               <select
@@ -576,11 +589,14 @@ export default function SolarRoofCalculator() {
                 type="number"
                 min={1762}
                 max={9999}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setModuleLength(Math.max(1762, Math.min(9999, value)));
+                value={moduleLengthInput}
+                onChange={(e) => setModuleLengthInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(moduleLengthInput);
+                  const clamped = Math.max(1762, Math.min(9999, isNaN(value) ? 1762 : value));
+                  setModuleLength(clamped);
+                  setModuleLengthInput(String(clamped));
                 }}
-                value={moduleLength}
               />
             </InputField>
 
@@ -697,10 +713,13 @@ export default function SolarRoofCalculator() {
                 type="number"
                 min={2}
                 max={50}
-                value={rowsCount}
-               onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setRowsCount(Math.max(2, Math.min(50, value)));
+                value={rowsCountInput}
+                onChange={(e) => setRowsCountInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(rowsCountInput);
+                  const clamped = Math.max(2, Math.min(50, isNaN(value) ? 2 : value));
+                  setRowsCount(clamped);
+                  setRowsCountInput(String(clamped));
                 }}
               />
               {rowsCountError && (
@@ -715,11 +734,14 @@ export default function SolarRoofCalculator() {
                 type="number"
                 min={0}
                 max={200}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setModuleCount(Math.max(0, Math.min(200, value)));
+                value={moduleCountInput}
+                onChange={(e) => setModuleCountInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(moduleCountInput);
+                  const clamped = Math.max(0, Math.min(200, isNaN(value) ? 0 : value));
+                  setModuleCount(clamped);
+                  setModuleCountInput(String(clamped));
                 }}
-                value={moduleCount}
               />
               {modulesCountError && (
                 <div style={{ color: "#b00020", marginTop: 6 }}>
@@ -766,11 +788,14 @@ export default function SolarRoofCalculator() {
                 type="number"
                 min={1762}
                 max={9999}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setModuleLength(Math.max(1762, Math.min(9999, value)));
+                value={moduleLengthInput}
+                onChange={(e) => setModuleLengthInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(moduleLengthInput);
+                  const clamped = Math.max(1762, Math.min(9999, isNaN(value) ? 1762 : value));
+                  setModuleLength(clamped);
+                  setModuleLengthInput(String(clamped));
                 }}
-                value={moduleLength}
               />
             </InputField>
 
@@ -911,13 +936,19 @@ export default function SolarRoofCalculator() {
               </select>
             </InputField>
 
-            <InputField label={t("fields.moduleLength")}>
+            <InputField label={orientation === "vertical" ? t("fields.moduleWidth"): t("fields.moduleLength")}>
               <input
                 type="number"
                 min={1762}
                 max={2400}
-                onChange={(e) => setModuleLength(Number(e.target.value))}
-                value={moduleLength}
+                value={moduleLengthInput}
+                onChange={(e) => setModuleLengthInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(moduleLengthInput);
+                  const clamped = Math.max(1762, Math.min(2400, isNaN(value) ? 1762 : value));
+                  setModuleLength(clamped);
+                  setModuleLengthInput(String(clamped));
+                }}
               />
             </InputField>
 
@@ -951,8 +982,14 @@ export default function SolarRoofCalculator() {
               <input
                 type="number"
                 min={1}
-                value={rowsCount}
-                onChange={(e) => setRowsCount(Number(e.target.value))}
+                value={rowsCountInput}
+                onChange={(e) => setRowsCountInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(rowsCountInput);
+                  const clamped = Math.max(1, isNaN(value) ? 1 : value);
+                  setRowsCount(clamped);
+                  setRowsCountInput(String(clamped));
+                }}
               />
             </InputField>
 
@@ -1021,7 +1058,7 @@ export default function SolarRoofCalculator() {
                 })
               }
             >
-              {t("actions.next")}
+              {t("actions.draw")}
             </button>
           )}
           {(isEvenModules === "true" && moduleCount!==0 || (batteryType === "slaitinisStogas" && moduleCount!==0)) && (
@@ -1053,7 +1090,7 @@ export default function SolarRoofCalculator() {
                 })
               }
             >
-              {t("actions.next")}
+              {t("actions.calculate")}
             </button>
           )}
         </div>

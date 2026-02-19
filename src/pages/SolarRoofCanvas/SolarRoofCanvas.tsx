@@ -716,7 +716,7 @@ export default function SolarRoofCanvas() {
               })
             }
           >
-            {t("actions.next")}
+            {t("actions.calculate")}
           </button>
         </>
       ) : state.system === "RV10" ? (
@@ -762,7 +762,7 @@ export default function SolarRoofCanvas() {
               })
             }
           >
-            {t("actions.next")}
+            {t("actions.calculate")}
           </button>
         </>
       ) :  state.system === "RV10-Z" ? (
@@ -802,7 +802,7 @@ export default function SolarRoofCanvas() {
               })
             }
           >
-            {t("actions.next")}
+            {t("actions.calculate")}
           </button>
         </>
       ) :
@@ -850,7 +850,7 @@ export default function SolarRoofCanvas() {
               })
             }
           >
-            {t("actions.next")}
+            {t("actions.calculate")}
           </button>
         </>
       )}
