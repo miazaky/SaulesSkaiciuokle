@@ -9,6 +9,7 @@ import "../SolarCalculator.css";
 
 const MODULE_WIDTH = 1134;
 const GAP_MM = 20;
+const MAX_LENGTH = 32000;
 
 type BatteryType = "ezys" | "poline" | null;
 
@@ -45,20 +46,50 @@ export default function SolarGroundCalculator() {
   
   const [batteryType, setBatteryType] = useState<BatteryType>(restoredState?.batteryType ?? null);
 
-  const [moduleCount, setModuleCount] = useState<number>(restoredState?.moduleCount ?? 36);
-  const [moduleLength, setModuleLength] = useState<number>(restoredState?.moduleLength ?? 2250);
-  const [moduleThickness, setModuleThickness] = useState<number>(restoredState?.moduleThickness ?? 30);
+  const [moduleCount, setModuleCount] = useState<string>(restoredState?.moduleCount.toString() ?? "36");
+  const [moduleLength, setModuleLength] = useState<string>(restoredState?.moduleLength.toString() ?? "2250");
+  const [moduleThickness, setModuleThickness] = useState<string>(restoredState?.moduleThickness.toString() ?? "30");
 
 
-  const rowsCount = moduleCount / 2;
-  const reserve = moduleCount <= 24 ? 50 : 100;
+  const moduleCountNumber = Number(moduleCount);
+  const moduleLengthNumber = Number(moduleLength);
+  const moduleThicknessNumber = Number(moduleThickness);
 
-  const constructionLength = calculateConstructionLength({
-    moduleWidth: MODULE_WIDTH,
-    rowsCount,
-    reserve,
-    gap: GAP_MM,
-  });
+  const isModuleCountValid =
+    moduleCount !== "" &&
+    moduleCountNumber >= 8 &&
+    moduleCountNumber <= 54 &&
+    moduleCountNumber % 2 === 0;
+
+  const isModuleLengthValid =
+    moduleLength !== "" &&
+    moduleLengthNumber >= 1700 &&
+    moduleLengthNumber <= 2400;
+
+  const isModuleThicknessValid =
+    moduleThickness !== "" &&
+    moduleThicknessNumber > 0;
+
+  const rowsCount = isModuleCountValid ? moduleCountNumber / 2 : 0;
+  const reserve = moduleCountNumber <= 24 ? 50 : 100;
+
+  const constructionLength = isModuleCountValid
+    ? calculateConstructionLength({
+        moduleWidth: MODULE_WIDTH,
+        rowsCount,
+        reserve,
+        gap: GAP_MM,
+      })
+    : 0;
+
+  const isConstructionValid = constructionLength <= MAX_LENGTH;
+
+  const isFormValid =
+    batteryType &&
+    isModuleCountValid &&
+    isModuleLengthValid &&
+    isModuleThicknessValid &&
+    isConstructionValid;
 
   return (
     <div className="solar-calculator">
@@ -85,23 +116,30 @@ export default function SolarGroundCalculator() {
           <FormGrid columns={2}>
             <InputField label={t("fields.moduleCount")}>
               <input
+                className={!isModuleCountValid ? "input-error" : ""}
                 type="number"
-                min={8}
-                max={54}
-                step={2}
                 value={moduleCount}
-                onChange={(e) => setModuleCount(+e.target.value)}
+                onChange={(e) => setModuleCount(e.target.value)}
               />
+              {!isModuleCountValid && (
+                <div className="error-text">
+                  {t("errors.moduleCount")}
+                </div>
+              )}
             </InputField>
 
             <InputField label={t("fields.moduleLength")}>
               <input
+                className={!isModuleLengthValid ? "input-error" : ""}
                 type="number"
-                min={1700}
-                max={2400}
                 value={moduleLength}
-                onChange={(e) => setModuleLength(+e.target.value)}
+                onChange={(e) => setModuleLength(e.target.value)}
               />
+              {!isModuleLengthValid && (
+                <div className="error-text">
+                  {t("errors.moduleLength")}
+                </div>
+              )}
             </InputField>
 
             <InputField label={t("fields.moduleWidth")}>
@@ -109,10 +147,16 @@ export default function SolarGroundCalculator() {
             </InputField>
 
             <InputField label={t("fields.moduleThickness")}>
-              <input type="number" 
-              min={1}
-              value={moduleThickness} 
-              onChange={(e) => setModuleThickness(+e.target.value)} />
+              <input
+                className={!isModuleThicknessValid ? "input-error" : ""}
+                type="number" 
+                value={moduleThickness} 
+                onChange={(e) => setModuleThickness(e.target.value)} />
+                {!isModuleThicknessValid && (
+                  <div className="error-text">
+                    {t("errors.moduleThickness")}
+              </div>
+              )}
             </InputField>
           </FormGrid>
 
@@ -156,6 +200,7 @@ export default function SolarGroundCalculator() {
           
           <button
             className="solar-calculator__actions"
+            disabled={!isFormValid}
             onClick={() =>
               navigate("/summary", {
                 state: {
@@ -172,7 +217,7 @@ export default function SolarGroundCalculator() {
               })
             }
           >
-            {t("actions.next")}
+            {t("actions.calculate")}
           </button>
         </div>
       )}
