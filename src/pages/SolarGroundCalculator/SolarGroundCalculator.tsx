@@ -13,6 +13,51 @@ const MAX_LENGTH = 32000;
 
 type BatteryType = "ezys" | "poline" | null;
 
+const isFocusable = (element: Element | null): element is HTMLElement => {
+  if (!element) {
+    return false;
+  }
+
+  const anyEl = element as any;
+  if (anyEl.disabled) {
+    return false;
+    }
+  if ((element as HTMLElement).tabIndex === -1) {
+    return false;
+  }
+
+  if (element instanceof HTMLInputElement && element.type === "hidden") {
+    return false;
+  }
+
+  return typeof (element as HTMLElement).focus === "function";
+};
+
+const handleEnterAsTab = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key !== "Enter") {
+    return;
+  }
+
+  e.preventDefault();
+
+  const form = e.currentTarget.form;
+  if (!form) {
+    return;
+  }
+
+  const elements = Array.from(form.elements);
+  const index = elements.indexOf(e.currentTarget);
+
+  for (let i = index + 1; i < elements.length; i++) {
+    const next = elements[i] as Element;
+
+    if (isFocusable(next)) {
+      (next as HTMLElement).focus();
+      break;
+    }
+  }
+};
+
 function calculateConstructionLength({moduleWidth, rowsCount, reserve, gap}: {
   moduleWidth: number;
   rowsCount: number;
@@ -111,7 +156,8 @@ export default function SolarGroundCalculator() {
       </div>
 
       {batteryType && (
-        <div className="solar-calculator__content">
+        <form className="solar-calculator__content"
+        onSubmit={(e) => e.preventDefault()}>
           <h3>{t("sections.modules")}</h3>
           <FormGrid columns={2}>
             <InputField label={t("fields.moduleCount")}>
@@ -119,7 +165,23 @@ export default function SolarGroundCalculator() {
                 className={!isModuleCountValid ? "input-error" : ""}
                 type="number"
                 value={moduleCount}
+                onKeyDown={handleEnterAsTab}
                 onChange={(e) => setModuleCount(e.target.value)}
+                onBlur={() => {
+                  if (moduleCount === "") {
+                    return;
+                  }
+
+                  let number = Number(moduleCount);
+
+                  if (isNaN(number)) {
+                    return;
+                  }
+
+                  if (number % 2 !== 0) {
+                    setModuleCount(String(number + 1));
+                  }
+                }}
               />
               {!isModuleCountValid && (
                 <div className="error-text">
@@ -134,6 +196,7 @@ export default function SolarGroundCalculator() {
                 type="number"
                 value={moduleLength}
                 onChange={(e) => setModuleLength(e.target.value)}
+                onKeyDown={handleEnterAsTab}
               />
               {!isModuleLengthValid && (
                 <div className="error-text">
@@ -151,7 +214,9 @@ export default function SolarGroundCalculator() {
                 className={!isModuleThicknessValid ? "input-error" : ""}
                 type="number" 
                 value={moduleThickness} 
-                onChange={(e) => setModuleThickness(e.target.value)} />
+                onChange={(e) => setModuleThickness(e.target.value)} 
+                onKeyDown={handleEnterAsTab}
+              />
                 {!isModuleThicknessValid && (
                   <div className="error-text">
                     {t("errors.moduleThickness")}
@@ -189,6 +254,7 @@ export default function SolarGroundCalculator() {
           </FormGrid>
 
           <button
+            type="button"
             className="solar-calculator__actions_back"
             onClick={() =>
               navigate("/", {
@@ -199,6 +265,7 @@ export default function SolarGroundCalculator() {
           </button>
           
           <button
+            type="button"
             className="solar-calculator__actions"
             disabled={!isFormValid}
             onClick={() =>
@@ -219,7 +286,7 @@ export default function SolarGroundCalculator() {
           >
             {t("actions.calculate")}
           </button>
-        </div>
+        </form>
       )}
     </div>
   );
