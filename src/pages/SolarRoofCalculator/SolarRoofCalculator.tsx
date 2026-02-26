@@ -1023,7 +1023,6 @@ export default function SolarRoofCalculator() {
         </div>
       )}
 
-      {showActions &&  (
         <div className="solar-calculator__actions-row">
           <button
             className="solar-calculator__actions_back"
@@ -1094,7 +1093,6 @@ export default function SolarRoofCalculator() {
             </button>
           )}
         </div>
-      )}
     </div>
   );
 }
