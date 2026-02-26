@@ -496,9 +496,9 @@ function calculateRysys(moduleCount: number): number {
 }
 // J10 – Gegnės kodas
 function calculateGegneCode(moduleLength: number): string {
-  if (moduleLength <= 1850) return "GG-0";
-  if (moduleLength <= 2200) return "GG-1";
-  if (moduleLength <= 2400) return "GG-2";
+  if (moduleLength <= 1794) return "GG-0";
+  if (moduleLength <= 2112) return "GG-1";
+  if (moduleLength <= 2384) return "GG-2";
 
   throw new Error("Klaida: netinkamas modulio ilgis");
 }
@@ -675,6 +675,9 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
     length: null,
     calculateQuantity: (i) => {
       const j5 = calculateLegCount(i.constructionLength);
+      if (i.batteryType === "poline") {
+        return j5 * 2;
+      }
       const j9 = j5;
       return j5 * 2 + j9 * 2; // J16
     },

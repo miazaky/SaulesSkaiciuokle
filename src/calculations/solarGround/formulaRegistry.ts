@@ -61,7 +61,10 @@ export const registry: Record<string, FormulaFn> = {
     const r1 = calcRysys(i.moduleCount);
     const r2 = calcLegCount(i.constructionLength);
 
-    if (i.batteryType === "poline") {
+    if (i.batteryType === "poline" && i.profileLength === 5200) {
+      return r1 * 2;
+    }
+    else if (i.batteryType === "poline" && i.profileLength === 4200) {
       return r1 * 2 + r2 * 2;
     }
 
@@ -71,7 +74,7 @@ export const registry: Record<string, FormulaFn> = {
   varztasM12: (i) => {
     const leg = calcLegCount(i.constructionLength);
 
-    if (i.batteryType === "poline") {
+    if (i.batteryType === "poline" && i.profileLength === 4200) {
       return leg * 2;
     }
 
