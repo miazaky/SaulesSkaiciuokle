@@ -12,6 +12,7 @@ const GAP_MM = 20;
 const MAX_LENGTH = 32000;
 
 type BatteryType = "ezys" | "poline" | null;
+type ProfileLength = 4200 | 5200;
 
 const isFocusable = (element: Element | null): element is HTMLElement => {
   if (!element) {
@@ -85,11 +86,13 @@ export default function SolarGroundCalculator() {
         moduleThickness: number;
         constructionLength: number;
         rowsCount: number;
+        profileLength: 4200 | 5200;
       }
     | undefined;
 
   
   const [batteryType, setBatteryType] = useState<BatteryType>(restoredState?.batteryType ?? null);
+  const [profileLength, setProfileLength] = useState<ProfileLength>((restoredState as any)?.profileLength ?? 4200);
 
   const [moduleCount, setModuleCount] = useState<string>(restoredState?.moduleCount.toString() ?? "36");
   const [moduleLength, setModuleLength] = useState<string>(restoredState?.moduleLength.toString() ?? "2250");
@@ -154,8 +157,32 @@ export default function SolarGroundCalculator() {
           onClick={() => setBatteryType("poline")}
         />
       </div>
-
       {batteryType && (
+        <>
+            <div className="solar-calculator__orientation_select">
+              <h3 className="solar-calculator__section">{t("sections.profile")}</h3>
+              <label className="solar-calculator__radio">
+                <input
+                  type="radio"
+                  name="profileLength"
+                  value="4200"
+                  checked={profileLength === 4200}
+                  onChange={() => setProfileLength(4200)}
+                />
+                4200 mm
+              </label>
+
+              <label className="solar-calculator__radio">
+                <input
+                  type="radio"
+                  name="profileLength"
+                  value="5200"
+                  checked={profileLength === 5200}
+                  onChange={() => setProfileLength(5200)}
+                />
+                5200 mm
+              </label>
+            </div>
         <form className="solar-calculator__content"
         onSubmit={(e) => e.preventDefault()}>
           <h3>{t("sections.modules")}</h3>
@@ -280,6 +307,7 @@ export default function SolarGroundCalculator() {
                   rowsCount,
                   reserve,
                   gap: GAP_MM,
+                  profileLength
                 },
               })
             }
@@ -287,6 +315,7 @@ export default function SolarGroundCalculator() {
             {t("actions.calculate")}
           </button>
         </form>
+        </>
       )}
     </div>
   );

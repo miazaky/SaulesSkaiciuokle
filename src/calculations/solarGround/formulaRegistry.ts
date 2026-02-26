@@ -26,13 +26,16 @@ export const registry: Record<string, FormulaFn> = {
   gegneCode: (i) => calcGegneCode(i.moduleLength),
   gegneLength: (i) => calcGegneLength(i.moduleLength),
 
-  grebestasQty: (i) => calcGrebestas(i.constructionLength),
-  extraGrebestasQty: (i) => calcExtraGrebestasQty(i.constructionLength),
-  extraGrebestasLength: (i) => calcExtraGrebestasLength(i.constructionLength),
+  grebestasQty: (i) =>
+    calcGrebestas(i.constructionLength, i.profileLength),
+  extraGrebestasQty: (i) =>
+    calcExtraGrebestasQty(i.constructionLength, i.profileLength),
+  extraGrebestasLength: (i) =>
+    calcExtraGrebestasLength(i.constructionLength, i.profileLength),
 
   grebestuJungtysQty: (i) => {
-    const j11 = calcGrebestas(i.constructionLength);
-    const j12 = calcExtraGrebestasQty(i.constructionLength);
+    const j11 = calcGrebestas(i.constructionLength, i.profileLength);
+    const j12 = calcExtraGrebestasQty(i.constructionLength, i.profileLength);
     return calcGrebestuJungtys(j11, j12);
   },
 
@@ -77,4 +80,5 @@ export const registry: Record<string, FormulaFn> = {
 
   clampGQty: () => 8,
   clampVQty: (i) => (i.moduleCount - 2) * 2,
+  profileLength: (i) => i.profileLength
 };

@@ -13,6 +13,7 @@ export default function SolarGroundSummary() {
   if (!state) {
     return <p>No data provided</p>;
   }
+  console.log("SUMMARY profileLength:", state.profileLength, typeof state.profileLength);
 
   const systemMaterials = calculateSystemMaterials(state);
   const hardwareMaterials = calculateFurnitureMaterials(state);

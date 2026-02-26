@@ -28,24 +28,36 @@ export function calcGegneLength(moduleLength: number): number | null {
 }
 
 /** J11 */
-export function calcGrebestas(constructionLength: number): number {
-  return rangeLookup(
-    constructionLength,
-    grebestasRules,
-    "Klaida: per didelis konstrukcijos ilgis (grebėstai)"
-  );
+export function calcGrebestas(
+  constructionLength: number,
+  profileLength: 4200 | 5200
+): number {
+  const steps = Math.floor(constructionLength / profileLength); // 0..∞
+
+  if (steps <= 0) return 0;
+
+  // Excel limits:
+  // 4200: allowed up to 7 (=> 28), error from 8+
+  // 5200: allowed up to 6 (=> 24), error from 7+
+  const maxSteps = profileLength === 4200 ? 7 : 6;
+
+  if (steps > maxSteps) {
+    throw new Error("Klaida: per didelis konstrukcijos ilgis (grebėstai)");
+  }
+
+  return steps * 4;
 }
 
 /** J12 qty */
-export function calcExtraGrebestasQty(constructionLength: number): number {
-  const k12 = calcExtraGrebestasLength(constructionLength);
+export function calcExtraGrebestasQty(constructionLength: number, profileLength: 4200 | 5200): number {
+  const k12 = calcExtraGrebestasLength(constructionLength, profileLength);
   return k12 === 0 ? 0 : 4;
 }
 
 /** J12 length */
-export function calcExtraGrebestasLength(constructionLength: number): number {
-  const j11 = calcGrebestas(constructionLength);
-  const remainder = constructionLength - (j11 / 4) * 4200;
+export function calcExtraGrebestasLength(constructionLength: number, profileLength: 4200 | 5200): number {
+  const j11 = calcGrebestas(constructionLength, profileLength);
+  const remainder = constructionLength - (j11 / 4) * profileLength;
 
   if (remainder === 0) {
     return 0;

@@ -20,7 +20,8 @@
   "sections": {
     "modules": "Modulių duomenys",
     "moduleOrientation": "Modulio orientacija",
-    "construction": "Konstrukcijos duomenys"
+    "construction": "Konstrukcijos duomenys",
+    "profile": "Duomenys"
   },
   "orientation": {
     "PT": "Pietų",
