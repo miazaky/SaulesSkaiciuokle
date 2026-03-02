@@ -498,20 +498,18 @@ export default function SolarRoofCanvas() {
     if (state.orientation !== "RV") return;
 
     e.preventDefault();
-    
-    let pairingBlocked = false;
+
+    const pairId = pairMapRef.current?.get(moduleId);
+    const thisModule = modules.find((m) => m.id === moduleId);
+    const pairedModule = pairId !== undefined ? modules.find((m) => m.id === pairId) : null;
 
     setUnpairedModules((prev) => {
       const newSet = new Set(prev);
-      const pairId = pairMapRef.current?.get(moduleId);
       
       const isThisUnpaired = newSet.has(moduleId);
       const isPairUnpaired = pairId !== undefined && newSet.has(pairId);
       
       if (isThisUnpaired || isPairUnpaired) {
-        const thisModule = modules.find((m) => m.id === moduleId);
-        const pairedModule = pairId !== undefined ? modules.find((m) => m.id === pairId) : null;
-        
         if (thisModule && pairedModule && 
             thisModule.col === pairedModule.col && 
             Math.abs(thisModule.row - pairedModule.row) === STEP) {
@@ -520,7 +518,7 @@ export default function SolarRoofCanvas() {
             newSet.delete(pairId);
           }
         } else {
-          pairingBlocked = true;
+          showToast(t("errors.verticalPairingRequired") || "Modules must be vertically adjacent to pair");
         }
       } else {
         newSet.add(moduleId);
@@ -530,10 +528,6 @@ export default function SolarRoofCanvas() {
       }
       return newSet;
     });
-
-    if (pairingBlocked) {
-      showToast(t("errors.verticalPairingRequired") || "Modules must be vertically adjacent to pair");
-    }
   };
 
   const getPairingColor = (moduleId: number): string => {
