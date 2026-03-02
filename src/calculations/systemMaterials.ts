@@ -19,6 +19,7 @@ const MATERIAL_KEYS = {
 };
 
 const clampG = 4;
+const squareRailFinish = 4;
 
 export type SystemMaterialDefinition = {
   code: string | ((input: CalculatorInput) => string);
@@ -65,6 +66,8 @@ function calculateSquareRailQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
+    if(moduleCount <= 0) return 0;
+
   if (orientation === "vertical") {
     return (
       Math.floor(
@@ -86,15 +89,24 @@ function calculateSquareRailFinishQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
+    
   const squareRailQty = calculateSquareRailQuantity(
     moduleCount,
     moduleWidth,
     moduleLength,
     orientation,
   );
+  
 
   return Math.max(0, (Math.floor(squareRailQty / 2) - 1) * 2);
 }
+
+function calculateSquareRailFinish(moduleCount: number)
+: number{
+    if(moduleCount <= 0) return 0;
+    return squareRailFinish;
+}
+
 
 function calculateStudsQuantity(
   moduleCount: number,
@@ -102,6 +114,7 @@ function calculateStudsQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
+    if(moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       2 *
@@ -148,15 +161,18 @@ function calculateM10ScrewQuantity(
 }
 
 function calculateClampVQuantity(moduleCount: number): number {
+    if(moduleCount <= 0) return 0;
   return (moduleCount - 1) * 2;
 }
 
 function calculateM8NutQuantity(moduleCount: number): number {
+    if(moduleCount <= 0) return 0;
   const clampVQty = calculateClampVQuantity(moduleCount);
   return clampVQty + 4;
 }
 
 function calculateEPDMMiniQuantity(moduleCount: number): number {
+    if(moduleCount <= 0) return 0;
   return (moduleCount + 1) * 2;
 }
 
@@ -166,6 +182,7 @@ function calculateEDPM40Quantity(
   moduleLength: number,
   orientation: string,
 ): number {
+    if(moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       Math.floor(
@@ -187,6 +204,7 @@ function calculateEDPM80Quantity(
   moduleLength: number,
   orientation: string,
 ): number {
+    if(moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       Math.floor(
@@ -208,6 +226,7 @@ function calcaulteSpecScrewQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
+    if(moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       2 *
@@ -230,12 +249,18 @@ function calcaulteSpecScrewQuantity(
   }
 }
 
+function calculateM80ClampGQuantity(moduleCount: number): number {
+  if(moduleCount <= 0) return 0;
+  return clampG;
+}
+
 function calculateFrontHolderQuantity(
   moduleCount: number,
   rowsCount: number,
   holderPCount?: number,
   isEvenModules?:string,
 ): number {
+  if(moduleCount <= 0) return 0;
   return isEqual(String(isEvenModules)) ? moduleCount + 1 : (holderPCount ?? 0);
 }
 
@@ -244,6 +269,7 @@ function calculateBackHolderQuantity(
   holderGCount?: number,
     isEvenModules?: string,
 ): number {
+  if(moduleCount <= 0) return 0;
   return isEqual(String(isEvenModules)) ? moduleCount + 1 : (holderGCount ?? 0);
 }
 function calculateMiddleHolderQuantity(
@@ -252,6 +278,7 @@ function calculateMiddleHolderQuantity(
   holderVCount?: number,
     isEvenModules?: string,
 ): number {
+    if(moduleCount <= 0) return 0;
   return isEqual(String(isEvenModules))
     ? (moduleCount + 1) * (rowsCount - 1)
     : (holderVCount ?? 0);
@@ -1115,7 +1142,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: MATERIAL_KEYS.squareRailFinish,
     length: null,
-    calculateQuantity: () => 4,
+    calculateQuantity: (i) => calculateSquareRailFinish(i.moduleCount),
   },
   {
     mountingMethods: ["studs", "clamps", "hooks"],
@@ -1221,7 +1248,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: MATERIAL_KEYS.clampG,
     length: null,
-    calculateQuantity: () => clampG,
+    calculateQuantity: (i) => calculateM80ClampGQuantity(i.moduleCount),
   },
   {
     mountingMethods: [
@@ -1235,7 +1262,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     code: "",
     name: MATERIAL_KEYS.m8Screw20,
     length: null,
-    calculateQuantity: () => clampG,
+    calculateQuantity: (i) => calculateM80ClampGQuantity(i.moduleCount),
   },
   {
     mountingMethods: [

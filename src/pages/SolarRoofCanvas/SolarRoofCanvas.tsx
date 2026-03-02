@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./SolarRoofCanvas.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -36,7 +36,7 @@ export default function SolarRoofCanvas() {
     return initial;
   });
 
-  // Create a stable pairing once for RV based on initial layout
+  // Create a stable pairing once for RV
   const pairMapRef = useRef<Map<number, number> | null>(null);
   if (pairMapRef.current === null) {
     const map = new Map<number, number>();
@@ -343,6 +343,12 @@ export default function SolarRoofCanvas() {
   };
 
   const handleMouseDown = (e: React.MouseEvent, moduleId: number) => {
+    if (e.button === 1 && state.orientation === "RV") {
+      e.preventDefault();
+      handleContextMenu(e, moduleId);
+      return;
+    }
+
     const module = modules.find((m) => m.id === moduleId);
     if (!module || !canvasRef.current) return;
 
@@ -466,17 +472,99 @@ export default function SolarRoofCanvas() {
       VZHolderCount++;
   });
 
+  const [unpairedModules, setUnpairedModules] = useState<Set<number>>(new Set());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    if (toastTimeoutRef.current) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setToastMessage(null);
+    }, 2200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        window.clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleContextMenu = (e: React.MouseEvent, moduleId: number) => {
+    if (state.orientation !== "RV") return;
+
+    e.preventDefault();
+    
+    let pairingBlocked = false;
+
+    setUnpairedModules((prev) => {
+      const newSet = new Set(prev);
+      const pairId = pairMapRef.current?.get(moduleId);
+      
+      const isThisUnpaired = newSet.has(moduleId);
+      const isPairUnpaired = pairId !== undefined && newSet.has(pairId);
+      
+      if (isThisUnpaired || isPairUnpaired) {
+        const thisModule = modules.find((m) => m.id === moduleId);
+        const pairedModule = pairId !== undefined ? modules.find((m) => m.id === pairId) : null;
+        
+        if (thisModule && pairedModule && 
+            thisModule.col === pairedModule.col && 
+            Math.abs(thisModule.row - pairedModule.row) === STEP) {
+          newSet.delete(moduleId);
+          if (pairId !== undefined) {
+            newSet.delete(pairId);
+          }
+        } else {
+          pairingBlocked = true;
+        }
+      } else {
+        newSet.add(moduleId);
+        if (pairId !== undefined) {
+          newSet.add(pairId);
+        }
+      }
+      return newSet;
+    });
+
+    if (pairingBlocked) {
+      showToast(t("errors.verticalPairingRequired") || "Modules must be vertically adjacent to pair");
+    }
+  };
+
+  const getPairingColor = (moduleId: number): string => {
+    const pairId = pairMapRef.current?.get(moduleId);
+    if (pairId === undefined) return "#ff6b6b";
+  
+    const minId = Math.min(moduleId, pairId);
+    const colors = ["#ff6b6b", "#ff9f1c", "#2ecc71", "#3498db", "#e74c3c", "#9b59b6"];
+    return colors[minId % colors.length];
+  };
+
   const getPairedModule = (moduleId: number) => {
     if (state.orientation !== "RV") return null;
-
+    if (unpairedModules.has(moduleId)) return null; // Skip if unpaired
+  
     const pairId = pairMapRef.current?.get(moduleId);
     if (pairId === undefined) return null;
+  
+    if (unpairedModules.has(pairId)) return null; // Skip if paired module is unpaired
 
     return modules.find((m) => m.id === pairId) ?? null;
   };
 
   return (
     <div className="solar-canvas">
+      {toastMessage && (
+        <div className="solar-canvas__toast" role="status" aria-live="polite">
+          {toastMessage}
+        </div>
+      )}
+
       {state.system === "PT15-L" ? (
         <h2 className="solar-canvas__title">
           {t("title.materialCountPT15-L")}
@@ -657,27 +745,32 @@ export default function SolarRoofCanvas() {
             : null} */}
 
           {/* Modules */}
-          {modules.map((module) =>
+          {modules.map((module) => {
+            const isPaired = pairMapRef.current?.get(module.id);
+            const isUnpairedOrPairUnpaired = unpairedModules.has(module.id) || (isPaired !== undefined && unpairedModules.has(isPaired));
+            const pairingColor = getPairingColor(module.id);
+
+            return (
               <div
                 key={module.id}
-                className={`solar-canvas__module${draggingModule === module.id ? ' solar-canvas__module--dragging' : ''}`}
+                className={`solar-canvas__module${draggingModule === module.id ? ' solar-canvas__module--dragging' : ''}${isUnpairedOrPairUnpaired ? ' solar-canvas__module--unpaired' : ''}`}
                 style={{
                   position: "absolute",
                   //left: (module.col + 1),  top: (module.row + ROW_OFFSET), jei su laikikliais
                   left: module.col * CELL_SIZE + CELL_SIZE / 2 - 17,
-                  top:
-                    module.row  * CELL_SIZE + CELL_SIZE / 2 - 26,
+                  top: module.row * CELL_SIZE + CELL_SIZE / 2 - 26,
                   width: 30,
                   height: 50,
-                  backgroundColor: "#4a90e2",
-                  border: "2px solid #2e5c8a",
+                  backgroundColor: isUnpairedOrPairUnpaired ? pairingColor : "#4a90e2",
+                  border: isUnpairedOrPairUnpaired ? `3px solid ${pairingColor}` : "2px solid #2e5c8a",
                   borderRadius: 4,
                   zIndex: draggingModule === module.id ? 10 : 2,
+                  boxShadow: isUnpairedOrPairUnpaired ? `0 0 12px ${pairingColor}55` : "none",
                 }}
                 onMouseDown={(e) => handleMouseDown(e, module.id)}
               />
-            
-          )}
+            );
+          })}
         </div>
       </div>
 
