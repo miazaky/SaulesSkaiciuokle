@@ -279,44 +279,42 @@ export default function SolarGroundCalculator() {
               <input type="number" value={GAP_MM} disabled />
             </InputField>
           </FormGrid>
-
-          <button
-            type="button"
-            className="solar-calculator__actions_back"
-            onClick={() =>
-              navigate("/", {
-              })
-            }
-          >
-            {t("actions.back")}
-          </button>
-          
-          <button
-            type="button"
-            className="solar-calculator__actions"
-            disabled={!isFormValid}
-            onClick={() =>
-              navigate("/summary", {
-                state: {
-                  batteryType,
-                  moduleCount,
-                  moduleLength,
-                  moduleWidth: MODULE_WIDTH,
-                  moduleThickness,
-                  constructionLength,
-                  rowsCount,
-                  reserve,
-                  gap: GAP_MM,
-                  profileLength
-                },
-              })
-            }
-          >
-            {t("actions.calculate")}
-          </button>
         </form>
         </>
       )}
+      <button
+        type="button"
+        className="solar-calculator__actions_back"
+        onClick={() =>
+          navigate("/", {
+          })
+        }
+      >
+      {t("actions.back")}
+      </button>
+      <button
+        type="button"
+        className="solar-calculator__actions"
+        disabled={!isFormValid}
+        onClick={() =>
+          navigate("/summary", {
+            state: {
+              batteryType,
+              moduleCount,
+              moduleLength,
+              moduleWidth: MODULE_WIDTH,
+              moduleThickness,
+              constructionLength,
+              rowsCount,
+              reserve,
+              gap: GAP_MM,
+              profileLength
+            },
+          })
+        }
+      >
+        {t("actions.calculate")}
+      </button>
     </div>
   );
 }
