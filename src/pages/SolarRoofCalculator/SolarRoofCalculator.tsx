@@ -180,7 +180,14 @@ export default function SolarRoofCalculator() {
       )
     : roofMountingMethodsEntries;
 
+  const prevBatteryTypeRef = useRef<BatteryType>(restoredState?.batteryType ?? null);
+
   useEffect(() => {
+    if (prevBatteryTypeRef.current === batteryType) {
+      return;
+    }
+    prevBatteryTypeRef.current = batteryType;
+
     if (batteryType === "slaitinisStogas") {
       setOrientation(null);
       setSystem(null);
