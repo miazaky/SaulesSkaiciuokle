@@ -116,7 +116,8 @@
     "next": "Kitas žingsnis",
     "back": "Grįžti atgal",
     "calculate": "Skaičiuoti",
-    "draw": "Brėžinys"
+    "draw": "Brėžinys",
+    "submit": "Pateikti paraišką"
   },
     "errors": {
     "moduleCount": "Modulių kiekis turi būti skaičius nuo 8 iki 54.",

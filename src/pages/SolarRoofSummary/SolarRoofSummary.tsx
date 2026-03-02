@@ -99,7 +99,7 @@ export default function SolarRoofSummary() {
       </button>
 
       <button className="solar-summary__actions" onClick={() => navigate("/checkout", { state })}>
-        {t("actions.next")}
+        {t("actions.submit")}
       </button>
     </div>
   );

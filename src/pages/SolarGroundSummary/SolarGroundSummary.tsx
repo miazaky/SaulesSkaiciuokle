@@ -58,7 +58,7 @@ export default function SolarGroundSummary() {
         <thead>
           <tr>
             <th>Pavadinimas</th>
-            <th>Kiekis</th>
+            <th>Kiekis, vnt</th>
           </tr>
         </thead>
         <tbody>
@@ -90,7 +90,7 @@ export default function SolarGroundSummary() {
           })
         }
       >
-        {t("actions.next")}
+        {t("actions.submit")}
       </button>
     </div>
   );
