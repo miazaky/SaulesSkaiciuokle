@@ -139,6 +139,17 @@
   gap: 4px;
 }
 
+.input-error {
+  border: 2px solid #e53935 !important;
+  background-color: #fff5f5;
+}
+
+.error-text {
+  color: #e53935;
+  font-size: 13px;
+  margin-top: 2px;
+  font-family: 'Open Sans', sans-serif;
+}
 
 @media (max-width: 767px) {
   .solar-calculator {

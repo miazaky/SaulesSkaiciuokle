@@ -32,13 +32,33 @@ export const furnitureRegistry: Record<string, FormulaFn> = {
   furn_rhombic_nut: (i) => n(sys.clampGQty(i)) + n(sys.clampVQty(i)),
 
   furn_m10_bolt: (i) => {
-    const m10 = byBattery(n(sys.varztasM10_1(i)), n(sys.varztasM10_1(i)) + n(sys.varztasM10_2(i)));
-    return n(m10(i));
+    const m10_1 = n(sys.varztasM10_1(i));
+    const m10_2 = n(sys.varztasM10_2(i));
+
+    if (i.batteryType === "ezys" && i.profileLength === 5200) {
+      return m10_1 + m10_2;
+    }
+
+    if (i.batteryType === "ezys") {
+      return m10_1;
+    }
+
+    return m10_1 + m10_2;
   },
 
   furn_m10_washer: (i) => {
-    const m10 = byBattery(n(furnitureRegistry.furn_m10_bolt(i)) * 2, n(sys.varztasM10_1(i)) * 2 + n(sys.varztasM10_2(i)));
-    return n(m10(i));
+    const m10_1 = n(sys.varztasM10_1(i));
+    const m10_2 = n(sys.varztasM10_2(i));
+
+    if (i.batteryType === "ezys" && i.profileLength === 5200) {
+      return m10_1 * 2 + m10_2;
+    }
+
+    if (i.batteryType === "ezys") {
+      return m10_1 * 2;
+    }
+
+    return m10_1 * 2 + m10_2;
   },
   furn_m10_flange_nut: (i) => n(furnitureRegistry.furn_m10_bolt(i)),
 

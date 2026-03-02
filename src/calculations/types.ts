@@ -8,6 +8,7 @@ export type CalculatorInput = {
   rowsCount: number;
   reserve: number;
   clampGap: number;
+  profileLength: 4200 | 5200;
   orientation: "PT" | "RV" | "vertical" | "horizontal";
   system: "PT5" | "PT10" | "PT15" | "PT20" | "PT15-L" | "RV10" | "RV10-Z";
   moduleColor: string;

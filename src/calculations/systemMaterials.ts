@@ -496,9 +496,9 @@ function calculateRysys(moduleCount: number): number {
 }
 // J10 – Gegnės kodas
 function calculateGegneCode(moduleLength: number): string {
-  if (moduleLength <= 1850) return "GG-0";
-  if (moduleLength <= 2200) return "GG-1";
-  if (moduleLength <= 2400) return "GG-2";
+  if (moduleLength <= 1794) return "GG-0";
+  if (moduleLength <= 2112) return "GG-1";
+  if (moduleLength <= 2384) return "GG-2";
 
   throw new Error("Klaida: netinkamas modulio ilgis");
 }
@@ -515,8 +515,11 @@ function calculateGegneLength(moduleLength: number): number | null {
 }
 
 // J11 – Grebėstas
-function calculateGrebestas(constructionLength: number): number {
-  const ratio = constructionLength / 4200;
+function calculateGrebestas(
+  constructionLength: number,
+  profileLength: 4200 | 5200
+): number {
+  const ratio = constructionLength / profileLength;
 
   if (ratio < 1) return 0;
   if (ratio < 2) return 4;
@@ -525,22 +528,24 @@ function calculateGrebestas(constructionLength: number): number {
   if (ratio < 5) return 16;
   if (ratio < 6) return 20;
   if (ratio < 7) return 24;
-  if (ratio < 8) return 28;
+
+  // 4200 version allows one more step
+  if (profileLength === 4200 && ratio < 8) return 28;
 
   throw new Error("Klaida: per didelis konstrukcijos ilgis");
 }
 
 // J12 – papildomas grebėstas
-function calculateExtraGrebestasQuantity(constructionLength: number): number {
-  const j11 = calculateGrebestas(constructionLength);
+function calculateExtraGrebestasQuantity(constructionLength: number, profileLength: 4200 | 5200): number {
+  const j11 = calculateGrebestas(constructionLength, profileLength);
   return j11 === 0 ? 0 : 4;
 }
 
 // J12 – papildomas grebėstas ilgis
-function calculateExtraGrebestasLength(constructionLength: number): number {
-  const j11 = calculateGrebestas(constructionLength);
+function calculateExtraGrebestasLength(constructionLength: number, profileLength: 4200 | 5200): number {
+  const j11 = calculateGrebestas(constructionLength, profileLength);
 
-  const remainder = constructionLength - (j11 / 4) * 4200;
+  const remainder = constructionLength - (j11 / 4) * profileLength;
 
   if (remainder === 0) return 0;
   if (remainder < 300) return 300;
@@ -611,24 +616,37 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
   {
     code: "Gb-1",
     name: "Grebėstas",
-    length: 4200,
-    calculateQuantity: (i) => calculateGrebestas(i.constructionLength), // J11
+    length: null,
+    calculateQuantity: (i) =>
+      calculateGrebestas(i.constructionLength, i.profileLength),
+    calculateLength: (i) => i.profileLength,
   },
   {
     code: "Gb-1*",
     name: "Grebėstas",
     length: null,
     calculateQuantity: (i) =>
-      calculateExtraGrebestasQuantity(i.constructionLength),
-    calculateLength: (i) => calculateExtraGrebestasLength(i.constructionLength),
+      calculateExtraGrebestasQuantity(
+        i.constructionLength,
+        i.profileLength
+      ),
+
+    calculateLength: (i) =>
+      calculateExtraGrebestasLength(
+        i.constructionLength,
+        i.profileLength
+      ),
   },
   {
     code: "Gbj",
     name: "Grebėstų jungtys",
     length: 200,
     calculateQuantity: (i) => {
-      const j11 = calculateGrebestas(i.constructionLength);
-      const j12 = calculateExtraGrebestasQuantity(i.constructionLength);
+      const j11 = calculateGrebestas(
+        i.constructionLength,
+        i.profileLength
+      );
+      const j12 = calculateExtraGrebestasQuantity(i.constructionLength, i.profileLength);
       return calculateGrebestuJungtys(j11, j12); // J13
     },
   },
@@ -639,8 +657,8 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
     calculateQuantity: (i) => {
       const j10 = calculateLegCount(i.constructionLength);
       const j13 = calculateGrebestuJungtys(
-        calculateGrebestas(i.constructionLength),
-        calculateExtraGrebestasQuantity(i.constructionLength),
+        calculateGrebestas(i.constructionLength, i.profileLength),
+        calculateExtraGrebestasQuantity(i.constructionLength, i.profileLength),
       );
       return j10 * 4 + j13 * 4; // J14
     },
@@ -657,6 +675,9 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
     length: null,
     calculateQuantity: (i) => {
       const j5 = calculateLegCount(i.constructionLength);
+      if (i.batteryType === "poline") {
+        return j5 * 2;
+      }
       const j9 = j5;
       return j5 * 2 + j9 * 2; // J16
     },

@@ -16,7 +16,7 @@ export const solarGroundMaterials: MaterialDef[] = [
 
   { code: { from: "gegneCode" }, name: "Gegnė", length: { from: "gegneLength" }, qty: "legCount" },
 
-  { code: "Gb-1", name: "Grebėstas", length: 4200, qty: "grebestasQty" },
+  { code: "Gb-1", name: "Grebėstas", length: { from: "profileLength" }, qty: "grebestasQty" },
   { code: "Gb-1*", name: "Grebėstas", length: { from: "extraGrebestasLength" }, qty: "extraGrebestasQty" },
 
   { code: "Gbj", name: "Grebėstų jungtys", length: 200, qty: "grebestuJungtysQty" },

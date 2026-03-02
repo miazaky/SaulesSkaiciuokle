@@ -20,7 +20,8 @@
   "sections": {
     "modules": "Modulių duomenys",
     "moduleOrientation": "Modulio orientacija",
-    "construction": "Konstrukcijos duomenys"
+    "construction": "Konstrukcijos duomenys",
+    "profile": "Duomenys"
   },
   "orientation": {
     "PT": "Pietų",
@@ -115,6 +116,12 @@
     "next": "Kitas žingsnis",
     "back": "Grįžti atgal",
     "calculate": "Skaičiuoti",
-    "draw": "Brėžinys"
+    "draw": "Brėžinys",
+    "submit": "Pateikti paraišką"
+  },
+    "errors": {
+    "moduleCount": "Modulių kiekis turi būti skaičius nuo 8 iki 54.",
+    "moduleLength": "Modulio ilgis turi būti tarp 1700 mm ir 2400 mm.",
+    "moduleThickness": "Modulio storis turi būti teigiamas skaičius."
   }
 }

@@ -26,13 +26,16 @@ export const registry: Record<string, FormulaFn> = {
   gegneCode: (i) => calcGegneCode(i.moduleLength),
   gegneLength: (i) => calcGegneLength(i.moduleLength),
 
-  grebestasQty: (i) => calcGrebestas(i.constructionLength),
-  extraGrebestasQty: (i) => calcExtraGrebestasQty(i.constructionLength),
-  extraGrebestasLength: (i) => calcExtraGrebestasLength(i.constructionLength),
+  grebestasQty: (i) =>
+    calcGrebestas(i.constructionLength, i.profileLength),
+  extraGrebestasQty: (i) =>
+    calcExtraGrebestasQty(i.constructionLength, i.profileLength),
+  extraGrebestasLength: (i) =>
+    calcExtraGrebestasLength(i.constructionLength, i.profileLength),
 
   grebestuJungtysQty: (i) => {
-    const j11 = calcGrebestas(i.constructionLength);
-    const j12 = calcExtraGrebestasQty(i.constructionLength);
+    const j11 = calcGrebestas(i.constructionLength, i.profileLength);
+    const j12 = calcExtraGrebestasQty(i.constructionLength, i.profileLength);
     return calcGrebestuJungtys(j11, j12);
   },
 
@@ -58,7 +61,10 @@ export const registry: Record<string, FormulaFn> = {
     const r1 = calcRysys(i.moduleCount);
     const r2 = calcLegCount(i.constructionLength);
 
-    if (i.batteryType === "poline") {
+    if (i.batteryType === "poline" && i.profileLength === 5200) {
+      return r1 * 2;
+    }
+    else if (i.batteryType === "poline" && i.profileLength === 4200) {
       return r1 * 2 + r2 * 2;
     }
 
@@ -68,7 +74,7 @@ export const registry: Record<string, FormulaFn> = {
   varztasM12: (i) => {
     const leg = calcLegCount(i.constructionLength);
 
-    if (i.batteryType === "poline") {
+    if (i.batteryType === "poline" && i.profileLength === 4200) {
       return leg * 2;
     }
 
@@ -77,4 +83,5 @@ export const registry: Record<string, FormulaFn> = {
 
   clampGQty: () => 8,
   clampVQty: (i) => (i.moduleCount - 2) * 2,
+  profileLength: (i) => i.profileLength
 };

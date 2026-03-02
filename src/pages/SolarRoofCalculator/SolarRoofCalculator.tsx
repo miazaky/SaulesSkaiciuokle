@@ -180,7 +180,14 @@ export default function SolarRoofCalculator() {
       )
     : roofMountingMethodsEntries;
 
+  const prevBatteryTypeRef = useRef<BatteryType>(restoredState?.batteryType ?? null);
+
   useEffect(() => {
+    if (prevBatteryTypeRef.current === batteryType) {
+      return;
+    }
+    prevBatteryTypeRef.current = batteryType;
+
     if (batteryType === "slaitinisStogas") {
       setOrientation(null);
       setSystem(null);
@@ -463,8 +470,6 @@ export default function SolarRoofCalculator() {
 
     if (!Number.isFinite(rowsCount) || rowsCount < 2) setRowsCount(2);
   }, [system]);
-
-  const showActions = Boolean(batteryType && orientation && system || roofMaterial);
 
   return (
     <div className="solar-calculator">
@@ -1023,78 +1028,93 @@ export default function SolarRoofCalculator() {
         </div>
       )}
 
-      {showActions &&  (
-        <div className="solar-calculator__actions-row">
-          <button
-            className="solar-calculator__actions_back"
-            onClick={() => navigate("/", {})}
-          >
-            Grįžti atgal
-          </button>
+      {(() => {
+        const hasErrors = Boolean(rowsCountError) || Boolean(modulesCountError);
 
-          {isEvenModules === "false" && moduleCount!==0 && batteryType === "ploksciasStogas" && (
+        const isDrawMode =
+          isEvenModules === "false" &&
+          moduleCount !== 0 &&
+          batteryType === "ploksciasStogas";
+
+        const isFieldsFilled =
+          batteryType === "slaitinisStogas"
+            ? moduleCount !== 0
+            : moduleCount !== 0 && isEvenModules !== null;
+
+        const actionDisabled = hasErrors || !isFieldsFilled;
+
+        return (
+          <div className="solar-calculator__actions-row">
             <button
-              className="solar-calculator__actions"
-              disabled={Boolean(rowsCountError) || Boolean(modulesCountError)}
-              onClick={() =>
-                navigate("/canvasRoof", {
-                  state: {
-                    batteryType,
-                    moduleCount,
-                    moduleLength,
-                    moduleWidth: MODULE_WIDTH,
-                    moduleThickness,
-                    rowsCount,
-                    orientation,
-                    system,
-                    moduleColor,
-                    moduleConstruction,
-                    gapBetweenRows,
-                    roofMaterial,
-                    mountingMethod,
-                    rowModuleCounts,
-                    isEvenModules
-                  },
-                })
-              }
+              className="solar-calculator__actions_back"
+              onClick={() => navigate("/", {})}
             >
-              {t("actions.draw")}
+              {t("actions.back")}
             </button>
-          )}
-          {(isEvenModules === "true" && moduleCount!==0 || (batteryType === "slaitinisStogas" && moduleCount!==0)) && (
-            <button
-              className="solar-calculator__actions"
-              disabled={Boolean(rowsCountError) || Boolean(modulesCountError)}
-              onClick={() =>
-                navigate("/summaryRoof", {
-                  state: {
-                    batteryType,
-                    moduleCount,
-                    moduleLength,
-                    moduleWidth: MODULE_WIDTH,
-                    moduleThickness,
-                    rowsCount,
-                    orientation,
-                    system,
-                    moduleColor,
-                    moduleConstruction,
-                    gapBetweenRows,
-                    roofMaterial,
-                    mountingMethod,
-                    rowModuleCounts:
-                      batteryType === "slaitinisStogas"
-                        ? rowModuleCounts
-                        : undefined,
-                    isEvenModules
-                  },
-                })
-              }
-            >
-              {t("actions.calculate")}
-            </button>
-          )}
-        </div>
-      )}
+
+            {isDrawMode ? (
+              <button
+                className="solar-calculator__actions"
+                disabled={actionDisabled}
+                onClick={() =>
+                  navigate("/canvasRoof", {
+                    state: {
+                      batteryType,
+                      moduleCount,
+                      moduleLength,
+                      moduleWidth: MODULE_WIDTH,
+                      moduleThickness,
+                      rowsCount,
+                      orientation,
+                      system,
+                      moduleColor,
+                      moduleConstruction,
+                      gapBetweenRows,
+                      roofMaterial,
+                      mountingMethod,
+                      rowModuleCounts,
+                      isEvenModules,
+                    },
+                  })
+                }
+              >
+                {t("actions.draw")}
+              </button>
+            ) : (
+              <button
+                className="solar-calculator__actions"
+                disabled={actionDisabled}
+                onClick={() =>
+                  navigate("/summaryRoof", {
+                    state: {
+                      batteryType,
+                      moduleCount,
+                      moduleLength,
+                      moduleWidth: MODULE_WIDTH,
+                      moduleThickness,
+                      rowsCount,
+                      orientation,
+                      system,
+                      moduleColor,
+                      moduleConstruction,
+                      gapBetweenRows,
+                      roofMaterial,
+                      mountingMethod,
+                      rowModuleCounts:
+                        batteryType === "slaitinisStogas"
+                          ? rowModuleCounts
+                          : undefined,
+                      isEvenModules,
+                    },
+                  })
+                }
+              >
+                {t("actions.calculate")}
+              </button>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
