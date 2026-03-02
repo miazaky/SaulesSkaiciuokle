@@ -61,11 +61,11 @@ export default function SolarRoofCalculator() {
   );
 
   const [system, setSystem] = useState<SystemKey>(
-    restoredState?.system ?? null,
+    restoredState?.system ?? "PT5",
   );
 
   const [isEvenModules, setIsEvenModules] = useState<string | null>(
-    restoredState?.isEvenModules ?? null,
+    restoredState?.isEvenModules ?? "true",
     );
 
   const prevOrientationRef = useRef<Orientation>(
@@ -73,7 +73,7 @@ export default function SolarRoofCalculator() {
   );
 
   const [roofMaterial, setRoofMaterial] = useState<RoofMaterial>(
-    restoredState?.roofMaterial ?? null,
+    restoredState?.roofMaterial ?? "cement",
   );
 
   const [moduleLength, setModuleLength] = useState<number>(
@@ -84,10 +84,10 @@ export default function SolarRoofCalculator() {
   );
 
   const [moduleCount, setModuleCount] = useState<number>(
-    restoredState?.moduleCount ?? 0,
+    restoredState?.moduleCount ?? 2,
   );
   const [moduleCountInput, setModuleCountInput] = useState<string>(
-    String(restoredState?.moduleCount ?? 0),
+    String(restoredState?.moduleCount ?? 2),
   );
 
   const [moduleThickness, setModuleThickness] = useState<number>(
@@ -189,18 +189,27 @@ export default function SolarRoofCalculator() {
     prevBatteryTypeRef.current = batteryType;
 
     if (batteryType === "slaitinisStogas") {
-      setOrientation(null);
+      setOrientation("horizontal");
+      setRoofMaterial("cement");
       setSystem(null);
     } else if (batteryType === "ploksciasStogas") {
-      setRoofMaterial(null);
-      setMountingMethod("");
+      setOrientation("PT");
+    setSystem("PT5"); 
+    setMountingMethod("");
+    setRoofMaterial(null);
     }
   }, [batteryType]);
 
   useEffect(() => {
     if (prevOrientationRef.current !== orientation) {
       if (prevOrientationRef.current !== null) {
-        setSystem(null);
+        if (orientation === "PT") {
+          setSystem("PT5");
+        } else if (orientation === "RV") {
+          setSystem("RV10");
+        } else {
+          setSystem(null);
+        }
       }
       prevOrientationRef.current = orientation;
     }
@@ -813,6 +822,7 @@ export default function SolarRoofCalculator() {
                   {t("select.placeholder")}
                 </option>
                 <option value="30">30 mm</option>
+                <option value="33">33 mm</option>
                 <option value="35">35 mm</option>
               </select>
             </InputField>
@@ -960,13 +970,14 @@ export default function SolarRoofCalculator() {
             <InputField label={t("fields.moduleThickness")}>
               <select
                 value={moduleThickness ?? ""}
-                onChange={(e) => setModuleThickness(30)}
-                disabled={true}
+                onChange={(e) => setModuleThickness(Number(e.target.value))}
               >
-                <option value="" disabled>
+                <option value="">
                   {t("select.placeholder")}
                 </option>
                 <option value="30">30 mm</option>
+                <option value="33">33 mm</option>
+                <option value="35">35 mm</option>
               </select>
             </InputField>
 
@@ -1038,8 +1049,8 @@ export default function SolarRoofCalculator() {
 
         const isFieldsFilled =
           batteryType === "slaitinisStogas"
-            ? moduleCount !== 0
-            : moduleCount !== 0 && isEvenModules !== null;
+            ? roofMaterial !== null && mountingMethod !== null && orientation !== null && moduleLength !== null && rowsCount !== null && rowModuleCounts.every((count) => count !== null) && rowModuleCounts.some((count) => count !== 0)
+            : moduleCount !== 0 && isEvenModules !== null && orientation !== null;
 
         const actionDisabled = hasErrors || !isFieldsFilled;
 

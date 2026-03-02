@@ -119,9 +119,10 @@
     "draw": "Brėžinys",
     "submit": "Pateikti paraišką"
   },
-    "errors": {
+  "errors": {
     "moduleCount": "Modulių kiekis turi būti skaičius nuo 8 iki 54.",
     "moduleLength": "Modulio ilgis turi būti tarp 1700 mm ir 2400 mm.",
-    "moduleThickness": "Modulio storis turi būti teigiamas skaičius."
+    "moduleThickness": "Modulio storis turi būti teigiamas skaičius.",
+    "verticalPairingRequired": "Moduliai turi būti vertikaliai greta vienas kito"
   }
 }
