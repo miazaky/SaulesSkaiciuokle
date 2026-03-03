@@ -119,7 +119,7 @@ export default function SolarRoofCalculator() {
       ? restoredState.rowModuleCounts
       : restoredState?.moduleCount
         ? [restoredState.moduleCount]
-        : [0],
+        : [2],
   );
 
   const [rowsCountInput, setRowsCountInput] = useState<string>(
@@ -132,11 +132,6 @@ export default function SolarRoofCalculator() {
   const rowsCountError =
     isRv && rowsCount % 2 !== 0
       ? "Eilučių skaičius turi būti lyginis."
-      : "";
-
-    const modulesCountError =
-    isRv && moduleCount % 2 !== 0
-      ? "Modulių skaičius turi būti lyginis."
       : "";
 
   const systemOptions = t("system", { returnObjects: true }) as Record<
@@ -757,11 +752,6 @@ export default function SolarRoofCalculator() {
                   setModuleCountInput(String(clamped));
                 }}
               />
-              {modulesCountError && (
-                <div style={{ color: "#b00020", marginTop: 6 }}>
-                  {modulesCountError}
-                </div>
-              )}
             </InputField>
 
             <InputField label={t("fields.isEvenModules")}>
@@ -1040,7 +1030,7 @@ export default function SolarRoofCalculator() {
       )}
 
       {(() => {
-        const hasErrors = Boolean(rowsCountError) || Boolean(modulesCountError);
+        const hasErrors = Boolean(rowsCountError);
 
         const isDrawMode =
           isEvenModules === "false" &&
