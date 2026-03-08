@@ -10,51 +10,75 @@ type Module = {
   col: number;
 };
 
-const CELL_SIZE = 60;
+const CELL_SIZE = 70;
 //1 jeigu moduliai prie pat, 2 jeigu norim matyt laikiklius(reikia atkomentuot)
 const STEP = 1;
-const ROW_OFFSET = 1;
+const ROW_OFFSET = 0;
 
 export default function SolarRoofCanvas() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { state } = useLocation() as { state: CalculatorInput };
-  let grid_cols = state.rowsCount * 3;
+  let grid_cols = 14;
 
   const [modules, setModules] = useState<Module[]>(() => {
     const initial: Module[] = [];
-    //1 jeigu prie pat, 2 jeigu su laikikliais
     const spacing = 1;
-    const modulesPerRow = Math.ceil(state.moduleCount / state.rowsCount);
 
-    for (let i = 0; i < state.moduleCount; i++) {
-      const col = Math.floor(i / state.rowsCount);
-      const row = i % state.rowsCount;
-      initial.push({ id: i, row: row * spacing, col: col * spacing });
+    if (state.orientation === "RV" && state.rowsCount > 0) {
+      const rows = state.rowsCount;
+      const total = state.moduleCount;
+      const pairCount = Math.floor(total / 2);
+      const basePairsPerRow = Math.floor(pairCount / rows);
+      const extraPairs = pairCount % rows;
+
+      const rowCounts = Array(rows).fill(basePairsPerRow * 2);
+      for (let r = 0; r < extraPairs; r++) {
+        rowCounts[r] += 2;
+      }
+
+      if (total % 2 === 1) {
+        const oddRow = extraPairs < rows ? extraPairs : 0;
+        rowCounts[oddRow] += 1;
+      }
+
+      let id = 0;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < rowCounts[row]; col++) {
+          initial.push({ id, row: row * spacing, col: col * spacing });
+          id++;
+        }
+      }
+    } else {
+      for (let i = 0; i < state.moduleCount; i++) {
+        const row = i % state.rowsCount;
+        const col = Math.floor(i / state.rowsCount);
+        initial.push({ id: i, row: row * spacing, col: col * spacing });
+      }
     }
 
     return initial;
   });
 
-  // Create a stable pairing once for RV
+  // Create pairing once for RV
   const pairMapRef = useRef<Map<number, number> | null>(null);
   if (pairMapRef.current === null) {
     const map = new Map<number, number>();
 
     if (state.orientation === "RV") {
-      const byCol = new Map<number, Module[]>();
+      const byRow = new Map<number, Module[]>();
       modules.forEach((m) => {
-        const list = byCol.get(m.col) ?? [];
+        const list = byRow.get(m.row) ?? [];
         list.push(m);
-        byCol.set(m.col, list);
+        byRow.set(m.row, list);
       });
 
-      byCol.forEach((list) => {
-        list.sort((a, b) => a.row - b.row);
+      byRow.forEach((list) => {
+        list.sort((a, b) => a.col - b.col);
         for (let i = 0; i < list.length - 1; i += 2) {
           const a = list[i];
           const b = list[i + 1];
-          if (Math.abs(a.row - b.row) === STEP) {
+          if (Math.abs(a.col - b.col) === STEP) {
             map.set(a.id, b.id);
             map.set(b.id, a.id);
           }
@@ -70,9 +94,13 @@ export default function SolarRoofCanvas() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   //padidinam gridRows(*2) jei su laikikliais
-  const gridRows = state.rowsCount + ROW_OFFSET;
   const maxCol = Math.max(0, ...modules.map((m) => m.col));
-  const gridCols = Math.max(grid_cols, maxCol + ROW_OFFSET);
+  const gridCols = Math.max(grid_cols, maxCol + ROW_OFFSET + 3);
+  const maxRow = Math.max(0, ...modules.map((m) => m.row));
+  const gridRowsMax = Math.max(
+    state.rowsCount + ROW_OFFSET,
+    maxRow + ROW_OFFSET + 3,
+  );
 
   const minCol = Math.min(...modules.map((m) => m.col));
   const firstColumnClampCol = minCol - 0.5;
@@ -83,7 +111,10 @@ export default function SolarRoofCanvas() {
   const shouldHideRv10Holder = (
     clamp: { side: "left" | "right"; col: number },
     holder: "G" | "V" | "L" | "P" | "VA" | "VZ" | "Z" | "",
-  ) => state.system === "RV10" && (holder === "VA" || holder === "VZ") && isFirstColumnClamp(clamp);
+  ) =>
+    state.system === "RV10" &&
+    (holder === "VA" || holder === "VZ") &&
+    isFirstColumnClamp(clamp);
 
   // Calculate clamps based on module positions
 
@@ -91,10 +122,11 @@ export default function SolarRoofCanvas() {
     const clamps: {
       row: number;
       col: number;
-      topHolder: "G" | "V" | "L" | "P" | "VA" | "VZ"|"Z" | "";
-      bottomHolder: "P" | "V" | "L" | "VA" | "VZ"|"Z" | "";
+      topHolder: "G" | "V" | "L" | "P" | "VA" | "VZ" | "Z" | "";
+      bottomHolder: "G" | "P" | "V" | "L" | "VA" | "VZ" | "Z" | "";
       clampType: "G" | "V";
       side: "left" | "right";
+      isFirstOrLastInBlock?: boolean;
     }[] = [];
 
     const occ = new Set(modules.map((m) => `${m.row},${m.col}`));
@@ -102,63 +134,42 @@ export default function SolarRoofCanvas() {
 
     const rv10IndexInBlock = new Map<string, number>();
 
-      const rowsByCol = new Map<number, number[]>();
+    const rowsByCol = new Map<number, number[]>();
+    modules.forEach((m) => {
+      const list = rowsByCol.get(m.col) ?? [];
+      list.push(m.row);
+      rowsByCol.set(m.col, list);
+    });
 
-      modules.forEach((m) => {
-        const list = rowsByCol.get(m.col) ?? [];
-        list.push(m.row);
-        rowsByCol.set(m.col, list);
-      });
+    rowsByCol.forEach((rows, col) => {
+      rows.sort((a, b) => a - b);
 
-      rowsByCol.forEach((rows, col) => {
-        rows.sort((a, b) => a - b);
+      let indexInBlock = 0;
+      for (let i = 0; i < rows.length; i++) {
+        indexInBlock =
+          i === 0 || rows[i] - rows[i - 1] !== STEP ? 0 : indexInBlock + 1;
 
-        let indexInBlock = 0;
-        for (let i = 0; i < rows.length; i++) {
-          indexInBlock =
-            i === 0 || rows[i] - rows[i - 1] !== STEP ? 0 : indexInBlock + 1;
-
-          rv10IndexInBlock.set(`${rows[i]},${col}`, indexInBlock);
-        }
-      });
-
+        rv10IndexInBlock.set(`${rows[i]},${col}`, indexInBlock);
+      }
+    });
 
     const getRv10Holder = (
       row: number,
       col: number,
-      direction: "top" | "bottom",
-      adjacentCol?: number,
-    ): "P" | "VA" | "VZ"|"Z" | "" => {
-      const indexInBlock = rv10IndexInBlock.get(`${row},${col}`) ?? 0;
-      if(state.system !== "RV10-Z"){
-
-      const r = direction === "top" ? row - STEP : row + STEP;
-      const hasCenter = has(r, col);
-      const hasAdjacent =
-        adjacentCol !== undefined ? has(r, adjacentCol) : false;
-
-      const shouldBeP = !hasCenter && !hasAdjacent;
-
-      if (shouldBeP) return "P";
-
-      return direction === "top"
-        ? (indexInBlock - 1) % 2 === 0
-          ? "VA"
-          : "VZ"
-        : indexInBlock % 2 === 0
-          ? "VA"
-          : "VZ";
+      direction: "left" | "right",
+    ): "P" | "VA" | "VZ" | "Z" | "" => {
+      if (state.system === "RV10-Z") {
+        const indexInBlock = rv10IndexInBlock.get(`${row},${col}`) ?? 0;
+        return direction === "left"
+          ? (indexInBlock - 1) % 2 === 0
+            ? "Z"
+            : ""
+          : indexInBlock % 2 === 0
+            ? "Z"
+            : "";
       }
-      else
-      {
-        return direction === "top"
-        ? (indexInBlock - 1) % 2 === 0
-          ? "Z"
-          : ""
-        : indexInBlock % 2 === 0
-          ? "Z"
-          : "";
-      }
+
+      return "VA";
     };
 
     modules.forEach((module) => {
@@ -239,6 +250,7 @@ export default function SolarRoofCanvas() {
           });
         }
       } else if (state.system === "PT15-L" && state.orientation === "PT") {
+        // PT15-L
         if (isFirstInRow) {
           const topHolder = "L";
           const bottomHolder = "L";
@@ -279,76 +291,80 @@ export default function SolarRoofCanvas() {
           });
         }
       } else {
+        // RV10, RV10-Z logic
         if (isFirstInRow) {
-          const topHolder: "P" | "VA" | "VZ" | "Z" | "" = getRv10Holder(row, col, "top");
-          const bottomHolder: "P" | "VA" | "VZ" | "Z" | "" = getRv10Holder(
-            row,
-            col,
-            "bottom",
-          );
+          const leftHolder: "P" | "VA" | "VZ" | "Z" | "" =
+            state.system === "RV10" ? "P" : getRv10Holder(row, col, "left");
 
           clamps.push({
             row,
             col: col - 0.5,
-            topHolder,
-            bottomHolder,
-            clampType: "G",
+            topHolder: leftHolder,
+            bottomHolder: leftHolder,
+            clampType: "V",
             side: "left",
           });
         }
+
         if (isLastInRow) {
-          const topHolder: "P" | "VA" | "VZ" | "Z" | "" = getRv10Holder(row, col, "top");
-          const bottomHolder: "P" | "VA" | "VZ" | "Z" | "" = getRv10Holder(
-            row,
-            col,
-            "bottom",
-          );
+          const rightHolder: "P" | "VA" | "VZ" | "Z" | "" =
+            state.system === "RV10" ? "P" : getRv10Holder(row, col, "right");
 
           clamps.push({
             row,
             col: col + 1.5,
-            topHolder,
-            bottomHolder,
-            clampType: "G",
+            topHolder: rightHolder,
+            bottomHolder: rightHolder,
+            clampType: "V",
             side: "right",
           });
         }
+
         if (hasLeft) {
-          const topHolder: "P" | "VA" | "VZ" | "Z" | "" = getRv10Holder(
+          const holder: "P" | "VA" | "VZ" | "Z" | "" = getRv10Holder(
             row,
             col,
-            "top",
-            col - STEP,
-          );
-          const bottomHolder: "P" | "VA" | "VZ" | "Z" | "" = getRv10Holder(
-            row,
-            col,
-            "bottom",
-            col - STEP,
+            "left",
           );
 
           clamps.push({
             row,
             col: col - 0.5,
-            topHolder,
-            bottomHolder,
-            clampType: "V",
+            topHolder: holder,
+            bottomHolder: holder,
+            clampType: "G",
             side: "left",
           });
         }
       }
     });
 
+    if (state.system === "RV10" && state.orientation === "RV") {
+      const byRow = new Map<number, typeof clamps>();
+
+      clamps
+        .filter((c) => c.clampType === "G")
+        .forEach((c) => {
+          const list = byRow.get(c.row) ?? [];
+          list.push(c);
+          byRow.set(c.row, list);
+        });
+
+      byRow.forEach((rowClamps) => {
+        rowClamps.sort((a, b) => a.col - b.col);
+        rowClamps.forEach((clamp, idx) => {
+          clamp.topHolder = "VA";
+          clamp.bottomHolder = idx % 2 === 0 ? "VA" : "VZ";
+          clamp.isFirstOrLastInBlock =
+            idx === 0 || idx === rowClamps.length - 1;
+        });
+      });
+    }
+
     return clamps;
   };
 
   const handleMouseDown = (e: React.MouseEvent, moduleId: number) => {
-    if (e.button === 1 && state.orientation === "RV") {
-      e.preventDefault();
-      handleContextMenu(e, moduleId);
-      return;
-    }
-
     const module = modules.find((m) => m.id === moduleId);
     if (!module || !canvasRef.current) return;
 
@@ -370,17 +386,8 @@ export default function SolarRoofCanvas() {
     const x = e.clientX - rect.left - dragOffset.x;
     const y = e.clientY - rect.top - dragOffset.y;
 
-    const newCol = Math.max(
-      0,
-      Math.min(grid_cols - 1, Math.round(x / CELL_SIZE)),
-    );
-    const newRow = Math.max(
-      0,
-      Math.min(
-        gridRows - 1,
-        Math.round(y / CELL_SIZE) - ROW_OFFSET,
-      ),
-    );
+    const newCol = Math.round(x / CELL_SIZE);
+    const newRow = Math.max(0, Math.round(y / CELL_SIZE) - ROW_OFFSET);
 
     const dragged = modules.find((m) => m.id === draggingModule);
     if (!dragged) return;
@@ -400,13 +407,13 @@ export default function SolarRoofCanvas() {
         ]
       : [{ id: dragged.id, row: newRow, col: newCol }];
 
-    // Keep within bounds for paired move
+    // Check out of bounds
     const outOfBounds = targets.some(
       (t) =>
         t.col < 0 ||
         t.row < 0 ||
-        t.col > grid_cols - 1 ||
-        t.row > gridRows - 1,
+        t.col > gridCols - 2 ||
+        t.row > gridRowsMax - 2,
     );
     if (outOfBounds) return;
 
@@ -452,7 +459,20 @@ export default function SolarRoofCanvas() {
 
   const clamps = getClamps();
 
-  const clampGCount = clamps.filter((c) => c.clampType === "G").length * 2;
+  const hasModulesBelowRow = (row: number) => {
+    return modules.some((m) => m.row > row);
+  };
+
+  const clampGCount =
+    clamps.filter(
+      (c) =>
+        c.clampType === "G" &&
+        !(
+          (state.system === "RV10" || state.system === "RV10-Z") &&
+          state.orientation === "RV" &&
+          !hasModulesBelowRow(c.row)
+        ),
+    ).length * 2;
   const clampVCount = clamps.filter((c) => c.clampType === "V").length * 2;
 
   let GholderCount = 0;
@@ -462,91 +482,150 @@ export default function SolarRoofCanvas() {
   let VZHolderCount = 0;
 
   clamps.forEach((clamp) => {
-    if (clamp.topHolder === "G" || clamp.topHolder === "L" || clamp.topHolder === "Z") GholderCount++;
-    if (clamp.topHolder === "P") GholderCount += 2;
-    if (clamp.topHolder === "V") VholderCount++;
-    if (clamp.bottomHolder === "P") PholderCount++;
-    if (clamp.topHolder === "VA" && !shouldHideRv10Holder(clamp, "VA"))
-      VAHolderCount++;
-    if (clamp.topHolder === "VZ" && !shouldHideRv10Holder(clamp, "VZ"))
-      VZHolderCount++;
+    if (state.orientation === "RV") {
+      // RV: topHolder
+      if (
+        clamp.topHolder === "G" ||
+        clamp.topHolder === "L" ||
+        clamp.topHolder === "Z"
+      )
+        GholderCount++;
+      if (clamp.topHolder === "P") PholderCount++;
+
+      if (clamp.topHolder === "V") VholderCount++;
+      if (
+        state.system === "RV10" &&
+        clamp.clampType === "G" &&
+        clamp.topHolder === "VA"
+      ) {
+        const isHidden = shouldHideRv10Holder(clamp, clamp.topHolder);
+        const hasBelow = hasModulesBelowRow(clamp.row);
+        const willCount = !isHidden && hasBelow;
+
+        if (willCount) {
+          VAHolderCount++;
+        }
+      }
+
+      // RV: bottomHolder
+      if (clamp.bottomHolder === "P" || clamp.bottomHolder === "Z")
+        GholderCount++;
+      if (clamp.bottomHolder === "P") PholderCount++;
+      if (clamp.bottomHolder === "V") VholderCount++;
+      if (
+        state.system === "RV10" &&
+        clamp.clampType === "G" &&
+        clamp.bottomHolder === "VZ"
+      ) {
+        if (!shouldHideRv10Holder(clamp, clamp.bottomHolder)) {
+          VZHolderCount++;
+        }
+      }
+    } else {
+      if (clamp.topHolder === "G" || clamp.topHolder === "Z") GholderCount++;
+      if (clamp.topHolder === "P") PholderCount++;
+      if (clamp.topHolder === "V") VholderCount++;
+      if (clamp.bottomHolder === "P") PholderCount++;
+      if (clamp.bottomHolder === "L") GholderCount++;
+    }
   });
 
-  const [unpairedModules, setUnpairedModules] = useState<Set<number>>(new Set());
+  if (state.system === "RV10-Z" && state.orientation === "RV") {
+    const zBottomCount = clamps.filter((c) => c.bottomHolder === "Z").length;
+    GholderCount = zBottomCount % 2 === 0 ? zBottomCount : zBottomCount + 1;
+  }
+
+  const [unpairedModules] = useState<Set<number>>(
+    new Set(),
+  );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
 
+  const [globalUnpairAll, setGlobalUnpairAll] = useState(false);
+
+  const [invalidPairModules, setInvalidPairModules] = useState<Set<number>>(
+    new Set(),
+  );
+  const invalidPairTimeoutRef = useRef<number | null>(null);
+
   const showToast = (message: string) => {
     setToastMessage(message);
-    if (toastTimeoutRef.current) {
-      window.clearTimeout(toastTimeoutRef.current);
+    if (toastTimeoutRef.current) window.clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = window.setTimeout(
+      () => setToastMessage(null),
+      2200,
+    );
+  };
+
+  const getInvalidPairModuleIds = () => {
+    const invalid = new Set<number>();
+    const visited = new Set<number>();
+    const pairMap = pairMapRef.current;
+    if (!pairMap) return invalid;
+
+    pairMap.forEach((pairId, id) => {
+      if (visited.has(id) || visited.has(pairId)) return;
+      visited.add(id);
+      visited.add(pairId);
+
+      if (unpairedModules.has(id) || unpairedModules.has(pairId)) return;
+
+      const a = modules.find((m) => m.id === id);
+      const b = modules.find((m) => m.id === pairId);
+      if (!a || !b) return;
+
+      const isHorizontalNeighbor =
+        a.row === b.row && Math.abs(a.col - b.col) === STEP;
+      if (!isHorizontalNeighbor) {
+        invalid.add(id);
+        invalid.add(pairId);
+      }
+    });
+
+    return invalid;
+  };
+
+  const handleGlobalUnpairAllChange = (checked: boolean) => {
+    if (checked) {
+      setGlobalUnpairAll(true);
+      return;
     }
-    toastTimeoutRef.current = window.setTimeout(() => {
-      setToastMessage(null);
-    }, 2200);
+    const invalid = getInvalidPairModuleIds();
+    if (invalid.size > 0) {
+      setGlobalUnpairAll(true);
+      setInvalidPairModules(invalid);
+
+      if (invalidPairTimeoutRef.current)
+        window.clearTimeout(invalidPairTimeoutRef.current);
+      invalidPairTimeoutRef.current = window.setTimeout(() => {
+        setInvalidPairModules(new Set());
+      }, 1200);
+
+      showToast(t("errors.horizontalPairingRequired"));
+      return;
+    }
+
+    setGlobalUnpairAll(false);
   };
 
   useEffect(() => {
     return () => {
-      if (toastTimeoutRef.current) {
-        window.clearTimeout(toastTimeoutRef.current);
-      }
+      if (toastTimeoutRef.current) window.clearTimeout(toastTimeoutRef.current);
+      if (invalidPairTimeoutRef.current)
+        window.clearTimeout(invalidPairTimeoutRef.current);
     };
   }, []);
 
-  const handleContextMenu = (e: React.MouseEvent, moduleId: number) => {
-    if (state.orientation !== "RV") return;
-
-    e.preventDefault();
-
-    const pairId = pairMapRef.current?.get(moduleId);
-    const thisModule = modules.find((m) => m.id === moduleId);
-    const pairedModule = pairId !== undefined ? modules.find((m) => m.id === pairId) : null;
-
-    setUnpairedModules((prev) => {
-      const newSet = new Set(prev);
-      
-      const isThisUnpaired = newSet.has(moduleId);
-      const isPairUnpaired = pairId !== undefined && newSet.has(pairId);
-      
-      if (isThisUnpaired || isPairUnpaired) {
-        if (thisModule && pairedModule && 
-            thisModule.col === pairedModule.col && 
-            Math.abs(thisModule.row - pairedModule.row) === STEP) {
-          newSet.delete(moduleId);
-          if (pairId !== undefined) {
-            newSet.delete(pairId);
-          }
-        } else {
-          showToast(t("errors.verticalPairingRequired") || "Modules must be vertically adjacent to pair");
-        }
-      } else {
-        newSet.add(moduleId);
-        if (pairId !== undefined) {
-          newSet.add(pairId);
-        }
-      }
-      return newSet;
-    });
-  };
-
-  const getPairingColor = (moduleId: number): string => {
-    const pairId = pairMapRef.current?.get(moduleId);
-    if (pairId === undefined) return "#ff6b6b";
-  
-    const minId = Math.min(moduleId, pairId);
-    const colors = ["#ff6b6b", "#ff9f1c", "#2ecc71", "#3498db", "#e74c3c", "#9b59b6"];
-    return colors[minId % colors.length];
-  };
-
   const getPairedModule = (moduleId: number) => {
     if (state.orientation !== "RV") return null;
-    if (unpairedModules.has(moduleId)) return null; // Skip if unpaired
-  
+    if (globalUnpairAll) return null;
+
+    if (unpairedModules.has(moduleId)) return null;
+
     const pairId = pairMapRef.current?.get(moduleId);
     if (pairId === undefined) return null;
-  
-    if (unpairedModules.has(pairId)) return null; // Skip if paired module is unpaired
+
+    if (unpairedModules.has(pairId)) return null;
 
     return modules.find((m) => m.id === pairId) ?? null;
   };
@@ -569,6 +648,31 @@ export default function SolarRoofCanvas() {
         <h2 className="solar-canvas__title">{t("title.materialCount")}</h2>
       )}
 
+      {/* checkbox for RV */}
+      {state.orientation === "RV" && (
+        <div style={{ marginBottom: 16 }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              cursor: "pointer",
+              fontFamily: "'Open Sans', sans-serif",
+              fontSize: 14,
+              color: "#5f656d",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={globalUnpairAll}
+              onChange={(e) => handleGlobalUnpairAllChange(e.target.checked)}
+              style={{ cursor: "pointer" }}
+            />
+            {t("fields.unpairAllModules")}
+          </label>
+        </div>
+      )}
+
       <div
         className="solar-canvas__grid-scroll"
         style={{
@@ -582,7 +686,7 @@ export default function SolarRoofCanvas() {
           className="solar-canvas__grid"
           style={{
             width: gridCols * CELL_SIZE,
-            height: gridRows * CELL_SIZE,
+            height: gridRowsMax * CELL_SIZE,
             position: "relative",
             // border: "2px solid #333",
             backgroundColor: "#f5f5f5",
@@ -592,8 +696,22 @@ export default function SolarRoofCanvas() {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
+          {/* Compass */}
+          <img
+            src="/images/compass.png"
+            style={{
+              position: "absolute",
+              top: -10,
+              right: -5,
+              width: 150,
+              height: 150,
+              zIndex: 5,
+              pointerEvents: "none",
+            }}
+          />
+
           {/* Grid lines */}
-          {Array.from({ length: gridRows + 1 }).map((_, i) => (
+          {Array.from({ length: gridRowsMax + 1 }).map((_, i) => (
             <div
               key={`h-${i}`}
               style={{
@@ -621,38 +739,53 @@ export default function SolarRoofCanvas() {
           ))}
           {/* Clamps (left/right only)
           {state.system !== "PT15-L"
-            ? clamps.map((clamp, idx) => (
-                <div
-                  key={`clamp-${idx}`}
-                  style={{
-                    position: "absolute",
-                    left: (clamp.col + 1) * CELL_SIZE - 25,
-                    top:
-                      (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
-                    width: 50,
-                    height: 30,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "10px",
-                    fontWeight: "bold",
-                    color: "#333",
-                    backgroundColor: "#e8f0fe",
-                    border: "1px solid #4a90e2",
-                    borderRadius: 3,
-                    pointerEvents: "none",
-                    zIndex: 1,
-                  }}
-                >
-                  {`Clamp ${clamp.clampType}`}
-                </div>
-              ))
+            ? clamps.map((clamp, idx) => {
+                let clampTop =
+                  (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10;
+
+                if (state.orientation === "RV" && clamp.clampType === "G") {
+                  const hasTopModule = modules.some(
+                    (m) =>
+                      m.row === clamp.row - STEP &&
+                      Math.abs(m.col - clamp.col) < 1,
+                  );
+                  if (!hasTopModule) {
+                    clampTop -= CELL_SIZE;
+                  }
+                }
+
+                return (
+                  <div
+                    key={`clamp-${idx}`}
+                    style={{
+                      position: "absolute",
+                      left: clamp.col * CELL_SIZE - 25,
+                      top: clampTop,
+                      width: 50,
+                      height: 30,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "10px",
+                      fontWeight: "bold",
+                      color: "#333",
+                      backgroundColor: "#e8f0fe",
+                      border: "1px solid #4a90e2",
+                      borderRadius: 3,
+                      pointerEvents: "none",
+                      zIndex: 3,
+                    }}
+                  >
+                    {`Clamp ${clamp.clampType}`}
+                  </div>
+                );
+              })
             : clamps.map((clamp, idx) => (
                 <div
                   key={`clamp-${idx}`}
                   style={{
                     position: "absolute",
-                    left: (clamp.col + 1) * CELL_SIZE - 25,
+                    left: clamp.col * CELL_SIZE - 25,
                     top:
                       (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10,
                     width: 50,
@@ -667,29 +800,44 @@ export default function SolarRoofCanvas() {
                     border: "1px solid #4a90e2",
                     borderRadius: 3,
                     pointerEvents: "none",
-                    zIndex: 1,
+                    zIndex: 3,
                   }}
                 >
                   {`Clamp ${clamp.clampType}`} <br></br>
                   {clamp.topHolder}
                 </div>
-              ))}
-          {/* Holder letters 
-          {state.system !== "PT15-L"
+              ))} */}
+          {/* Holder letters */}
+          {/* {state.system !== "PT15-L"
             ? clamps.map((clamp, idx) => {
-                const clampTop =
+                let clampTop =
                   (clamp.row + ROW_OFFSET) * CELL_SIZE + CELL_SIZE / 2 - 10;
-                const top = clampTop - CELL_SIZE;
-                const bottom = clampTop + CELL_SIZE;
+
+                if (state.orientation === "RV" && clamp.clampType === "G") {
+                  const hasTopModule = modules.some(
+                    (m) =>
+                      m.row === clamp.row - STEP &&
+                      Math.abs(m.col - clamp.col) < 1,
+                  );
+                  if (!hasTopModule) {
+                    clampTop -= CELL_SIZE;
+                  }
+                }
 
                 return (
                   <div key={`holders-${idx}`}>
-                    {!shouldHideRv10Holder(clamp, clamp.topHolder) && (
+                    {!shouldHideRv10Holder(clamp, clamp.topHolder) &&
+                      !(
+                        state.system === "RV10" &&
+                        clamp.clampType === "G" &&
+                        clamp.topHolder === "VA" &&
+                        !hasModulesBelowRow(clamp.row)
+                      ) && (
                       <div
                         style={{
                           position: "absolute",
-                          left: (clamp.col + 1) * CELL_SIZE - 25,
-                          top,
+                          left: clamp.col * CELL_SIZE - 25,
+                          top: clampTop - CELL_SIZE,
                           width: 50,
                           height: 30,
                           display: "flex",
@@ -709,12 +857,18 @@ export default function SolarRoofCanvas() {
                       </div>
                     )}
 
-                    {!shouldHideRv10Holder(clamp, clamp.bottomHolder) && (
+                    {!shouldHideRv10Holder(clamp, clamp.bottomHolder) &&
+                      !(
+                        state.system === "RV10" &&
+                        clamp.clampType === "G" &&
+                        clamp.bottomHolder === "VA" &&
+                        !hasModulesBelowRow(clamp.row)
+                      ) && (
                       <div
                         style={{
                           position: "absolute",
-                          left: (clamp.col + 1) * CELL_SIZE - 25,
-                          top: bottom,
+                          left: clamp.col * CELL_SIZE - 25,
+                          top: clampTop + CELL_SIZE,
                           width: 50,
                           height: 30,
                           display: "flex",
@@ -741,25 +895,48 @@ export default function SolarRoofCanvas() {
           {/* Modules */}
           {modules.map((module) => {
             const isPaired = pairMapRef.current?.get(module.id);
-            const isUnpairedOrPairUnpaired = unpairedModules.has(module.id) || (isPaired !== undefined && unpairedModules.has(isPaired));
-            const pairingColor = getPairingColor(module.id);
+            const isUnpairedOrPairUnpaired =
+              unpairedModules.has(module.id) ||
+              (isPaired !== undefined && unpairedModules.has(isPaired));
+
+            const horizontalOffset =
+              state.orientation === "RV"
+                ? module.col % 2 === 0
+                  ? CELL_SIZE / 4
+                  : -CELL_SIZE / 4.5
+                : 0;
+
+            const isInvalidPair = invalidPairModules.has(module.id);
 
             return (
               <div
                 key={module.id}
-                className={`solar-canvas__module${draggingModule === module.id ? ' solar-canvas__module--dragging' : ''}${isUnpairedOrPairUnpaired ? ' solar-canvas__module--unpaired' : ''}`}
+                className={`solar-canvas__module${draggingModule === module.id ? " solar-canvas__module--dragging" : ""}${isUnpairedOrPairUnpaired ? " solar-canvas__module--unpaired" : ""}`}
                 style={{
                   position: "absolute",
-                  //left: (module.col + 1),  top: (module.row + ROW_OFFSET), jei su laikikliais
-                  left: module.col * CELL_SIZE + CELL_SIZE / 2 - 17,
+                  left:
+                    module.col * CELL_SIZE +
+                    CELL_SIZE / 2 -
+                    15 +
+                    horizontalOffset,
                   top: module.row * CELL_SIZE + CELL_SIZE / 2 - 26,
                   width: 30,
-                  height: 50,
-                  backgroundColor: isUnpairedOrPairUnpaired ? pairingColor : "#4a90e2",
-                  border: isUnpairedOrPairUnpaired ? `3px solid ${pairingColor}` : "2px solid #2e5c8a",
+                  height: 56,
+                  backgroundColor: "#4a90e2",
+                  backgroundImage: "url('/images/solar.jpg')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "right",
+                  border: isInvalidPair
+                    ? "2px solid #d32f2f"
+                    : "2px solid #2e5c8a",
                   borderRadius: 4,
                   zIndex: draggingModule === module.id ? 10 : 2,
-                  boxShadow: isUnpairedOrPairUnpaired ? `0 0 12px ${pairingColor}55` : "none",
+                  boxShadow: isInvalidPair
+                    ? "0 0 0 4px rgba(211,47,47,0.25)"
+                    : "0px 2px 5px 2px rgba(0, 0, 0, 0.6)",
+                  transition: "box-shadow 0.2s ease, border-color 0.2s ease",
+                  transform:
+                    state.orientation === "PT" ? "rotate(90deg)" : "none",
                 }}
                 onMouseDown={(e) => handleMouseDown(e, module.id)}
               />
@@ -852,7 +1029,7 @@ export default function SolarRoofCanvas() {
             {t("actions.calculate")}
           </button>
         </>
-      ) :  state.system === "RV10-Z" ? (
+      ) : state.system === "RV10-Z" ? (
         <>
           <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
@@ -892,9 +1069,7 @@ export default function SolarRoofCanvas() {
             {t("actions.calculate")}
           </button>
         </>
-      ) :
-    
-      (
+      ) : (
         <>
           <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
