@@ -548,6 +548,31 @@ export default function SolarRoofCanvas() {
   );
   const invalidPairTimeoutRef = useRef<number | null>(null);
 
+  const buildPairMapFromModules = (items: Module[]) => {
+    const map = new Map<number, number>();
+    const byRow = new Map<number, Module[]>();
+
+    items.forEach((m) => {
+      const list = byRow.get(m.row) ?? [];
+      list.push(m);
+      byRow.set(m.row, list);
+    });
+
+    byRow.forEach((list) => {
+      list.sort((a, b) => a.col - b.col);
+      for (let i = 0; i < list.length - 1; i += 2) {
+        const a = list[i];
+        const b = list[i + 1];
+        if (Math.abs(a.col - b.col) === STEP) {
+          map.set(a.id, b.id);
+          map.set(b.id, a.id);
+        }
+      }
+    });
+
+    return map;
+  };
+
   const showToast = (message: string) => {
     setToastMessage(message);
     if (toastTimeoutRef.current) window.clearTimeout(toastTimeoutRef.current);
@@ -590,7 +615,14 @@ export default function SolarRoofCanvas() {
       setGlobalUnpairAll(true);
       return;
     }
-    const invalid = getInvalidPairModuleIds();
+
+    const newPairMap = buildPairMapFromModules(modules);
+    const expectedPairedModules = Math.floor(modules.length / 2) * 2;
+    const invalid =
+      newPairMap.size < expectedPairedModules
+        ? new Set(modules.filter((m) => !newPairMap.has(m.id)).map((m) => m.id))
+        : new Set<number>();
+
     if (invalid.size > 0) {
       setGlobalUnpairAll(true);
       setInvalidPairModules(invalid);
@@ -605,6 +637,8 @@ export default function SolarRoofCanvas() {
       return;
     }
 
+    pairMapRef.current = newPairMap;
+    setInvalidPairModules(new Set());
     setGlobalUnpairAll(false);
   };
 
@@ -702,7 +736,7 @@ export default function SolarRoofCanvas() {
             style={{
               position: "absolute",
               top: -10,
-              right: -5,
+              right: 8,
               width: 150,
               height: 150,
               zIndex: 5,
