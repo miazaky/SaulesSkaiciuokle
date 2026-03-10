@@ -535,9 +535,7 @@ export default function SolarRoofCanvas() {
     GholderCount = zBottomCount % 2 === 0 ? zBottomCount : zBottomCount + 1;
   }
 
-  const [unpairedModules] = useState<Set<number>>(
-    new Set(),
-  );
+  const [unpairedModules] = useState<Set<number>>(new Set());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
 
@@ -664,6 +662,58 @@ export default function SolarRoofCanvas() {
     return modules.find((m) => m.id === pairId) ?? null;
   };
 
+  const getIsolatedModules = (ignorePairs: boolean): Set<number> => {
+    const isolated = new Set<number>();
+    const moduleMap = new Map(modules.map((m) => [`${m.row},${m.col}`, m.id]));
+    const visited = new Set<number>();
+
+    const hasExternalNeighbor = (module: Module, excludeId?: number) => {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const neighborKey = `${module.row + dr},${module.col + dc}`;
+          const neighborId = moduleMap.get(neighborKey);
+
+          if (neighborId !== undefined && neighborId !== excludeId) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+
+    modules.forEach((module) => {
+      if (visited.has(module.id)) return;
+
+      const pairId = ignorePairs ? undefined : pairMapRef.current?.get(module.id);
+      
+      visited.add(module.id);
+      if (pairId !== undefined) {
+        visited.add(pairId);
+      }
+
+      if (ignorePairs || pairId === undefined) {
+        if (!hasExternalNeighbor(module)) {
+          isolated.add(module.id);
+        }
+      } else {
+        const pairedModule = modules.find((m) => m.id === pairId);
+        const module1HasNeighbor = hasExternalNeighbor(module, pairId);
+        const module2HasNeighbor = pairedModule ? hasExternalNeighbor(pairedModule, module.id) : false;
+
+        if (!module1HasNeighbor && !module2HasNeighbor) {
+          isolated.add(module.id);
+          isolated.add(pairId);
+        }
+      }
+    });
+
+    return isolated;
+  };
+
+  const isolatedModules = getIsolatedModules(globalUnpairAll);
+  const hasIsolatedModules = isolatedModules.size > 0;
+
   return (
     <div className="solar-canvas">
       {toastMessage && (
@@ -684,26 +734,24 @@ export default function SolarRoofCanvas() {
 
       {/* checkbox for RV */}
       {state.orientation === "RV" && (
-        <div style={{ marginBottom: 16 }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              cursor: "pointer",
-              fontFamily: "'Open Sans', sans-serif",
-              fontSize: 14,
-              color: "#5f656d",
-            }}
-          >
+        <div className="solar-canvas__toolbar">
+          <label>
             <input
               type="checkbox"
               checked={globalUnpairAll}
               onChange={(e) => handleGlobalUnpairAllChange(e.target.checked)}
-              style={{ cursor: "pointer" }}
             />
             {t("fields.unpairAllModules")}
           </label>
+
+          <div
+            className={`solar-canvas__warning-chip${
+              hasIsolatedModules ? " solar-canvas__warning-chip--visible" : ""
+            }`}
+            aria-live="polite"
+          >
+            {t("errors.isolatedModules")}
+          </div>
         </div>
       )}
 
@@ -1047,6 +1095,7 @@ export default function SolarRoofCanvas() {
           </button>
           <button
             className="solar-calculator__actions"
+            disabled={hasIsolatedModules}
             onClick={() =>
               navigate("/summaryRoof", {
                 state: {
@@ -1087,6 +1136,7 @@ export default function SolarRoofCanvas() {
           </button>
           <button
             className="solar-calculator__actions"
+            disabled={hasIsolatedModules}
             onClick={() =>
               navigate("/summaryRoof", {
                 state: {
