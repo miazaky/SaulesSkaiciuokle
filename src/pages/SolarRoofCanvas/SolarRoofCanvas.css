@@ -154,9 +154,7 @@
   background-color: #ffa331;
 }
 
-/* ========================================
-   MOBILE
-======================================== */
+
 
 @media (max-width: 767px) {
   .solar-canvas {
@@ -194,6 +192,62 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+.solar-canvas__toolbar {
+  height: 38px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.solar-canvas__warning-chip {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-2px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  background: #fff4e5;
+  border: 1px solid #ecb570;
+  color: #0e0800;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: 600 12px/1.2 "Open Sans", sans-serif;
+  max-width: 70%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.solar-canvas__warning-chip--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.solar-canvas__unpair-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  color: #5f656d;
+}
+
+@media (max-width: 767px) {
+  .solar-canvas__toolbar {
+    height: auto;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .solar-canvas__warning-chip {
+    max-width: 100%;
+    white-space: normal;
   }
 }
 
