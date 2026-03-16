@@ -732,7 +732,7 @@ export default function SolarRoofCalculator() {
                 }}
               />
               {rowsCountError && (
-                <div style={{ color: "#b00020", marginTop: 6 }}>
+                <div style={{ color: "var(--color-danger)", marginTop: 6 }}>
                   {rowsCountError}
                 </div>
               )}
