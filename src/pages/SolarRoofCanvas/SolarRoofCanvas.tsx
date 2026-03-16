@@ -771,7 +771,7 @@ export default function SolarRoofCanvas() {
             height: gridRowsMax * CELL_SIZE,
             position: "relative",
             // border: "2px solid #333",
-            backgroundColor: "#f5f5f5",
+            backgroundColor: "var(--color-surface-muted)",
             cursor: draggingModule !== null ? "grabbing" : "default",
           }}
           onMouseMove={handleMouseMove}
@@ -802,7 +802,7 @@ export default function SolarRoofCanvas() {
                 left: 0,
                 right: 0,
                 height: 1,
-                backgroundColor: "#ddd",
+                backgroundColor: "var(--color-border)",
               }}
             />
           ))}
@@ -815,7 +815,7 @@ export default function SolarRoofCanvas() {
                 top: 0,
                 bottom: 0,
                 width: 1,
-                backgroundColor: "#ddd",
+                backgroundColor: "var(--color-border)",
               }}
             />
           ))}
@@ -1004,18 +1004,18 @@ export default function SolarRoofCanvas() {
                   top: module.row * CELL_SIZE + CELL_SIZE / 2 - 26,
                   width: 30,
                   height: 56,
-                  backgroundColor: "#4a90e2",
+                  backgroundColor: "var(--color-brand)",
                   backgroundImage: "url('/images/solar.jpg')",
                   backgroundSize: "cover",
                   backgroundPosition: "right",
                   border: isInvalidPair
-                    ? "2px solid #d32f2f"
-                    : "2px solid #2e5c8a",
+                    ? "2px solid var(--color-danger)"
+                    : "2px solid var(--color-brand)",
                   borderRadius: 4,
                   zIndex: draggingModule === module.id ? 10 : 2,
                   boxShadow: isInvalidPair
-                    ? "0 0 0 4px rgba(211,47,47,0.25)"
-                    : "0px 2px 5px 2px rgba(0, 0, 0, 0.6)",
+                    ? "0 0 0 4px var(--color-danger-shadow)"
+                    : "0 8px 18px var(--color-brand-shadow)",
                   transition: "box-shadow 0.2s ease, border-color 0.2s ease",
                   transform:
                     state.orientation === "PT" ? "rotate(90deg)" : "none",

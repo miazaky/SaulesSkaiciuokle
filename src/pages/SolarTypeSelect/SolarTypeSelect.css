@@ -9,7 +9,7 @@
   font-family: 'Hind', sans-serif;
   font-size: 22px;
   font-weight: 600;
-  color: #292929;
+  color: var(--color-text);
   margin: 0 0 40px;
   line-height: 1.334;
 }

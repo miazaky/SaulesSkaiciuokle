@@ -20,8 +20,17 @@ export function ImageCard({
         width: 260,
         padding: 16,
         cursor: "pointer",
-        border: selected ? "2px solid #1f2937" : "1px solid #d1d5db",
+        border: selected
+          ? "2px solid var(--color-accent)"
+          : "1px solid var(--color-border)",
+        borderRadius: 14,
+        background: "rgba(255, 255, 255, 0.92)",
+        boxShadow: selected
+          ? "0 14px 28px rgba(18, 60, 90, 0.14)"
+          : "0 10px 24px rgba(18, 60, 90, 0.06)",
         textAlign: "center",
+        color: "var(--color-text)",
+        transition: "transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease",
       }}
     >
       <img
@@ -35,7 +44,7 @@ export function ImageCard({
         }}
       />
 
-      <p style={{ marginTop: 12 }}>{title}</p>
+      <p style={{ marginTop: 12, color: "var(--color-text)" }}>{title}</p>
     </div>
   );
 }

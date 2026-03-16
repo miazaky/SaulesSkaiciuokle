@@ -50,7 +50,17 @@ function CreateQuestion() {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '24px auto', padding: 16 }}>
+    <div
+      style={{
+        maxWidth: 720,
+        margin: '24px auto',
+        padding: 16,
+        background: 'rgba(255, 255, 255, 0.92)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 14,
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
       <h1>Create question</h1>
 
       <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12 }}>
@@ -84,7 +94,7 @@ function CreateQuestion() {
               style={{
                 maxWidth: '50%',
                 height: 'auto',
-                border: '1px solid #ddd',
+                border: '1px solid var(--color-border)',
                 borderRadius: 6,
               }}
               onLoad={() => URL.revokeObjectURL(imagePreviewUrl)}
