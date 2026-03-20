@@ -259,7 +259,7 @@ function buildMaterialsPage(
   const SCALE    = 2;
   const isGround = input.batteryType === "ezys" || input.batteryType === "poline";
   const prices   = input.productPrices ?? {};
-  const hasPrices = Object.keys(prices).length > 0;
+  const hasPrices = true; // always show price columns
 
   // ── Column layout ──────────────────────────────────────────────────────────
   // Fixed cols first, name gets the remainder
@@ -295,13 +295,13 @@ function buildMaterialsPage(
       { text: String(m.quantity) },
       ...(isGround ? [{ text: m.length != null ? String(m.length) : "–" }] : []),
       ...(hasPrices ? [
-        { text: price  != null ? fmt(price)  : "–" },
-        { text: rowSum != null ? fmt(rowSum) : "–" },
+        { text: fmt(price ?? 0) },
+        { text: fmt(rowSum ?? 0) },
       ] : []),
     ];
   });
 
-  if (hasPrices && sysTotal > 0) {
+  if (hasPrices) {
     // Sentinel row handled by drawTable
     const emptyCount = sysCols.length - 2;
     sysRows.push([
@@ -345,13 +345,13 @@ function buildMaterialsPage(
       { text: displayName, align: "left" },
       { text: String(m.quantity) },
       ...(hasPrices ? [
-        { text: price  != null ? fmt(price)  : "–" },
-        { text: rowSum != null ? fmt(rowSum) : "–" },
+        { text: fmt(price ?? 0) },
+        { text: fmt(rowSum ?? 0) },
       ] : []),
     ];
   });
 
-  if (hasPrices && furnTotal > 0) {
+  if (hasPrices) {
     const emptyCount = furnCols.length - 2;
     furnRows.push([
       { text: "__total__" },
@@ -399,7 +399,7 @@ function buildMaterialsPage(
 
   // ── Grand total band ───────────────────────────────────────────────────────
   const grand = sysTotal + furnTotal;
-  if (hasPrices && grand > 0) {
+  if (hasPrices) {
     fillStrokeRect(ctx, MARGIN, y, COL_W, 24, BRAND);
     ctx.font = `bold 11px ${FONT}`; ctx.fillStyle = "#fff"; ctx.textAlign = "right";
     ctx.fillText(`Bendra suma be PVM:   ${fmt(grand)} €`, MARGIN + COL_W - 10, y + 16);
@@ -407,10 +407,10 @@ function buildMaterialsPage(
   }
 
   // ── Footer ─────────────────────────────────────────────────────────────────
-  y += 8;
-  ctx.font = `8.5px ${FONT}`; ctx.fillStyle = MUTED; ctx.textAlign = "left";
-  ctx.fillText("* Užsakyti galima sumokant nurodytais rekvizitais, būtina nurodyti pasiūlymo numerį.", MARGIN, y);
-  ctx.fillText("* Pasiūlymas galioja 5 d.d.", MARGIN, y + 14);
+  // y += 8;
+  // ctx.font = `8.5px ${FONT}`; ctx.fillStyle = MUTED; ctx.textAlign = "left";
+  // // ctx.fillText("* Užsakyti galima sumokant nurodytais rekvizitais, būtina nurodyti pasiūlymo numerį.", MARGIN, y);
+  // // ctx.fillText("* Pasiūlymas galioja 5 d.d.", MARGIN, y + 14);
 
   return canvas;
 }
@@ -510,12 +510,11 @@ export async function generateCommercialProposalPdf(
 </head>
 <body>
   <div class="toolbar">
-    <button class="btn btn-print" onclick="window.print()">🖨️ Spausdinti / Išsaugoti PDF</button>
+    <button class="btn btn-print" onclick="window.print()">Išsaugoti PDF</button>
     <span>${imgs.length} puslapis(-iai)</span>
     <button class="btn btn-close" onclick="window.close()">✕ Uždaryti</button>
   </div>
   ${imgs.map((src) => `<div class="page"><img src="${src}"/></div>`).join("\n")}
-  <script>setTimeout(function(){window.print()},700);</script>
 </body>
 </html>`);
   pw.document.close();

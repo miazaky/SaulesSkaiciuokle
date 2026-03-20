@@ -26,8 +26,9 @@ export function useProductPrices(): {
         if (cancelled) return;
         const map: Record<string, number> = {};
         for (const p of products) {
-          if (p.sku && p.price != null) {
-            map[p.sku] = p.price;
+          if (p.sku) {
+            // Use 0 as fallback so price columns always appear even for unpriced items
+            map[p.sku] = p.price ?? 0;
           }
         }
         setPricesBySku(map);

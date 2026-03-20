@@ -1274,7 +1274,7 @@ export default function SolarRoofCanvas() {
         </>
       ) : (
         <>
-          <div style={{ marginTop: 20 }}>
+          {/* <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
               <p>
                 {t("fields.backHolder")} (G): {GholderCount}
@@ -1292,7 +1292,7 @@ export default function SolarRoofCanvas() {
                 {t("fields.middleClamp")} (Clamp V): {clampVCount}
               </p>
             </div>
-          </div>
+          </div> */}
 
           <button
             className="solar-summary__actions_back"

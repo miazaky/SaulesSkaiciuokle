@@ -190,14 +190,14 @@ export default function Checkout() {
 
       {submitState === "success" && (
         <div className="checkout-status checkout-status--success">
-          ✅ Užsakymas sėkmingai pateiktas! PDF pasiūlymas atidarytas naujame lange.
+          ✅ Užsakymas sėkmingai pateiktas!
         </div>
       )}
-      {submitState === "error" && (
+      {/* {submitState === "error" && (
         <div className="checkout-status checkout-status--error">
           ⚠️ {errorMsg || "Klaida siunčiant užsakymą."} PDF vis tiek sugeneruotas.
         </div>
-      )}
+      )} */}
 
       <div className="checkout-actions">
         <button
