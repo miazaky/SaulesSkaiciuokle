@@ -15,6 +15,24 @@ const CELL_SIZE = 70;
 const STEP = 1;
 const ROW_OFFSET = 0;
 
+// ── Canvas helper ────────────────────────────────────────────────────────────
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number, r: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
 export default function SolarRoofCanvas() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -92,6 +110,101 @@ export default function SolarRoofCanvas() {
   const [draggingModule, setDraggingModule] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Capture the grid by redrawing it onto an offscreen <canvas> with pure 2D API.
+   * No DOM serialisation → no tainted-canvas security error.
+   */
+  const captureGridImage = (): string | undefined => {
+    try {
+      const cols = gridCols;
+      const rows = gridRowsMax;
+      const CS   = CELL_SIZE;
+      const W    = cols * CS;
+      const H    = rows * CS;
+
+      const offscreen = document.createElement("canvas");
+      offscreen.width  = W * 2;   // 2× for crispness
+      offscreen.height = H * 2;
+      const ctx = offscreen.getContext("2d")!;
+      ctx.scale(2, 2);
+
+      // Background
+      ctx.fillStyle = "#f5f7fa";
+      ctx.fillRect(0, 0, W, H);
+
+      // Grid lines
+      ctx.strokeStyle = "#d0d8e4";
+      ctx.lineWidth = 0.5;
+      for (let r = 0; r <= rows; r++) {
+        ctx.beginPath(); ctx.moveTo(0, r * CS); ctx.lineTo(W, r * CS); ctx.stroke();
+      }
+      for (let c = 0; c <= cols; c++) {
+        ctx.beginPath(); ctx.moveTo(c * CS, 0); ctx.lineTo(c * CS, H); ctx.stroke();
+      }
+
+      // Modules
+      modules.forEach((module) => {
+        const hOffset =
+          state.orientation === "RV"
+            ? module.col % 2 === 0 ? CS / 4 : -CS / 4.5
+            : 0;
+
+        const cx = module.col * CS + CS / 2 - 15 + hOffset;
+        const cy = module.row * CS + CS / 2 - 26;
+        const mW = 30;
+        const mH = 56;
+
+        ctx.save();
+
+        if (state.orientation === "PT") {
+          // Rotate 90° around module centre
+          const mcx = cx + mW / 2;
+          const mcy = cy + mH / 2;
+          ctx.translate(mcx, mcy);
+          ctx.rotate(Math.PI / 2);
+          ctx.translate(-mcx, -mcy);
+        }
+
+        // Module body
+        ctx.fillStyle = "#1a3a5c";
+        ctx.strokeStyle = "#0f2238";
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, cx, cy, mW, mH, 3);
+        ctx.fill();
+        ctx.stroke();
+
+        // Solar cell grid lines (decorative)
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 0.8;
+        const cols3 = 3; const rows6 = 6;
+        for (let ci = 1; ci < cols3; ci++) {
+          const lx = cx + (mW / cols3) * ci;
+          ctx.beginPath(); ctx.moveTo(lx, cy + 2); ctx.lineTo(lx, cy + mH - 2); ctx.stroke();
+        }
+        for (let ri = 1; ri < rows6; ri++) {
+          const ly = cy + (mH / rows6) * ri;
+          ctx.beginPath(); ctx.moveTo(cx + 2, ly); ctx.lineTo(cx + mW - 2, ly); ctx.stroke();
+        }
+
+        ctx.restore();
+      });
+
+      // Label: system + module count
+      ctx.fillStyle = "#1a3a5c";
+      ctx.font = "bold 11px Arial, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(
+        `${state.system ?? state.batteryType}  |  ${modules.length} moduliai  |  ${state.rowsCount} eilės`,
+        8, H - 8
+      );
+
+      return offscreen.toDataURL("image/png");
+    } catch {
+      return undefined;
+    }
+  };
+
 
   //padidinam gridRows(*2) jei su laikikliais
   const maxCol = Math.max(0, ...modules.map((m) => m.col));
@@ -1051,16 +1164,18 @@ export default function SolarRoofCanvas() {
           </button>
           <button
             className="solar-calculator__actions"
-            onClick={() =>
+            onClick={() => {
+              const img = captureGridImage();
               navigate("/summaryRoof", {
                 state: {
                   ...state,
+                      canvasImageDataUrl: img,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
                 },
               })
-            }
+            }}
           >
             {t("actions.calculate")}
           </button>
@@ -1096,10 +1211,12 @@ export default function SolarRoofCanvas() {
           <button
             className="solar-calculator__actions"
             disabled={hasIsolatedModules}
-            onClick={() =>
+            onClick={() => {
+              const img = captureGridImage();
               navigate("/summaryRoof", {
                 state: {
                   ...state,
+                      canvasImageDataUrl: img,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
@@ -1107,7 +1224,7 @@ export default function SolarRoofCanvas() {
                   holderVZCount: VZHolderCount,
                 },
               })
-            }
+            }}
           >
             {t("actions.calculate")}
           </button>
@@ -1137,10 +1254,12 @@ export default function SolarRoofCanvas() {
           <button
             className="solar-calculator__actions"
             disabled={hasIsolatedModules}
-            onClick={() =>
+            onClick={() => {
+              const img = captureGridImage();
               navigate("/summaryRoof", {
                 state: {
                   ...state,
+                      canvasImageDataUrl: img,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
@@ -1148,7 +1267,7 @@ export default function SolarRoofCanvas() {
                   holderVZCount: VZHolderCount,
                 },
               })
-            }
+            }}
           >
             {t("actions.calculate")}
           </button>
@@ -1183,10 +1302,12 @@ export default function SolarRoofCanvas() {
           </button>
           <button
             className="solar-calculator__actions"
-            onClick={() =>
-              navigate("/summaryRoof", {
+            onClick={() => {
+              const img = captureGridImage();
+              navigate("/checkout", {
                 state: {
                   ...state,
+                      canvasImageDataUrl: img,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
@@ -1194,7 +1315,7 @@ export default function SolarRoofCanvas() {
                   holderPCount: PholderCount,
                 },
               })
-            }
+            }}
           >
             {t("actions.calculate")}
           </button>

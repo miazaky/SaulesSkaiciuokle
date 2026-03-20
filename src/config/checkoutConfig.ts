@@ -10,21 +10,18 @@ export const seller = {
 };
 
 export const initialBuyer = {
-  name: "",
-  companyCode: "",
-  vatCode: "",
-  address: "",
-  phone: "",
-  email: "",
-  deliveryAddress: "",
+  name: '',
+  email: '',
+  phone: '',
 };
 
-export const buyerFields = [
-  { key: 'name', placeholder: 'Vardas Pavardė / Įmonė', highlight: true },
-  { key: 'companyCode', placeholder: 'Įmonės kodas' },
-  { key: 'vatCode', placeholder: 'PVM kodas' },
-  { key: 'address', placeholder: 'Adresas' },
-  { key: 'phone', placeholder: 'Tel. nr.' },
-  { key: 'email', placeholder: 'El. paštas' },
-  { key: 'deliveryAddress', placeholder: 'Pristatymo adresas' },
+export const buyerFields: Array<{
+  key: keyof typeof initialBuyer;
+  placeholder: string;
+  type: string;
+  required: boolean;
+}> = [
+  { key: 'name',  placeholder: 'Vardas Pavardė',  type: 'text',  required: true },
+  { key: 'email', placeholder: 'El. paštas',       type: 'email', required: true },
+  { key: 'phone', placeholder: 'Tel. nr.',          type: 'tel',   required: true },
 ];

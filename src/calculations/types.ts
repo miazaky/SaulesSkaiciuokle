@@ -32,4 +32,10 @@ export type CalculatorInput = {
   holderVACount?: number;
   holderVZCount?: number;
   isEvenModules?: string;
+
+  // ── App-level fields (not calculator inputs) ──────────────────────────────
+  /** Base64 PNG snapshot of the SolarRoofCanvas drawing */
+  canvasImageDataUrl?: string;
+  /** SKU → unit price (€ ex. VAT) fetched from /api/products */
+  productPrices?: Record<string, number>;
 };

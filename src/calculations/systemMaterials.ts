@@ -710,7 +710,7 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
     },
   },
   {
-    code: "Clamp G",
+    code: "Clamp G35",
     name: "Galinių prispaudėjų kompl.",
     length: null,
     calculateQuantity: () => 8, // J17
@@ -778,7 +778,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["RV10", "RV10-Z"],
-    code: "",
+    code: "M8-30",
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
@@ -934,7 +934,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["ilgoji"],
-    code: "",
+    code: "VEJ2000",
     name: "Vejalentė",
     length: null,
     calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
@@ -942,7 +942,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["ilgoji"],
-    code: "",
+    code: "SAV Vej.",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
     calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
@@ -958,7 +958,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["ilgoji"],
-    code: "",
+    code: "M8-30",
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.isEvenModules),
@@ -975,7 +975,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["trumpoji"],
-    code: "",
+    code: "VEJ2000",
     name: "Vejalentė",
     length: null,
     calculateQuantity: (i) => calculatePT15WindboardQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
@@ -983,7 +983,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["trumpoji"],
-    code: "",
+    code: "SAV Vej.",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
     calculateQuantity: (i) => calculatePT15WindboardScrewsQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.isEvenModules),
@@ -1007,7 +1007,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["trumpoji"],
-    code: "",
+    code: "M8-30",
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
@@ -1015,7 +1015,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5"],
-    code: "PT5-1",
+    code: "PT05-1",
     name: "Priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
@@ -1023,7 +1023,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5"],
-    code: "PT5-3",
+    code: "PT05-3",
     name: "Galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
@@ -1031,7 +1031,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5"],
-    code: "PT5-2",
+    code: "PT05-2",
     name: "Vidurinis (jungiamasis) laikiklis",
     length: null,
     calculateQuantity: (i) =>
@@ -1065,7 +1065,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
-    code: "",
+    code: "VEJ2000",
     name: "Vejalentė",
     length: null,
     calculateQuantity: (i) =>
@@ -1073,7 +1073,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
-    code: "",
+    code: "SAV Vej.",
     name: "Savisriegiai varžtai vejalentėm",
     length: null,
     calculateQuantity: (i) =>
@@ -1097,7 +1097,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
-    code: "",
+    code: "M8-30",
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>

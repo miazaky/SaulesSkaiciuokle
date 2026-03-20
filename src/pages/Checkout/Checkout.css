@@ -169,3 +169,123 @@
     text-align: center;
   }
 }
+/* ── New additions ─────────────────────────────────────────────────────────── */
+
+.checkout__title {
+  font-family: 'Hind', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-brand);
+  margin: 0 0 28px;
+}
+
+.required-star {
+  color: var(--color-danger, #c0392b);
+}
+
+/* Materials preview */
+.checkout-materials-preview {
+  margin: 0 0 28px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,248,250,0.96));
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 24px 28px;
+  overflow-x: auto;
+}
+
+.checkout-materials-preview__title {
+  font-family: 'Hind', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-brand);
+  margin: 0 0 14px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--color-accent);
+  display: inline-block;
+}
+
+/* Status messages */
+.checkout-status {
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.checkout-status--success {
+  background: #e6f9ed;
+  border: 1px solid #52c97a;
+  color: #1a6b34;
+}
+
+.checkout-status--error {
+  background: #fff3f3;
+  border: 1px solid #e74c3c;
+  color: #922b21;
+}
+
+/* Action row */
+.checkout-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.checkout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 28px;
+  font-family: 'Hind', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  line-height: 1;
+}
+
+.checkout-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.checkout-btn--back {
+  color: var(--color-brand);
+  background: #e8f0f8;
+  box-shadow: none;
+}
+
+.checkout-btn--back:hover:not(:disabled) {
+  background: #d5e4f3;
+}
+
+.checkout-btn--submit {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-strong));
+  box-shadow: 0 10px 20px rgba(18,60,90,0.2);
+}
+
+.checkout-btn--submit:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(18,60,90,0.24);
+}
+
+@media (max-width: 767px) {
+  .checkout-actions {
+    flex-direction: column;
+  }
+  .checkout-btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
