@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "https://solar-inventory.azurewebsites.net/api";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export interface ProductPrice {
   id: string;

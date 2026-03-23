@@ -8,9 +8,10 @@ import { calculateSystemMaterials } from "../../calculations/calculateSystemMate
 import { calculateFurnitureMaterials } from "../../calculations/calculateFurnitureMaterials";
 import { useProductPrices } from "../../hooks/useProductPrices";
 import { generateCommercialProposalPdf } from "../../calculations/utils/generatePdf";
+import { useProducts } from "../../hooks/useProducts";
 
-const WAREHOUSE_ID = "00000000-0000-0000-0000-000000000000"; // backend auto-resolves to first warehouse
-const API_BASE = import.meta.env.VITE_API_BASE ?? "https://solar-inventory.azurewebsites.net/api";
+const WAREHOUSE_ID = null;
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
@@ -33,6 +34,7 @@ export default function Checkout() {
     buyer.phone.trim().length > 0;
 
   const { pricesBySku: fetchedPrices, loading: pricesLoading } = useProductPrices();
+  const { productsBySku } = useProducts(); // product id lookup for order items
   // Prefer prices already in router state (set by Summary page), fall back to freshly fetched
   const pricesBySku = (state?.productPrices && Object.keys(state.productPrices).length > 0)
     ? state.productPrices
@@ -51,15 +53,31 @@ export default function Checkout() {
     setErrorMsg("");
 
     try {
+      // 1. Create guest order (user + order record)
+      // const orderRes = await fetch(`${API_BASE}/orders/guest`, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     warehouseId: WAREHOUSE_ID,
+      //     name: buyer.name.trim(),
+      //     email: buyer.email.trim(),
+      //     phone: buyer.phone.trim(),
+      //   }),
+      // });
+
+      const body = JSON.stringify({
+        warehouseId: WAREHOUSE_ID,
+        name: buyer.name.trim(),
+        email: buyer.email.trim(),
+        phone: buyer.phone.trim(),
+      });
+      console.log("POST URL:", `${API_BASE}/orders/guest`);
+      console.log("POST body:", body);
+
       const orderRes = await fetch(`${API_BASE}/orders/guest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          warehouseId: WAREHOUSE_ID,
-          name: buyer.name.trim(),
-          email: buyer.email.trim(),
-          phone: buyer.phone.trim(),
-        }),
+        body,
       });
 
       if (!orderRes.ok) {
@@ -69,6 +87,39 @@ export default function Checkout() {
       const orderId: string = await orderRes.json();
       console.log("Guest order created:", orderId);
 
+      // 2. Add order items — match each calculated material to a product by SKU
+      const allMaterials: Array<{ code: string; quantity: number }> = [
+        ...systemMaterials.map((m) => ({ code: m.code ?? "", quantity: m.quantity })),
+        ...furnitureMaterials.map((m) => {
+          const skuMatch = m.name.match(/\(([^)]+)\)$/);
+          return { code: skuMatch ? skuMatch[1] : "", quantity: m.quantity };
+        }),
+      ];
+
+      const itemPromises: Promise<void>[] = [];
+      for (const mat of allMaterials) {
+        if (!mat.code || mat.quantity <= 0) continue;
+        // Use first SKU from compound codes like "M10-30/M10-pov/M10-VS"
+        const sku = mat.code.split("/")[0].trim();
+        const product = productsBySku[sku];
+        if (!product) continue; // skip items with no matching product in DB
+
+        itemPromises.push(
+          fetch(`${API_BASE}/orders/${orderId}/items`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: product.id, quantity: mat.quantity }),
+          }).then((r) => {
+            if (!r.ok) console.warn(`Could not add item ${sku}: ${r.status}`);
+          })
+        );
+      }
+
+      // Fire all item adds in parallel, don't block on failures
+      await Promise.allSettled(itemPromises);
+      console.log(`Added items to order ${orderId}`);
+
+      // 3. Generate PDF
       await generateCommercialProposalPdf(buyer, { ...state, productPrices: pricesBySku }, systemMaterials, furnitureMaterials);
       setSubmitState("success");
     } catch (err) {
@@ -76,9 +127,7 @@ export default function Checkout() {
       try {
         await generateCommercialProposalPdf(buyer, { ...state, productPrices: pricesBySku }, systemMaterials, furnitureMaterials);
       } catch (_) {}
-      setErrorMsg(
-        err instanceof Error ? err.message : "Nežinoma klaida."
-      );
+      setErrorMsg(err instanceof Error ? err.message : "Nežinoma klaida.");
       setSubmitState("error");
     }
   };

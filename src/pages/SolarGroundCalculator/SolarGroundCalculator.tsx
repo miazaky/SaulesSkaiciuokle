@@ -96,12 +96,12 @@ export default function SolarGroundCalculator() {
 
   const [moduleCount, setModuleCount] = useState<string>(restoredState?.moduleCount.toString() ?? "36");
   const [moduleLength, setModuleLength] = useState<string>(restoredState?.moduleLength.toString() ?? "2250");
-  const [moduleThickness, setModuleThickness] = useState<string>(restoredState?.moduleThickness.toString() ?? "30");
+  const [moduleThickness, setModuleThickness] = useState<number>(restoredState?.moduleThickness ?? 30);
 
 
   const moduleCountNumber = Number(moduleCount);
   const moduleLengthNumber = Number(moduleLength);
-  const moduleThicknessNumber = Number(moduleThickness);
+  const moduleThicknessNumber = moduleThickness;
 
   const isModuleCountValid =
     moduleCount !== "" &&
@@ -114,9 +114,7 @@ export default function SolarGroundCalculator() {
     moduleLengthNumber >= 1700 &&
     moduleLengthNumber <= 2400;
 
-  const isModuleThicknessValid =
-    moduleThickness !== "" &&
-    moduleThicknessNumber > 0;
+  const isModuleThicknessValid = true; // always valid - dropdown enforces 30 or 35
 
   const rowsCount = isModuleCountValid ? moduleCountNumber / 2 : 0;
   const reserve = moduleCountNumber <= 24 ? 50 : 100;
@@ -237,18 +235,13 @@ export default function SolarGroundCalculator() {
             </InputField>
 
             <InputField label={t("fields.moduleThickness")}>
-              <input
-                className={!isModuleThicknessValid ? "input-error" : ""}
-                type="number" 
-                value={moduleThickness} 
-                onChange={(e) => setModuleThickness(e.target.value)} 
-                onKeyDown={handleEnterAsTab}
-              />
-                {!isModuleThicknessValid && (
-                  <div className="error-text">
-                    {t("errors.moduleThickness")}
-              </div>
-              )}
+              <select
+                value={moduleThickness}
+                onChange={(e) => setModuleThickness(Number(e.target.value))}
+              >
+                <option value={30}>30 mm</option>
+                <option value={35}>35 mm</option>
+              </select>
             </InputField>
           </FormGrid>
 

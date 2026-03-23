@@ -1304,7 +1304,7 @@ export default function SolarRoofCanvas() {
             className="solar-calculator__actions"
             onClick={() => {
               const img = captureGridImage();
-              navigate("/checkout", {
+              navigate("/summaryRoof", {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
