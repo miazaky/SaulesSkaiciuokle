@@ -7,13 +7,14 @@ import { CalculatorInput } from "../../calculations/types";
 import { calculateSystemMaterials } from "../../calculations/calculateSystemMaterials";
 import { calculateFurnitureMaterials } from "../../calculations/calculateFurnitureMaterials";
 import { useProductPrices } from "../../hooks/useProductPrices";
-import { generateCommercialProposalPdf } from "../../calculations/utils/generatePdf";
 import { useProducts } from "../../hooks/useProducts";
+import { generateCommercialProposalPdf } from "../../calculations/utils/generatePdf";
 
-const WAREHOUSE_ID = null;
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 type SubmitState = "idle" | "loading" | "success" | "error";
+
+function fmt(n: number) { return n.toFixed(2).replace(".", ","); }
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -34,98 +35,92 @@ export default function Checkout() {
     buyer.phone.trim().length > 0;
 
   const { pricesBySku: fetchedPrices, loading: pricesLoading } = useProductPrices();
-  const { productsBySku } = useProducts(); // product id lookup for order items
-  // Prefer prices already in router state (set by Summary page), fall back to freshly fetched
+  const { productsBySku } = useProducts();
   const pricesBySku = (state?.productPrices && Object.keys(state.productPrices).length > 0)
     ? state.productPrices
     : fetchedPrices;
 
-  const isGround =
-    state?.batteryType === "ezys" || state?.batteryType === "poline";
+  const isGround = state?.batteryType === "ezys" || state?.batteryType === "poline";
+  const systemMaterials  = state ? calculateSystemMaterials(state) : [];
+  const furnitureMaterials = state && isGround ? calculateFurnitureMaterials(state) : [];
 
-  const systemMaterials = state ? calculateSystemMaterials(state) : [];
-  const furnitureMaterials =
-    state && isGround ? calculateFurnitureMaterials(state) : [];
+  // ── Price helpers ───────────────────────────────────────────────────────────
+  const getPrice = (code: string) => pricesBySku[(code ?? "").split("/")[0].trim()] ?? 0;
 
+  const systemTotal = systemMaterials.reduce(
+    (sum, m) => sum + getPrice(m.code ?? "") * m.quantity, 0
+  );
+  const furnTotal = furnitureMaterials.reduce(
+    (sum, m) => sum + (pricesBySku[m.sku ?? ""] ?? 0) * m.quantity, 0
+  );
+  const grandTotal = systemTotal + furnTotal;
+
+  // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!isFormValid || !state) return;
     setSubmitState("loading");
     setErrorMsg("");
 
     try {
-      // 1. Create guest order (user + order record)
-      // const orderRes = await fetch(`${API_BASE}/orders/guest`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     warehouseId: WAREHOUSE_ID,
-      //     name: buyer.name.trim(),
-      //     email: buyer.email.trim(),
-      //     phone: buyer.phone.trim(),
-      //   }),
-      // });
-
+      // 1. Create guest order
       const body = JSON.stringify({
-        warehouseId: WAREHOUSE_ID,
         name: buyer.name.trim(),
         email: buyer.email.trim(),
         phone: buyer.phone.trim(),
       });
-      console.log("POST URL:", `${API_BASE}/orders/guest`);
-      console.log("POST body:", body);
-
       const orderRes = await fetch(`${API_BASE}/orders/guest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body,
       });
-
-      if (!orderRes.ok) {
-        throw new Error(`Klaida kuriant užsakymą: ${orderRes.status}`);
-      }
-
+      if (!orderRes.ok) throw new Error(`Klaida kuriant užsakymą: ${orderRes.status}`);
       const orderId: string = await orderRes.json();
-      console.log("Guest order created:", orderId);
 
-      // 2. Add order items — match each calculated material to a product by SKU
-      const allMaterials: Array<{ code: string; quantity: number }> = [
-        ...systemMaterials.map((m) => ({ code: m.code ?? "", quantity: m.quantity })),
-        ...furnitureMaterials.map((m) => {
-          const skuMatch = m.name.match(/\(([^)]+)\)$/);
-          return { code: skuMatch ? skuMatch[1] : "", quantity: m.quantity };
-        }),
+      // 2. Add order items
+      const allMaterials = [
+        ...systemMaterials.map((m) => ({ sku: (m.code ?? "").split("/")[0].trim(), quantity: m.quantity })),
+        ...furnitureMaterials.map((m) => ({ sku: m.sku ?? "", quantity: m.quantity })),
       ];
 
-      const itemPromises: Promise<void>[] = [];
-      for (const mat of allMaterials) {
-        if (!mat.code || mat.quantity <= 0) continue;
-        // Use first SKU from compound codes like "M10-30/M10-pov/M10-VS"
-        const sku = mat.code.split("/")[0].trim();
-        const product = productsBySku[sku];
-        if (!product) continue; // skip items with no matching product in DB
+      await Promise.allSettled(
+        allMaterials
+          .filter((m) => m.sku && m.quantity > 0 && productsBySku[m.sku])
+          .map((m) =>
+            fetch(`${API_BASE}/orders/${orderId}/items`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ productId: productsBySku[m.sku].id, quantity: m.quantity }),
+            }).then((r) => { if (!r.ok) console.warn(`Could not add item ${m.sku}: ${r.status}`); })
+          )
+      );
 
-        itemPromises.push(
-          fetch(`${API_BASE}/orders/${orderId}/items`, {
+      // 3. Generate PDF — get base64 pages back
+      const pdfPages = await generateCommercialProposalPdf(
+        buyer,
+        { ...state, productPrices: pricesBySku },
+        systemMaterials,
+        furnitureMaterials,
+      );
+
+      // 4. Save PDF pages to DB (one call per page)
+      await Promise.allSettled(
+        pdfPages.map((pageBase64, idx) =>
+          fetch(`${API_BASE}/orders/${orderId}/pdf`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productId: product.id, quantity: mat.quantity }),
-          }).then((r) => {
-            if (!r.ok) console.warn(`Could not add item ${sku}: ${r.status}`);
-          })
-        );
-      }
+            body: JSON.stringify({ pageIndex: idx, data: pageBase64 }),
+          }).then((r) => { if (!r.ok) console.warn(`PDF page ${idx} not saved: ${r.status}`); })
+        )
+      );
 
-      // Fire all item adds in parallel, don't block on failures
-      await Promise.allSettled(itemPromises);
-      console.log(`Added items to order ${orderId}`);
-
-      // 3. Generate PDF
-      await generateCommercialProposalPdf(buyer, { ...state, productPrices: pricesBySku }, systemMaterials, furnitureMaterials);
       setSubmitState("success");
     } catch (err) {
       console.error(err);
+      // Still open PDF even if API fails
       try {
-        await generateCommercialProposalPdf(buyer, { ...state, productPrices: pricesBySku }, systemMaterials, furnitureMaterials);
+        await generateCommercialProposalPdf(
+          buyer, { ...state, productPrices: pricesBySku }, systemMaterials, furnitureMaterials
+        );
       } catch (_) {}
       setErrorMsg(err instanceof Error ? err.message : "Nežinoma klaida.");
       setSubmitState("error");
@@ -136,6 +131,7 @@ export default function Checkout() {
     <div className="checkout">
       <h2 className="checkout__title">Užsakymo pateikimas</h2>
 
+      {/* ── Seller / Buyer ────────────────────────────────────────────────── */}
       <div className="checkout-header">
         <div>
           <h3>Pardavėjas</h3>
@@ -170,83 +166,16 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* {state && (
-        <div className="checkout-materials-preview">
-          <h3 className="checkout-materials-preview__title">
-            Užsakomų medžiagų sąrašas
-          </h3>
-          <table className="checkout-table">
-            <thead>
-              <tr>
-                <th>Nr.</th>
-                <th>Kodas</th>
-                <th>Pavadinimas</th>
-                <th>Kiekis, vnt.</th>
-                {isGround && <th>Ilgis, mm</th>}
-                <th>Kaina, €</th>
-                <th>Suma, €</th>
-              </tr>
-            </thead>
-            <tbody>
-              {systemMaterials.map((m, i) => (
-                <tr key={i}>
-                  <td>{i + 1}</td>
-                  <td>{m.code}</td>
-                  <td style={{ textAlign: "left" }}>{m.name}</td>
-                  <td>{m.quantity}</td>
-                  {isGround && <td>{m.length ?? "–"}</td>}
-                  {(() => {
-                    const sku = (m.code ?? "").split("/")[0].trim();
-                    const price = pricesBySku[sku] ?? null;
-                    const total = price != null ? price * m.quantity : null;
-                    return (<>
-                      <td>{price != null ? price.toFixed(2).replace(".",",") : "–"}</td>
-                      <td>{total != null ? total.toFixed(2).replace(".",",") : "–"}</td>
-                    </>);
-                  })()}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {isGround && furnitureMaterials.length > 0 && (
-            <>
-              <h3 className="checkout-materials-preview__title" style={{ marginTop: 24 }}>
-                Furnitūros sąrašas
-              </h3>
-              <table className="checkout-table">
-                <thead>
-                  <tr>
-                    <th>Nr.</th>
-                    <th>Pavadinimas</th>
-                    <th>Kiekis, vnt.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {furnitureMaterials.map((m, i) => (
-                    <tr key={i}>
-                      <td>{i + 1}</td>
-                      <td style={{ textAlign: "left" }}>{m.name}</td>
-                      <td>{m.quantity}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
-        </div>
-      )} */}
-
       {submitState === "success" && (
         <div className="checkout-status checkout-status--success">
           ✅ Užsakymas sėkmingai pateiktas!
         </div>
       )}
-      {/* {submitState === "error" && (
+      {submitState === "error" && (
         <div className="checkout-status checkout-status--error">
           ⚠️ {errorMsg || "Klaida siunčiant užsakymą."} PDF vis tiek sugeneruotas.
         </div>
-      )} */}
+      )}
 
       <div className="checkout-actions">
         <button
@@ -259,7 +188,12 @@ export default function Checkout() {
 
         <button
           className="checkout-btn checkout-btn--submit"
-          disabled={!isFormValid || submitState === "loading" || submitState === "success" || (pricesLoading && Object.keys(pricesBySku).length === 0)}
+          disabled={
+            !isFormValid ||
+            submitState === "loading" ||
+            submitState === "success" ||
+            (pricesLoading && Object.keys(pricesBySku).length === 0)
+          }
           onClick={handleSubmit}
         >
           {submitState === "loading"
@@ -272,10 +206,95 @@ export default function Checkout() {
         </button>
       </div>
 
-      {/* <p className="checkout-footer">
-        * Pateikdami paraišką sutinkate, kad jūsų kontaktiniai duomenys bus
-        naudojami komerciniam pasiūlymui parengti.
-      </p> */}
+      {state && (
+        <div className="checkout-materials-preview">
+          <h3 className="checkout-materials-preview__title">
+            Sistemos medžiagų sąrašas
+          </h3>
+          <table className="checkout-table">
+            <thead>
+              <tr>
+                <th>Nr.</th>
+                <th>Kodas</th>
+                <th>Pavadinimas</th>
+                <th>Kiekis</th>
+                {isGround && <th>Ilgis, mm</th>}
+                <th>Kaina €</th>
+                <th>Suma €</th>
+              </tr>
+            </thead>
+            <tbody>
+              {systemMaterials.map((m, i) => {
+                const price = getPrice(m.code ?? "");
+                const total = price * m.quantity;
+                return (
+                  <tr key={i}>
+                    <td>{i + 1}</td>
+                    <td>{m.code}</td>
+                    <td style={{ textAlign: "left" }}>{t(m.name, { defaultValue: m.name })}</td>
+                    <td>{m.quantity}</td>
+                    {isGround && <td>{m.length ?? "–"}</td>}
+                    <td>{fmt(price)}</td>
+                    <td>{fmt(total)}</td>
+                  </tr>
+                );
+              })}
+              <tr className="total-row">
+                <td colSpan={isGround ? 5 : 4}></td>
+                <td style={{ textAlign: "right", fontWeight: 700 }}>Viso:</td>
+                <td style={{ fontWeight: 700 }}>{fmt(systemTotal)} €</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Furniture (ground only) */}
+          {isGround && furnitureMaterials.length > 0 && (
+            <>
+              <h3 className="checkout-materials-preview__title" style={{ marginTop: 24 }}>
+                Furnitūros sąrašas
+              </h3>
+              <table className="checkout-table">
+                <thead>
+                  <tr>
+                    <th>Nr.</th>
+                    <th>Kodas</th>
+                    <th>Pavadinimas</th>
+                    <th>Kiekis</th>
+                    <th>Kaina €</th>
+                    <th>Suma €</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {furnitureMaterials.map((m, i) => {
+                    const price = pricesBySku[m.sku ?? ""] ?? 0;
+                    const total = price * m.quantity;
+                    return (
+                      <tr key={i}>
+                        <td>{i + 1}</td>
+                        <td>{m.sku}</td>
+                        <td style={{ textAlign: "left" }}>{t(m.name, { defaultValue: m.name })}</td>
+                        <td>{m.quantity}</td>
+                        <td>{fmt(price)}</td>
+                        <td>{fmt(total)}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="total-row">
+                    <td colSpan={4}></td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>Viso:</td>
+                    <td style={{ fontWeight: 700 }}>{fmt(furnTotal)} €</td>
+                  </tr>
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {/* Grand total */}
+          <div className="checkout-grand-total">
+            Bendra suma €: <strong>{fmt(grandTotal)} €</strong>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

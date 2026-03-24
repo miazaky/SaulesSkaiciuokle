@@ -353,8 +353,7 @@ function buildMaterialsPage(
 
   let furnTotal = 0;
   const furnRows: RowCell[][] = furnitureMaterials.map((m, i) => {
-    const skuMatch = m.name.match(/\(([^)]+)\)$/);
-    const sku      = skuMatch ? skuMatch[1] : "";
+    const sku      = m.sku ?? "";
     const price    = prices[sku] ?? null;
     const rowSum   = price != null ? price * m.quantity : null;
     if (rowSum != null) furnTotal += rowSum;
@@ -484,12 +483,13 @@ function buildCanvasPage(
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-export async function generateCommercialProposalPdf(
+/** Build PDF pages and return as base64 PNG data URLs — use for preview AND DB storage */
+export async function buildPdfPages(
   buyer: BuyerInfo,
   input: CalculatorInput,
   systemMaterials: CalculatedSystemMaterial[],
   furnitureMaterials: CalculatedFurnitureMaterial[],
-): Promise<void> {
+): Promise<{ offerNum: string; imgs: string[] }> {
   const offerNum = getOrderNum();
 
   const page1 = buildMaterialsPage(buyer, input, systemMaterials, furnitureMaterials, offerNum);
@@ -499,9 +499,23 @@ export async function generateCommercialProposalPdf(
     : null;
 
   const imgs = [page1, ...(page2 ? [page2] : [])].map((c) => c.toDataURL("image/png"));
+  return { offerNum, imgs };
+}
+
+/** Build pages then open a print preview window */
+export async function generateCommercialProposalPdf(
+  buyer: BuyerInfo,
+  input: CalculatorInput,
+  systemMaterials: CalculatedSystemMaterial[],
+  furnitureMaterials: CalculatedFurnitureMaterial[],
+): Promise<string[]> {
+  const { offerNum, imgs } = await buildPdfPages(buyer, input, systemMaterials, furnitureMaterials);
 
   const pw = window.open("", "_blank");
-  if (!pw) { alert("Prašome leisti iššokančius langus šiam puslapiui."); return; }
+  if (!pw) { 
+    alert("Prašome leisti iššokančius langus šiam puslapiui."); 
+    return imgs; 
+  }
 
   pw.document.write(`<!DOCTYPE html>
 <html>
@@ -539,4 +553,5 @@ export async function generateCommercialProposalPdf(
 </body>
 </html>`);
   pw.document.close();
+  return imgs;
 }

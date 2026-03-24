@@ -4,7 +4,8 @@ import { furnitureRegistry } from "./solarGround/furnitureRegistry";
 import { registry as formulaRegistry } from "./solarGround/formulaRegistry";
 
 export type CalculatedFurnitureMaterial = {
-  name: string;
+  name: string;   // i18n key or display name
+  sku: string;    // clean SKU for price lookup and DB matching
   quantity: number;
   note?: string;
 };
@@ -18,16 +19,21 @@ export function calculateFurnitureMaterials(input: CalculatorInput): CalculatedF
       throw new Error(`Furniture formula '${m.qty}' returned non-number: ${String(qtyVal)}`);
     }
 
-    let displayName = m.name;
-    if (m.skuFormula) {
-      const sku = String(formulaRegistry[m.skuFormula]?.(input) ?? "");
-      displayName = `${m.name} (${sku})`;
-    }
+    // Resolve dynamic SKU (e.g. Clamp G30/G35 based on thickness)
+    const sku = m.skuFormula
+      ? String(formulaRegistry[m.skuFormula]?.(input) ?? "")
+      : extractSku(m.name);
 
     return {
-      name: displayName,
+      name: m.name,
+      sku,
       quantity: qty,
       note: m.note ?? "",
     };
   });
+}
+
+function extractSku(name: string): string {
+  const match = name.match(/\(([^)]+)\)$/);
+  return match ? match[1] : "";
 }
