@@ -1166,7 +1166,7 @@ export default function SolarRoofCanvas() {
             className="solar-calculator__actions"
             onClick={() => {
               const img = captureGridImage();
-              navigate("/summaryRoof", {
+              navigate("/checkout", {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
@@ -1213,7 +1213,7 @@ export default function SolarRoofCanvas() {
             disabled={hasIsolatedModules}
             onClick={() => {
               const img = captureGridImage();
-              navigate("/summaryRoof", {
+              navigate("/checkout", {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
