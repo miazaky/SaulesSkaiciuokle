@@ -307,3 +307,78 @@
   font-size: 17px;
   margin-left: 8px;
 }
+
+/* ── Proposal checkbox ───────────────────────────────────────────────────── */
+.proposal-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--color-highlight);
+  border: 2px solid var(--color-accent);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.proposal-checkbox:hover {
+  background: #f0dfc8;
+}
+
+.proposal-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  margin-top: 2px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.proposal-checkbox span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.proposal-checkbox strong {
+  font-family: 'Hind', sans-serif;
+  font-size: 14px;
+  color: var(--color-brand);
+}
+
+.proposal-checkbox small {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ── Proposal info banner ────────────────────────────────────────────────── */
+.checkout-proposal-banner {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: var(--color-highlight);
+  border-left: 4px solid var(--color-accent);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--color-brand);
+  font-family: 'Hind', sans-serif;
+  font-weight: 500;
+}
+
+/* ── Grand total ─────────────────────────────────────────────────────────── */
+.checkout-grand-total {
+  margin-top: 16px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-strong));
+  color: #fff;
+  border-radius: 8px;
+  font-family: 'Hind', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.checkout-grand-total strong {
+  font-size: 17px;
+  margin-left: 8px;
+}

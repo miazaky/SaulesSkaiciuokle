@@ -12,6 +12,12 @@ import { generateCommercialProposalPdf } from "../../calculations/utils/generate
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
+// Matches backend OrderType enum
+const ORDER_TYPE = {
+  SpecialOffer:   1,
+  NoSpecialOffer: 2,
+} as const;
+
 type SubmitState = "idle" | "loading" | "success" | "error";
 
 function fmt(n: number) { return n.toFixed(2).replace(".", ","); }
@@ -21,9 +27,12 @@ export default function Checkout() {
   const { t } = useTranslation();
   const { state } = useLocation() as { state: CalculatorInput };
 
-  const [buyer, setBuyer] = useState(initialBuyer);
+  const [buyer, setBuyer]           = useState(initialBuyer);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg]     = useState("");
+
+  // Checkbox: does the user want a special proposal (PDF with prices)?
+  const [wantsProposal, setWantsProposal] = useState(true);
 
   const updateBuyer = (field: keyof typeof initialBuyer, value: string) => {
     setBuyer((prev) => ({ ...prev, [field]: value }));
@@ -35,17 +44,18 @@ export default function Checkout() {
     buyer.phone.trim().length > 0;
 
   const { pricesBySku: fetchedPrices, loading: pricesLoading } = useProductPrices();
-  const { productsBySku } = useProducts();
+  const { productsBySku, loading: productsLoading } = useProducts();
   const pricesBySku = (state?.productPrices && Object.keys(state.productPrices).length > 0)
     ? state.productPrices
     : fetchedPrices;
 
   const isGround = state?.batteryType === "ezys" || state?.batteryType === "poline";
-  const systemMaterials  = state ? calculateSystemMaterials(state) : [];
+  const systemMaterials    = state ? calculateSystemMaterials(state) : [];
   const furnitureMaterials = state && isGround ? calculateFurnitureMaterials(state) : [];
 
-  // ── Price helpers ───────────────────────────────────────────────────────────
-  const getPrice = (code: string) => pricesBySku[(code ?? "").split("/")[0].trim()] ?? 0;
+  // ── Price helpers ────────────────────────────────────────────────────────────
+  const getPrice = (code: string) =>
+    pricesBySku[(code ?? "").split("/")[0].trim()] ?? 0;
 
   const systemTotal = systemMaterials.reduce(
     (sum, m) => sum + getPrice(m.code ?? "") * m.quantity, 0
@@ -55,31 +65,43 @@ export default function Checkout() {
   );
   const grandTotal = systemTotal + furnTotal;
 
-  // ── Submit ──────────────────────────────────────────────────────────────────
+  // ── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!isFormValid || !state) return;
     setSubmitState("loading");
     setErrorMsg("");
 
     try {
-      // 1. Create guest order
-      const body = JSON.stringify({
-        name: buyer.name.trim(),
-        email: buyer.email.trim(),
-        phone: buyer.phone.trim(),
-      });
+      // 1. Create guest order — orderType depends on checkbox
+      //    wantsProposal = true  → SpecialOffer   (PDF will be generated & saved)
+      //    wantsProposal = false → NoSpecialOffer  (just price summary shown, no PDF)
+      const orderType = wantsProposal
+        ? ORDER_TYPE.SpecialOffer
+        : ORDER_TYPE.NoSpecialOffer;
+
       const orderRes = await fetch(`${API_BASE}/orders/guest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body,
+        body: JSON.stringify({
+          name:      buyer.name.trim(),
+          email:     buyer.email.trim(),
+          phone:     buyer.phone.trim(),
+          orderType,
+        }),
       });
       if (!orderRes.ok) throw new Error(`Klaida kuriant užsakymą: ${orderRes.status}`);
       const orderId: string = await orderRes.json();
 
       // 2. Add order items
       const allMaterials = [
-        ...systemMaterials.map((m) => ({ sku: (m.code ?? "").split("/")[0].trim(), quantity: m.quantity })),
-        ...furnitureMaterials.map((m) => ({ sku: m.sku ?? "", quantity: m.quantity })),
+        ...systemMaterials.map((m) => ({
+          sku: (m.code ?? "").split("/")[0].trim(),
+          quantity: m.quantity,
+        })),
+        ...furnitureMaterials.map((m) => ({
+          sku: m.sku ?? "",
+          quantity: m.quantity,
+        })),
       ];
 
       await Promise.allSettled(
@@ -89,49 +111,58 @@ export default function Checkout() {
             fetch(`${API_BASE}/orders/${orderId}/items`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ productId: productsBySku[m.sku].id, quantity: m.quantity }),
-            }).then((r) => { if (!r.ok) console.warn(`Could not add item ${m.sku}: ${r.status}`); })
+              body: JSON.stringify({
+                productId: productsBySku[m.sku].id,
+                quantity: m.quantity,
+              }),
+            }).then((r) => {
+              if (!r.ok) console.warn(`Could not add item ${m.sku}: ${r.status}`);
+            })
           )
       );
 
-      // 3. Generate PDF — get base64 pages back
-      const pdfPages = await generateCommercialProposalPdf(
-        buyer,
-        { ...state, productPrices: pricesBySku },
-        systemMaterials,
-        furnitureMaterials,
-      );
+      // 3. If user wants special proposal → generate PDF, open in new window, save to DB
+      if (wantsProposal) {
+        const pdfPages = await generateCommercialProposalPdf(
+          buyer,
+          { ...state, productPrices: pricesBySku },
+          systemMaterials,
+          furnitureMaterials,
+        );
 
-      // 4. Save PDF pages to DB (one call per page)
-      await Promise.allSettled(
-        pdfPages.map((pageBase64, idx) =>
-          fetch(`${API_BASE}/orders/${orderId}/pdf`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pageIndex: idx, data: pageBase64 }),
-          }).then((r) => { if (!r.ok) console.warn(`PDF page ${idx} not saved: ${r.status}`); })
-        )
-      );
+        await Promise.allSettled(
+          pdfPages.map((pageBase64, idx) =>
+            fetch(`${API_BASE}/orders/${orderId}/pdf`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pageIndex: idx, data: pageBase64 }),
+            }).then((r) => {
+              if (!r.ok) console.warn(`PDF page ${idx} not saved: ${r.status}`);
+            })
+          )
+        );
+      }
 
       setSubmitState("success");
     } catch (err) {
       console.error(err);
-      // Still open PDF even if API fails
-      try {
-        await generateCommercialProposalPdf(
-          buyer, { ...state, productPrices: pricesBySku }, systemMaterials, furnitureMaterials
-        );
-      } catch (_) {}
       setErrorMsg(err instanceof Error ? err.message : "Nežinoma klaida.");
       setSubmitState("error");
     }
   };
 
+  const isSubmitDisabled =
+    !isFormValid ||
+    submitState === "loading" ||
+    submitState === "success" ||
+    productsLoading ||
+    (pricesLoading && Object.keys(pricesBySku).length === 0);
+
   return (
     <div className="checkout">
       <h2 className="checkout__title">Užsakymo pateikimas</h2>
 
-      {/* ── Seller / Buyer ────────────────────────────────────────────────── */}
+      {/* ── Seller / Buyer ─────────────────────────────────────────────────── */}
       <div className="checkout-header">
         <div>
           <h3>Pardavėjas</h3>
@@ -163,50 +194,25 @@ export default function Checkout() {
               />
             </div>
           ))}
+
+          {/* ── Proposal checkbox ──────────────────────────────────────────── */}
+          <label className="proposal-checkbox">
+            <input
+              type="checkbox"
+              checked={wantsProposal}
+              onChange={(e) => setWantsProposal(e.target.checked)}
+              disabled={submitState === "loading" || submitState === "success"}
+            />
+            <span>
+              <strong>Noriu specialaus pasiūlymo</strong>
+              <small>Susisieksime su jumis dėl specialaus pasiūlymo</small>
+            </span>
+          </label>
         </div>
       </div>
 
-      {submitState === "success" && (
-        <div className="checkout-status checkout-status--success">
-          ✅ Užsakymas sėkmingai pateiktas!
-        </div>
-      )}
-      {submitState === "error" && (
-        <div className="checkout-status checkout-status--error">
-          ⚠️ {errorMsg || "Klaida siunčiant užsakymą."} PDF vis tiek sugeneruotas.
-        </div>
-      )}
-
-      <div className="checkout-actions">
-        <button
-          className="checkout-btn checkout-btn--back"
-          onClick={() => navigate(-1)}
-          disabled={submitState === "loading"}
-        >
-          {t("actions.back")}
-        </button>
-
-        <button
-          className="checkout-btn checkout-btn--submit"
-          disabled={
-            !isFormValid ||
-            submitState === "loading" ||
-            submitState === "success" ||
-            (pricesLoading && Object.keys(pricesBySku).length === 0)
-          }
-          onClick={handleSubmit}
-        >
-          {submitState === "loading"
-            ? "Siunčiama..."
-            : submitState === "success"
-            ? "✅ Išsiųsta"
-            : pricesLoading && Object.keys(pricesBySku).length === 0
-            ? "⏳ Kraunamos kainos..."
-            : "Pateikti užsakymą"}
-        </button>
-      </div>
-
-      {state && (
+      {/* ── Price summary — shown only when proposal NOT requested ─────────── */}
+      {state && !wantsProposal && (
         <div className="checkout-materials-preview">
           <h3 className="checkout-materials-preview__title">
             Sistemos medžiagų sąrašas
@@ -247,7 +253,6 @@ export default function Checkout() {
             </tbody>
           </table>
 
-          {/* Furniture (ground only) */}
           {isGround && furnitureMaterials.length > 0 && (
             <>
               <h3 className="checkout-materials-preview__title" style={{ marginTop: 24 }}>
@@ -289,12 +294,51 @@ export default function Checkout() {
             </>
           )}
 
-          {/* Grand total */}
           <div className="checkout-grand-total">
-            Bendra suma €: <strong>{fmt(grandTotal)} €</strong>
+            Bendra suma: <strong>{fmt(grandTotal)} €</strong>
           </div>
         </div>
       )}
+
+      {/* ── Status messages ─────────────────────────────────────────────────── */}
+      {submitState === "success" && (
+        <div className="checkout-status checkout-status--success">
+          ✅ Užsakymas sėkmingai pateiktas!
+          {wantsProposal && " Susisieksime su jumis dėl specialaus pasiūlymo."}
+        </div>
+      )}
+      {submitState === "error" && (
+        <div className="checkout-status checkout-status--error">
+          ⚠️ {errorMsg || "Klaida siunčiant užsakymą."}
+        </div>
+      )}
+
+      {/* ── Buttons ─────────────────────────────────────────────────────────── */}
+      <div className="checkout-actions">
+        <button
+          className="checkout-btn checkout-btn--back"
+          onClick={() => navigate(-1)}
+          disabled={submitState === "loading"}
+        >
+          {t("actions.back")}
+        </button>
+
+        <button
+          className="checkout-btn checkout-btn--submit"
+          disabled={isSubmitDisabled}
+          onClick={handleSubmit}
+        >
+          {submitState === "loading"
+            ? "Siunčiama..."
+            : submitState === "success"
+            ? "✅ Išsiųsta"
+            : (pricesLoading || productsLoading)
+            ? "⏳ Kraunama..."
+            : wantsProposal
+            ? "Pateikti užsakymą"
+            : "Pateikti užsakymą"}
+        </button>
+      </div>
     </div>
   );
 }
