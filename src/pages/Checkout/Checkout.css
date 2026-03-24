@@ -431,3 +431,58 @@
   font-size: 13px;
   color: #166534;
 }
+
+/* ── Proposal upgrade block (inside price card) ─────────────────────────── */
+.checkout-proposal-upgrade {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #86efac;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkout-proposal-upgrade__text {
+  font-size: 14px;
+  color: #166534;
+  margin: 0;
+  text-align: center;
+}
+
+.checkout-proposal-upgrade__error {
+  font-size: 13px;
+  color: #dc2626;
+  margin: 0;
+}
+
+.checkout-proposal-upgrade__success {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #86efac;
+  font-size: 14px;
+  font-weight: 600;
+  color: #15803d;
+  text-align: center;
+}
+
+.checkout-btn--proposal {
+  background: #15803d;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.checkout-btn--proposal:hover:not(:disabled) {
+  background: #166534;
+}
+
+.checkout-btn--proposal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
