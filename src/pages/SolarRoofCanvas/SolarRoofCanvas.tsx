@@ -1256,7 +1256,7 @@ export default function SolarRoofCanvas() {
             disabled={hasIsolatedModules}
             onClick={() => {
               const img = captureGridImage();
-              navigate("/summaryRoof", {
+              navigate("/checkout", {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
