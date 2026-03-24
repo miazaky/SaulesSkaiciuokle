@@ -267,6 +267,12 @@
   background: #d5e4f3;
 }
 
+.checkout-btn--back:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
 .checkout-btn--submit {
   color: #ffffff;
   background: linear-gradient(135deg, var(--color-brand), var(--color-brand-strong));
@@ -401,25 +407,25 @@
 .checkout-price-result {
   margin: 24px 0;
   padding: 24px 32px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 2px solid #86efac;
-  border-radius: 12px;
+  background: #F7F8FA;
+  border: 1px solid #D9DEE3;
+  border-radius: 8px;
   text-align: center;
 }
 
 .checkout-price-result__label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
-  color: #15803d;
+  color: #6B737B;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   margin-bottom: 8px;
 }
 
 .checkout-price-result__value {
   font-size: 42px;
   font-weight: 800;
-  color: #14532d;
+  color: #2B2F33;
   line-height: 1;
 }
 
@@ -429,14 +435,14 @@
   gap: 24px;
   margin-top: 10px;
   font-size: 13px;
-  color: #166534;
+  color: #6B737B;
 }
 
 /* ── Proposal upgrade block (inside price card) ─────────────────────────── */
 .checkout-proposal-upgrade {
   margin-top: 20px;
   padding-top: 18px;
-  border-top: 1px solid #86efac;
+  border-top: 1px solid #D9DEE3;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -445,7 +451,7 @@
 
 .checkout-proposal-upgrade__text {
   font-size: 14px;
-  color: #166534;
+  color: #6B737B;
   margin: 0;
   text-align: center;
 }
@@ -459,15 +465,15 @@
 .checkout-proposal-upgrade__success {
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px solid #86efac;
+  border-top: 1px solid #D9DEE3;
   font-size: 14px;
   font-weight: 600;
-  color: #15803d;
+  color: #2B2F33;
   text-align: center;
 }
 
 .checkout-btn--proposal {
-  background: #15803d;
+  background: #D8892D;
   color: #fff;
   border: none;
   padding: 10px 24px;
@@ -479,7 +485,7 @@
 }
 
 .checkout-btn--proposal:hover:not(:disabled) {
-  background: #166534;
+  background: #c07828;
 }
 
 .checkout-btn--proposal:disabled {

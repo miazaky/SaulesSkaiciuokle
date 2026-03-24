@@ -250,6 +250,9 @@ export default function Checkout() {
           {/* ── Proposal upgrade section ─────────────────────────────── */}
           {upgradeState !== "success" && (
             <div className="checkout-proposal-upgrade">
+              {/* <p className="checkout-proposal-upgrade__text">
+                Norite gauti individualų komercinį pasiūlymą su išsamia informacija?
+              </p> */}
               {upgradeState === "error" && (
                 <p className="checkout-proposal-upgrade__error">⚠️ {upgradeError}</p>
               )}
@@ -265,7 +268,7 @@ export default function Checkout() {
 
           {upgradeState === "success" && (
             <div className="checkout-proposal-upgrade__success">
-              Pasiūlymas išsiųstas! Susisieksime su jumis.
+              ✅ Pasiūlymas išsiųstas! Susisieksime su jumis.
             </div>
           )}
         </div>
@@ -281,9 +284,9 @@ export default function Checkout() {
       {/* ── Buttons ─────────────────────────────────────────────────────── */}
       <div className="checkout-actions">
         <button
-          className="checkout-btn checkout-btn--back"
+          className="checkout-btn checkout-btn--submit"
           onClick={() => navigate(-1)}
-          disabled={submitState === "loading"}
+          // disabled={submitState === "loading" || submitState === "success"}
         >
           {t("actions.back")}
         </button>
