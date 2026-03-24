@@ -83,5 +83,18 @@ export const registry: Record<string, FormulaFn> = {
 
   clampGQty: () => 8,
   clampVQty: (i) => (i.moduleCount - 2) * 2,
-  profileLength: (i) => i.profileLength
+  profileLength: (i) => i.profileLength,
+
+  clampGCode: (i) => {
+    const isBlack = i.moduleColor === "juoda";
+    const thickness = Number(i.moduleThickness);
+    const t = thickness <= 30 ? 30 : 35;
+    if (isBlack) return t === 30 ? "Clamp G30J" : "Clamp G35J";
+    return t === 30 ? "Clamp G30" : "Clamp G35";
+  },
+
+  clampVCode: (i) => {
+    const isBlack = i.moduleColor === "juoda";
+    return isBlack ? "Clamp VJ" : "Clamp V";
+  },
 };

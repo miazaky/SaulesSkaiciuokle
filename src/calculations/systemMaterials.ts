@@ -710,13 +710,18 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
     },
   },
   {
-    code: "Clamp G35",
+    code: (i) => {
+      const isBlack = i.moduleColor === "juoda";
+      const t = Number(i.moduleThickness) <= 30 ? 30 : 35;
+      if (isBlack) return t === 30 ? "Clamp G30J" : "Clamp G35J";
+      return t === 30 ? "Clamp G30" : "Clamp G35";
+    },
     name: "Galinių prispaudėjų kompl.",
     length: null,
     calculateQuantity: () => 8, // J17
   },
   {
-    code: "Clamp V",
+    code: (i) => i.moduleColor === "juoda" ? "Clamp VJ" : "Clamp V",
     name: "Vidinių prispaudėjų kompl.",
     length: null,
     calculateQuantity: (i) => (i.moduleCount - 2) * 2,
@@ -764,14 +769,14 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["RV10", "RV10-Z"],
-    code: "",
+    code: (i) => { const b = i.moduleColor === "juoda"; const t = Number(i.moduleThickness) <= 30 ? "G30" : "G35"; return b ? `Clamp ${t}J` : `Clamp ${t}`; },
     name: "Prispaudėjas galinis",
     length: null,
     calculateQuantity: (i) => calculateRVClampBackQuantity(i.moduleCount, i.rowsCount, i.clampGCount, i.isEvenModules),
   },
   {
     systems: ["RV10", "RV10-Z"],
-    code: "",
+    code: (i) => i.moduleColor === "juoda" ? "Clamp VJ" : "Clamp V",
     name: "Prispaudėjas vidinis",
     length: null,
     calculateQuantity: (i) => calculateRVClampInnerQuantity(i.moduleCount, i.rowsCount, i.clampVCount, i.isEvenModules),
@@ -950,7 +955,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["ilgoji"],
-    code: "",
+    code: (i) => { const b = i.moduleColor === "juoda"; const t = Number(i.moduleThickness) <= 30 ? "G30" : "G35"; return b ? `Clamp ${t}J` : `Clamp ${t}`; },
     name: "Prispaudėjas galinis",
     length: null,
     calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.isEvenModules),
@@ -991,7 +996,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["trumpoji"],
-    code: "",
+    code: (i) => { const b = i.moduleColor === "juoda"; const t = Number(i.moduleThickness) <= 30 ? "G30" : "G35"; return b ? `Clamp ${t}J` : `Clamp ${t}`; },
     name: "Prispaudėjas galinis",
     length: null,
     calculateQuantity: (i) => calculatePT15BackClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.isEvenModules),
@@ -999,7 +1004,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   {
     systems: ["PT15-L"],
     construction: ["trumpoji"],
-    code: "",
+    code: (i) => i.moduleColor === "juoda" ? "Clamp VJ" : "Clamp V",
     name: "Prispaudėjas vidinis",
     length: null,
     calculateQuantity: (i) => calculatePT15InnerClampQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampVCount, i.isEvenModules),
@@ -1081,7 +1086,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
-    code: "",
+    code: (i) => { const b = i.moduleColor === "juoda"; const t = Number(i.moduleThickness) <= 30 ? "G30" : "G35"; return b ? `Clamp ${t}J` : `Clamp ${t}`; },
     name: "Prispaudėjas galinis",
     length: null,
     calculateQuantity: (i) =>
@@ -1089,7 +1094,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
-    code: "",
+    code: (i) => i.moduleColor === "juoda" ? "Clamp VJ" : "Clamp V",
     name: "Prispaudėjas vidinis",
     length: null,
     calculateQuantity: (i) =>
@@ -1245,7 +1250,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       "screwsEPDM40",
       "screwsEPDM80",
     ],
-    code: "",
+    code: (i) => { const b = i.moduleColor === "juoda"; const t = Number(i.moduleThickness) <= 30 ? "G30" : "G35"; return b ? `Clamp ${t}J` : `Clamp ${t}`; },
     name: MATERIAL_KEYS.clampG,
     length: null,
     calculateQuantity: (i) => calculateM80ClampGQuantity(i.moduleCount),
@@ -1273,7 +1278,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       "screwsEPDM40",
       "screwsEPDM80",
     ],
-    code: "",
+    code: (i) => i.moduleColor === "juoda" ? "Clamp VJ" : "Clamp V",
     name: MATERIAL_KEYS.clampV,
     length: null,
     calculateQuantity: (i) => calculateClampVQuantity(i.moduleCount),

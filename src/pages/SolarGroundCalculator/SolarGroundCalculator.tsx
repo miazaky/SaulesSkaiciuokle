@@ -290,7 +290,7 @@ export default function SolarGroundCalculator() {
         className="solar-calculator__actions"
         disabled={!isFormValid}
         onClick={() =>
-          navigate("/checkout", {
+          navigate("/summary", {
             state: {
               batteryType,
               moduleCount,
