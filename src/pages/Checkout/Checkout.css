@@ -382,3 +382,52 @@
   font-size: 17px;
   margin-left: 8px;
 }
+
+/* ── Validation ─────────────────────────────────────────────────────────── */
+.invoice-input--error {
+  border-color: #ef4444 !important;
+  background: #fff5f5;
+}
+
+.input-error-msg {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+/* ── Price result block ─────────────────────────────────────────────────── */
+.checkout-price-result {
+  margin: 24px 0;
+  padding: 24px 32px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 2px solid #86efac;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.checkout-price-result__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #15803d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.checkout-price-result__value {
+  font-size: 42px;
+  font-weight: 800;
+  color: #14532d;
+  line-height: 1;
+}
+
+.checkout-price-result__breakdown {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #166534;
+}

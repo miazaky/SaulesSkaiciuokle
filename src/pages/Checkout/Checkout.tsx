@@ -12,7 +12,6 @@ import { generateCommercialProposalPdf } from "../../calculations/utils/generate
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-// Matches backend OrderType enum
 const ORDER_TYPE = {
   SpecialOffer:   1,
   NoSpecialOffer: 2,
@@ -22,26 +21,57 @@ type SubmitState = "idle" | "loading" | "success" | "error";
 
 function fmt(n: number) { return n.toFixed(2).replace(".", ","); }
 
+// ── Validation helpers ────────────────────────────────────────────────────────
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Accepts: +370XXXXXXXX (8 digits after +370) or 0XXXXXXXX (local, 8 digits after leading 0)
+const PHONE_RE = /^(\+370\d{8}|0\d{8})$/;
+
+function validateEmail(v: string) {
+  if (!v.trim()) return "El. paštas yra privalomas";
+  if (!EMAIL_RE.test(v.trim())) return "Neteisingas el. pašto formatas";
+  return "";
+}
+
+function validatePhone(v: string) {
+  const cleaned = v.replace(/\s/g, "");
+  if (!cleaned) return "Telefono numeris yra privalomas";
+  if (!PHONE_RE.test(cleaned)) return "Numeris turi būti +370XXXXXXXX arba 8XXXXXXXX";
+  return "";
+}
+
+function validateName(v: string) {
+  if (!v.trim()) return "Vardas yra privalomas";
+  return "";
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { state } = useLocation() as { state: CalculatorInput };
 
-  const [buyer, setBuyer]           = useState(initialBuyer);
+  const [buyer, setBuyer]             = useState(initialBuyer);
+  const [touched, setTouched]         = useState<Record<string, boolean>>({});
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
-  const [errorMsg, setErrorMsg]     = useState("");
+  const [errorMsg, setErrorMsg]       = useState("");
+  const [showPrice, setShowPrice]     = useState(false);
 
-  // Checkbox: does the user want a special proposal (PDF with prices)?
   const [wantsProposal, setWantsProposal] = useState(true);
 
   const updateBuyer = (field: keyof typeof initialBuyer, value: string) => {
     setBuyer((prev) => ({ ...prev, [field]: value }));
   };
 
-  const isFormValid =
-    buyer.name.trim().length > 0 &&
-    buyer.email.trim().length > 0 &&
-    buyer.phone.trim().length > 0;
+  const markTouched = (field: string) =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  // Per-field errors
+  const errors = {
+    name:  validateName(buyer.name),
+    email: validateEmail(buyer.email),
+    phone: validatePhone(buyer.phone),
+  };
+
+  const isFormValid = !errors.name && !errors.email && !errors.phone;
 
   const { pricesBySku: fetchedPrices, loading: pricesLoading } = useProductPrices();
   const { productsBySku, loading: productsLoading } = useProducts();
@@ -53,7 +83,6 @@ export default function Checkout() {
   const systemMaterials    = state ? calculateSystemMaterials(state) : [];
   const furnitureMaterials = state && isGround ? calculateFurnitureMaterials(state) : [];
 
-  // ── Price helpers ────────────────────────────────────────────────────────────
   const getPrice = (code: string) =>
     pricesBySku[(code ?? "").split("/")[0].trim()] ?? 0;
 
@@ -65,16 +94,16 @@ export default function Checkout() {
   );
   const grandTotal = systemTotal + furnTotal;
 
-  // ── Submit ───────────────────────────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
+    // Mark all fields touched so errors show
+    setTouched({ name: true, email: true, phone: true });
     if (!isFormValid || !state) return;
+
     setSubmitState("loading");
     setErrorMsg("");
 
     try {
-      // 1. Create guest order — orderType depends on checkbox
-      //    wantsProposal = true  → SpecialOffer   (PDF will be generated & saved)
-      //    wantsProposal = false → NoSpecialOffer  (just price summary shown, no PDF)
       const orderType = wantsProposal
         ? ORDER_TYPE.SpecialOffer
         : ORDER_TYPE.NoSpecialOffer;
@@ -83,16 +112,15 @@ export default function Checkout() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name:      buyer.name.trim(),
-          email:     buyer.email.trim(),
-          phone:     buyer.phone.trim(),
+          name:  buyer.name.trim(),
+          email: buyer.email.trim(),
+          phone: buyer.phone.replace(/\s/g, "").trim(),
           orderType,
         }),
       });
       if (!orderRes.ok) throw new Error(`Klaida kuriant užsakymą: ${orderRes.status}`);
       const orderId: string = await orderRes.json();
 
-      // 2. Add order items
       const allMaterials = [
         ...systemMaterials.map((m) => ({
           sku: (m.code ?? "").split("/")[0].trim(),
@@ -121,7 +149,6 @@ export default function Checkout() {
           )
       );
 
-      // 3. If user wants special proposal → generate PDF, open in new window, save to DB
       if (wantsProposal) {
         const pdfPages = await generateCommercialProposalPdf(
           buyer,
@@ -143,6 +170,8 @@ export default function Checkout() {
         );
       }
 
+      // Show price after successful submit (only for non-proposal orders)
+      if (!wantsProposal) setShowPrice(true);
       setSubmitState("success");
     } catch (err) {
       console.error(err);
@@ -152,17 +181,18 @@ export default function Checkout() {
   };
 
   const isSubmitDisabled =
-    !isFormValid ||
     submitState === "loading" ||
     submitState === "success" ||
     productsLoading ||
     (pricesLoading && Object.keys(pricesBySku).length === 0);
 
+  const isLocked = submitState === "loading" || submitState === "success";
+
   return (
     <div className="checkout">
       <h2 className="checkout__title">Užsakymo pateikimas</h2>
 
-      {/* ── Seller / Buyer ─────────────────────────────────────────────────── */}
+      {/* ── Seller / Buyer ───────────────────────────────────────────────── */}
       <div className="checkout-header">
         <div>
           <h3>Pardavėjas</h3>
@@ -178,133 +208,66 @@ export default function Checkout() {
 
         <div>
           <h3>Pirkėjo informacija</h3>
-          {buyerFields.map(({ key, placeholder, type, required }) => (
-            <div key={key} className="input-group">
-              <label className="input-label">
-                {placeholder}
-                {required && <span className="required-star"> *</span>}
-              </label>
-              <input
-                className="invoice-input"
-                type={type}
-                placeholder={placeholder}
-                value={buyer[key]}
-                onChange={(e) => updateBuyer(key, e.target.value)}
-                disabled={submitState === "loading" || submitState === "success"}
-              />
-            </div>
-          ))}
+          {buyerFields.map(({ key, placeholder, required }) => {
+            const err = touched[key] ? errors[key] : "";
+            return (
+              <div key={key} className="input-group">
+                <label className="input-label">
+                  {placeholder}
+                  {required && <span className="required-star"> *</span>}
+                </label>
+                <input
+                  className={`invoice-input${err ? " invoice-input--error" : ""}`}
+                  type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
+                  placeholder={
+                    key === "phone" ? "+370XXXXXXXX arba 0XXXXXXXX" : placeholder
+                  }
+                  value={buyer[key]}
+                  onChange={(e) => updateBuyer(key, e.target.value)}
+                  onBlur={() => markTouched(key)}
+                  disabled={isLocked}
+                />
+                {err && (
+                  <span className="input-error-msg">{err}</span>
+                )}
+              </div>
+            );
+          })}
 
-          {/* ── Proposal checkbox ──────────────────────────────────────────── */}
+          {/* ── Proposal checkbox ─────────────────────────────────────── */}
           <label className="proposal-checkbox">
             <input
               type="checkbox"
               checked={wantsProposal}
               onChange={(e) => setWantsProposal(e.target.checked)}
-              disabled={submitState === "loading" || submitState === "success"}
+              disabled={isLocked}
             />
             <span>
-              <strong>Noriu specialaus pasiūlymo</strong>
-              <small>Susisieksime su jumis dėl specialaus pasiūlymo</small>
+              <strong>Noriu gauti pasiūlymą</strong>
+              <small>Susisieksime su jumis dėl pasiūlymo</small>
             </span>
           </label>
         </div>
       </div>
 
-      {/* ── Price summary — shown only when proposal NOT requested ─────────── */}
-      {state && !wantsProposal && (
-        <div className="checkout-materials-preview">
-          <h3 className="checkout-materials-preview__title">
-            Sistemos medžiagų sąrašas
-          </h3>
-          <table className="checkout-table">
-            <thead>
-              <tr>
-                <th>Nr.</th>
-                <th>Kodas</th>
-                <th>Pavadinimas</th>
-                <th>Kiekis</th>
-                {isGround && <th>Ilgis, mm</th>}
-                <th>Kaina €</th>
-                <th>Suma €</th>
-              </tr>
-            </thead>
-            <tbody>
-              {systemMaterials.map((m, i) => {
-                const price = getPrice(m.code ?? "");
-                const total = price * m.quantity;
-                return (
-                  <tr key={i}>
-                    <td>{i + 1}</td>
-                    <td>{m.code}</td>
-                    <td style={{ textAlign: "left" }}>{t(m.name, { defaultValue: m.name })}</td>
-                    <td>{m.quantity}</td>
-                    {isGround && <td>{m.length ?? "–"}</td>}
-                    <td>{fmt(price)}</td>
-                    <td>{fmt(total)}</td>
-                  </tr>
-                );
-              })}
-              <tr className="total-row">
-                <td colSpan={isGround ? 5 : 4}></td>
-                <td style={{ textAlign: "right", fontWeight: 700 }}>Viso:</td>
-                <td style={{ fontWeight: 700 }}>{fmt(systemTotal)} €</td>
-              </tr>
-            </tbody>
-          </table>
-
-          {isGround && furnitureMaterials.length > 0 && (
-            <>
-              <h3 className="checkout-materials-preview__title" style={{ marginTop: 24 }}>
-                Furnitūros sąrašas
-              </h3>
-              <table className="checkout-table">
-                <thead>
-                  <tr>
-                    <th>Nr.</th>
-                    <th>Kodas</th>
-                    <th>Pavadinimas</th>
-                    <th>Kiekis</th>
-                    <th>Kaina €</th>
-                    <th>Suma €</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {furnitureMaterials.map((m, i) => {
-                    const price = pricesBySku[m.sku ?? ""] ?? 0;
-                    const total = price * m.quantity;
-                    return (
-                      <tr key={i}>
-                        <td>{i + 1}</td>
-                        <td>{m.sku}</td>
-                        <td style={{ textAlign: "left" }}>{t(m.name, { defaultValue: m.name })}</td>
-                        <td>{m.quantity}</td>
-                        <td>{fmt(price)}</td>
-                        <td>{fmt(total)}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr className="total-row">
-                    <td colSpan={4}></td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>Viso:</td>
-                    <td style={{ fontWeight: 700 }}>{fmt(furnTotal)} €</td>
-                  </tr>
-                </tbody>
-              </table>
-            </>
+      {/* ── Price — shown only after successful submit (no proposal) ─────── */}
+      {showPrice && submitState === "success" && !wantsProposal && (
+        <div className="checkout-price-result">
+          <div className="checkout-price-result__label">Bendra sistemos kaina</div>
+          <div className="checkout-price-result__value">{fmt(grandTotal)} €</div>
+          {isGround && furnTotal > 0 && (
+            <div className="checkout-price-result__breakdown">
+              <span>Sistema: {fmt(systemTotal)} €</span>
+              <span>Furnitūra: {fmt(furnTotal)} €</span>
+            </div>
           )}
-
-          <div className="checkout-grand-total">
-            Bendra suma: <strong>{fmt(grandTotal)} €</strong>
-          </div>
         </div>
       )}
 
-      {/* ── Status messages ─────────────────────────────────────────────────── */}
-      {submitState === "success" && (
+      {/* ── Status messages ──────────────────────────────────────────────── */}
+      {submitState === "success" && wantsProposal && (
         <div className="checkout-status checkout-status--success">
           ✅ Užsakymas sėkmingai pateiktas!
-          {wantsProposal && " Susisieksime su jumis dėl specialaus pasiūlymo."}
         </div>
       )}
       {submitState === "error" && (
@@ -313,7 +276,7 @@ export default function Checkout() {
         </div>
       )}
 
-      {/* ── Buttons ─────────────────────────────────────────────────────────── */}
+      {/* ── Buttons ─────────────────────────────────────────────────────── */}
       <div className="checkout-actions">
         <button
           className="checkout-btn checkout-btn--back"
@@ -332,10 +295,8 @@ export default function Checkout() {
             ? "Siunčiama..."
             : submitState === "success"
             ? "✅ Išsiųsta"
-            : (pricesLoading || productsLoading)
+            : pricesLoading || productsLoading
             ? "⏳ Kraunama..."
-            : wantsProposal
-            ? "Pateikti užsakymą"
             : "Pateikti užsakymą"}
         </button>
       </div>

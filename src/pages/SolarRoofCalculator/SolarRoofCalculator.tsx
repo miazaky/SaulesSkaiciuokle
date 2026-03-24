@@ -1086,7 +1086,7 @@ export default function SolarRoofCalculator() {
                 className="solar-calculator__actions"
                 disabled={actionDisabled}
                 onClick={() =>
-                  navigate("/summaryRoof", {
+                  navigate("/checkout", {
                     state: {
                       batteryType,
                       moduleCount,
