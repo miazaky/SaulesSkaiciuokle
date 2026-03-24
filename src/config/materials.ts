@@ -43,6 +43,6 @@ export const solarGroundMaterials: MaterialDef[] = [
   { code: "M12-30/M12-pov/M12-spp/M12-Ve", name: "Varžto M12 kompl.", length: null,                      qty: "varztasM12" },
 
   // Clamps
-  { code: "Clamp G35",        name: "Galinių prispaudėjų kompl.", length: null,                            qty: "clampGQty" },
-  { code: "Clamp V",          name: "Vidinių prispaudėjų kompl.", length: null,                            qty: "clampVQty" },
+  { code: { from: "clampGCode" }, name: "Galinių prispaudėjų kompl.", length: null,                       qty: "clampGQty" },
+  { code: { from: "clampVCode" }, name: "Vidinių prispaudėjų kompl.", length: null,                          qty: "clampVQty" },
 ];

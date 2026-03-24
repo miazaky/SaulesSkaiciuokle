@@ -79,8 +79,8 @@ export default function SolarRoofSummary() {
               <th>Kodas</th>
               <th>Pavadinimas</th>
               <th>Kiekis, vnt.</th>
-              <th>Kaina be PVM, €</th>
-              <th>Suma be PVM, €</th>
+              <th>Kaina €</th>
+              <th>Suma €</th>
             </tr>
           </thead>
           <tbody>
@@ -116,8 +116,8 @@ export default function SolarRoofSummary() {
               {effectiveRowModuleCounts.map((_, i) => (
                 <th key={i}>{i + 1} eilės kiekiai</th>
               ))}
-              <th>Kaina be PVM, €</th>
-              <th>Suma be PVM, €</th>
+              <th>Kaina €</th>
+              <th>Suma €</th>
             </tr>
           </thead>
           <tbody>

@@ -58,8 +58,8 @@ export default function SolarGroundSummary() {
             <th>Pavadinimas</th>
             <th>Kiekis, vnt.</th>
             <th>Ilgis, mm</th>
-            <th>Kaina be PVM, €</th>
-            <th>Suma be PVM, €</th>
+            <th>Kaina €</th>
+            <th>Suma €</th>
           </tr>
         </thead>
         <tbody>
@@ -96,8 +96,8 @@ export default function SolarGroundSummary() {
           <tr>
             <th>Pavadinimas</th>
             <th>Kiekis, vnt</th>
-            <th>Kaina be PVM, €</th>
-            <th>Suma be PVM, €</th>
+            <th>Kaina €</th>
+            <th>Suma €</th>
           </tr>
         </thead>
         <tbody>

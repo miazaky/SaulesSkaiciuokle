@@ -1118,7 +1118,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   /* ----------------- Slaitinis stogas MATERIALS ----------------- */
   {
     mountingMethods: ["studs", "clamps", "hooks"],
-    code: "",
+    code: "KvBe",
     name: MATERIAL_KEYS.squareRail,
     length: null,
     calculateQuantity: (i) =>
@@ -1131,7 +1131,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     mountingMethods: ["studs", "clamps", "hooks"],
-    code: "",
+    code: "JungAL",
     name: MATERIAL_KEYS.squareRailJoint,
     length: null,
     calculateQuantity: (i) =>
@@ -1144,14 +1144,14 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     mountingMethods: ["studs", "clamps", "hooks"],
-    code: "",
+    code: "KvBeEND",
     name: MATERIAL_KEYS.squareRailFinish,
     length: null,
     calculateQuantity: (i) => calculateSquareRailFinish(i.moduleCount),
   },
   {
     mountingMethods: ["studs", "clamps", "hooks"],
-    code: "",
+    code: "M10-20",
     name: MATERIAL_KEYS.m10Screw,
     length: null,
     calculateQuantity: (i) =>
@@ -1164,7 +1164,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     mountingMethods: ["studs", "clamps", "hooks"],
-    code: "",
+    code: "M10-VS",
     name: MATERIAL_KEYS.m10Nut,
     length: null,
     calculateQuantity: (i) =>
@@ -1177,7 +1177,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     mountingMethods: ["studs", "clamps", "hooks"],
-    code: "",
+    code: "SM180",
     name: MATERIAL_KEYS.studs,
     length: null,
     calculateQuantity: (i) =>
@@ -1190,21 +1190,21 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     mountingMethods: ["screwsR"],
-    code: "",
+    code: "QrailMini",
     name: MATERIAL_KEYS.railEDPMMini,
     length: null,
     calculateQuantity: (i) => calculateEPDMMiniQuantity(i.moduleCount),
   },
   {
     mountingMethods: ["screwsR"],
-    code: "",
+    code: "SavBeg",
     name: MATERIAL_KEYS.specScrew,
     length: null,
     calculateQuantity: (i) => calculateEPDMMiniQuantity(i.moduleCount) * 4,
   },
   {
     mountingMethods: ["screwsEPDM40"],
-    code: "",
+    code: "Qraqil6300",
     name: MATERIAL_KEYS.railEDPM40,
     length: null,
     calculateQuantity: (i) =>
@@ -1217,7 +1217,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     mountingMethods: ["screwsEPDM80"],
-    code: "",
+    code: "Qrail6000",
     name: MATERIAL_KEYS.railEDPM80,
     length: null,
     calculateQuantity: (i) =>
@@ -1230,7 +1230,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     mountingMethods: ["screwsEPDM40", "screwsEPDM80"],
-    code: "",
+    code: "SavBeg",
     name: MATERIAL_KEYS.specScrew,
     length: null,
     calculateQuantity: (i) =>
@@ -1264,7 +1264,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       "screwsEPDM40",
       "screwsEPDM80",
     ],
-    code: "",
+    code: "M8-20",
     name: MATERIAL_KEYS.m8Screw20,
     length: null,
     calculateQuantity: (i) => calculateM80ClampGQuantity(i.moduleCount),
@@ -1292,7 +1292,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       "screwsEPDM40",
       "screwsEPDM80",
     ],
-    code: "",
+    code: "M8-25",
     name: MATERIAL_KEYS.m8Screw,
     length: null,
     calculateQuantity: (i) => calculateClampVQuantity(i.moduleCount),
@@ -1306,7 +1306,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       "screwsEPDM40",
       "screwsEPDM80",
     ],
-    code: "",
+    code: "M8Men",
     name: MATERIAL_KEYS.m8Nut,
     length: null,
     calculateQuantity: (i) => calculateM8NutQuantity(i.moduleCount),

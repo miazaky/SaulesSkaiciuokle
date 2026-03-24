@@ -3,6 +3,27 @@ import { CalculatedFurnitureMaterial } from "../calculateFurnitureMaterials";
 import { CalculatedSystemMaterial } from "../calculateSystemMaterials";
 import { CalculatorInput } from "../types";
 
+const MATERIAL_NAMES: Record<string, string> = {
+  "materials.squareRail":      "Kvadratinis bėgelis",
+  "materials.squareRailJoint": "Kvadratinio bėgelio jungtis",
+  "materials.squareRailFinish":"Kvadratinio bėgelio past. užbaigimas",
+  "materials.m10Screw":        "M10 varžtas 20",
+  "materials.m10Nut":          "M10 veržlės su sijonėliu",
+  "materials.studs":           "Smeigės",
+  "materials.clampG":          "Clamp G",
+  "materials.m8Screw20":       "M8 varžtas cilindrine galvute 20",
+  "materials.clampV":          "Clamp V",
+  "materials.m8Screw":         "M8 varžtas cilindrine galvute 25",
+  "materials.m8Nut":           "M8 mėnuliukai",
+  "materials.railEDPMMini":    "Bėgelis su EPDM guma mini",
+  "materials.specScrew":       "Spec. Savisriegiai bėgeliui",
+  "materials.railEDPM40":      "Bėgelis su EPDM guma 40",
+  "materials.railEDPM80":      "Bėgelis su EPDM guma 80",
+};
+
+function resolveName(name: string): string {
+  return MATERIAL_NAMES[name] ?? name;
+}
 
 export interface BuyerInfo {
   name: string;
@@ -291,7 +312,7 @@ function buildMaterialsPage(
     return [
       { text: String(i + 1) },
       { text: shortCode(m.code ?? "") },
-      { text: m.name, align: "left" },
+      { text: resolveName(m.name), align: "left" },
       { text: String(m.quantity) },
       ...(isGround ? [{ text: m.length != null ? String(m.length) : "–" }] : []),
       ...(hasPrices ? [
