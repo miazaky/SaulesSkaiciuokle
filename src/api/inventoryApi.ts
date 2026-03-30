@@ -55,9 +55,9 @@ export const inventoryApi = {
    * The backend stores the PDF in blob storage and saves the URL on the Order entity.
    * Returns the blob URL.
    */
-  savePdf: (orderId: string, pdfBase64: string) =>
+  savePdf: (orderId: string, pdfBase64: string, buyerName: string) =>
     apiFetch<SavePdfResponse>(`/orders/${orderId}/pdf`, {
       method: "POST",
-      body: JSON.stringify({ data: pdfBase64 }),
+      body: JSON.stringify({ data: pdfBase64, buyerName }),
     }),
 };

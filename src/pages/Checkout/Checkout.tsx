@@ -165,7 +165,7 @@ export default function Checkout() {
         systemMaterials,
         furnitureMaterials,
       );
-      await inventoryApi.savePdf(completedOrderId, pdfBase64);
+      inventoryApi.savePdf(completedOrderId, pdfBase64, buyer.name)
 
       setUpgradeState("success");
     } catch (err) {
