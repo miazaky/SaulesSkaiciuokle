@@ -333,7 +333,6 @@ function buildMaterialsPage(
     ]);
   }
 
-  // Furniture table
   const fCode  = 52;
   const fQty   = 44;
   const fPrice2 = hasPrices ? 64 : 0;
@@ -357,7 +356,6 @@ function buildMaterialsPage(
     const price    = prices[sku] ?? null;
     const rowSum   = price != null ? price * m.quantity : null;
     if (rowSum != null) furnTotal += rowSum;
-    // Strip "(SKU)" from display name
     const displayName = m.name.replace(/\s*\([^)]+\)$/, "");
     return [
       { text: String(i + 1) },
@@ -381,7 +379,6 @@ function buildMaterialsPage(
     ]);
   }
 
-  // ── Estimate canvas height ─────────────────────────────────────────────────
   const hdrH    = 40 + 26 + 22 + 128;
   const secH    = 22; // section title
   const sysH    = ROW_H * (sysRows.length + 1);
@@ -401,14 +398,12 @@ function buildMaterialsPage(
   let y = MARGIN;
   y = drawPageHeader(ctx, buyer, input, offerNum, y);
 
-  // ── System table ───────────────────────────────────────────────────────────
   ctx.font = `bold 10px ${FONT}`; ctx.fillStyle = BRAND; ctx.textAlign = "left";
   ctx.fillText("SISTEMOS MEDŽIAGŲ KIEKIŲ ŽINIARAŠTIS", MARGIN, y + 14);
   y += 22;
   y = drawTable(ctx, MARGIN, y, sysCols, sysRows, COL_W);
   y += 14;
 
-  // ── Furniture table (ground only) ──────────────────────────────────────────
   if (isGround && furnitureMaterials.length > 0) {
     ctx.font = `bold 10px ${FONT}`; ctx.fillStyle = BRAND; ctx.textAlign = "left";
     ctx.fillText("FURNITŪROS MEDŽIAGŲ KIEKIŲ ŽINIARAŠTIS", MARGIN, y + 14);
@@ -417,7 +412,7 @@ function buildMaterialsPage(
     y += 14;
   }
 
-  // ── Grand total band ───────────────────────────────────────────────────────
+
   const grand = sysTotal + furnTotal;
   if (hasPrices) {
     fillStrokeRect(ctx, MARGIN, y, COL_W, 24, BRAND);
@@ -426,16 +421,9 @@ function buildMaterialsPage(
     y += 30;
   }
 
-  // ── Footer ─────────────────────────────────────────────────────────────────
-  // y += 8;
-  // ctx.font = `8.5px ${FONT}`; ctx.fillStyle = MUTED; ctx.textAlign = "left";
-  // // ctx.fillText("* Užsakyti galima sumokant nurodytais rekvizitais, būtina nurodyti pasiūlymo numerį.", MARGIN, y);
-  // // ctx.fillText("* Pasiūlymas galioja 5 d.d.", MARGIN, y + 14);
-
   return canvas;
 }
 
-// ─── Page 2: canvas layout drawing ───────────────────────────────────────────
 
 function buildCanvasPage(
   canvasDataUrl: string,
@@ -481,9 +469,6 @@ function buildCanvasPage(
   });
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
-
-/** Build PDF pages and return as base64 PNG data URLs — use for preview AND DB storage */
 export async function buildPdfPages(
   buyer: BuyerInfo,
   input: CalculatorInput,
@@ -502,7 +487,6 @@ export async function buildPdfPages(
   return { offerNum, imgs };
 }
 
-/** Build pages then open a print preview window */
 export async function generateCommercialProposalPdf(
   buyer: BuyerInfo,
   input: CalculatorInput,
@@ -511,47 +495,20 @@ export async function generateCommercialProposalPdf(
 ): Promise<string[]> {
   const { offerNum, imgs } = await buildPdfPages(buyer, input, systemMaterials, furnitureMaterials);
 
-  const pw = window.open("", "_blank");
-  if (!pw) { 
-    alert("Prašome leisti iššokančius langus šiam puslapiui."); 
-    return imgs; 
+  const { jsPDF } = await import("jspdf");
+
+  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+
+  for (let i = 0; i < imgs.length; i++) {
+    if (i > 0) pdf.addPage();
+    pdf.addImage(imgs[i], "PNG", 0, 0, pageW, pageH, undefined, "FAST");
   }
 
-  pw.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>Komercinis pasiūlymas Nr. ${offerNum}</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#ccc;font-family:Arial,sans-serif}
-    .toolbar{display:flex;gap:12px;justify-content:center;align-items:center;
-             padding:14px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2);
-             position:sticky;top:0;z-index:10}
-    .toolbar span{font-size:13px;color:#555}
-    .btn{padding:10px 24px;font-size:13px;font-weight:600;border:none;border-radius:6px;cursor:pointer}
-    .btn-print{background:#1a3a5c;color:#fff}
-    .btn-close{background:#ddd;color:#333}
-    .page{width:210mm;margin:16px auto;background:#fff;box-shadow:0 2px 16px rgba(0,0,0,.25)}
-    img{width:100%;display:block}
-    @media print{
-      @page{size:A4 portrait;margin:0}
-      .toolbar{display:none}
-      body{background:#fff}
-      .page{width:100%;margin:0;box-shadow:none;page-break-after:always}
-      .page:last-child{page-break-after:auto}
-    }
-  </style>
-</head>
-<body>
-  <div class="toolbar">
-    <button class="btn btn-print" onclick="window.print()">Išsaugoti PDF</button>
-    <span>${imgs.length} puslapis(-iai)</span>
-    <button class="btn btn-close" onclick="window.close()">✕ Uždaryti</button>
-  </div>
-  ${imgs.map((src) => `<div class="page"><img src="${src}"/></div>`).join("\n")}
-</body>
-</html>`);
-  pw.document.close();
-  return imgs;
+  const filename = `Komercinis-pasiulymas-${offerNum}.pdf`;
+  pdf.save(filename);
+
+  const pdfBase64 = pdf.output("datauristring");
+  return [pdfBase64];
 }

@@ -24,7 +24,7 @@ function fmt(n: number) { return n.toFixed(2).replace(".", ","); }
 
 // ── Validation ────────────────────────────────────────────────────────────────
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_RE = /^(\+370\d{8}|8\d{8})$/;
+const PHONE_RE = /^(\+370\d{8}|0\d{8})$/;
 
 function validateEmail(v: string) {
   if (!v.trim()) return "El. paštas yra privalomas";
@@ -222,7 +222,7 @@ export default function Checkout() {
                 <input
                   className={`invoice-input${err ? " invoice-input--error" : ""}`}
                   type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
-                  placeholder={key === "phone" ? "+370XXXXXXXX arba 8XXXXXXXX" : placeholder}
+                  placeholder={key === "phone" ? "+370XXXXXXXX arba 0XXXXXXXX" : placeholder}
                   value={buyer[key]}
                   onChange={(e) => updateBuyer(key, e.target.value)}
                   onBlur={() => markTouched(key)}
