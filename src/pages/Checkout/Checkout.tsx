@@ -9,6 +9,7 @@ import { calculateFurnitureMaterials } from "../../calculations/calculateFurnitu
 import { useProductPrices } from "../../hooks/useProductPrices";
 import { useProducts } from "../../hooks/useProducts";
 import { generateCommercialProposalPdf } from "../../calculations/utils/generatePdf";
+import { inventoryApi } from "../../api/inventoryApi";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -34,7 +35,7 @@ function validateEmail(v: string) {
 function validatePhone(v: string) {
   const c = v.replace(/\s/g, "");
   if (!c) return "Telefono numeris yra privalomas";
-  if (!PHONE_RE.test(c)) return "Numeris turi būti +370XXXXXXXX arba 8XXXXXXXX";
+  if (!PHONE_RE.test(c)) return "Numeris turi būti +370XXXXXXXX arba 0XXXXXXXX";
   return "";
 }
 function validateName(v: string) {
@@ -157,22 +158,14 @@ export default function Checkout() {
       });
       if (!patchRes.ok) throw new Error(`Klaida atnaujinant užsakymą: ${patchRes.status}`);
 
-      // 2. Generate & upload PDF
-      const pdfPages = await generateCommercialProposalPdf(
+      // 2. Generate PDF (triggers browser download) and upload to blob storage
+      const [pdfBase64] = await generateCommercialProposalPdf(
         buyer,
         { ...state, productPrices: pricesBySku },
         systemMaterials,
         furnitureMaterials,
       );
-      await Promise.allSettled(
-        pdfPages.map((pageBase64, idx) =>
-          fetch(`${API_BASE}/orders/${completedOrderId}/pdf`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pageIndex: idx, data: pageBase64 }),
-          })
-        )
-      );
+      await inventoryApi.savePdf(completedOrderId, pdfBase64);
 
       setUpgradeState("success");
     } catch (err) {
@@ -302,7 +295,7 @@ export default function Checkout() {
             ? "✅ Išsiųsta"
             : pricesLoading || productsLoading
             ? "⏳ Kraunama..."
-            : "Pateikti užsakymą"}
+            : "Skaičiuoti kainą"}
         </button>
       </div>
     </div>
