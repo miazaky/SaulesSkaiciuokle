@@ -53,7 +53,7 @@ const W      = 794;
 const MARGIN = 40;
 const COL_W  = W - MARGIN * 2;
 const ROW_H  = 18;
-const LOGO_H = 100;
+const LOGO_H = 50;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(n: number): string {
@@ -611,7 +611,7 @@ export async function generateCommercialProposalPdf(
     pdf.addImage(imgs[i], "PNG", 0, 0, pageW, pageH, undefined, "FAST");
   }
 
-  const filename = `Komercinis-pasiulymas-${offerNum}.pdf`;
-  pdf.save(filename);
+  // const filename = `Komercinis-pasiulymas-${offerNum}.pdf`;
+  // pdf.save(filename);
   return [pdf.output("datauristring")];
 }
