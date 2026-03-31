@@ -53,7 +53,7 @@ const W      = 794;
 const MARGIN = 40;
 const COL_W  = W - MARGIN * 2;
 const ROW_H  = 18;
-const LOGO_H = 50;
+const LOGO_H = 100;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(n: number): string {
