@@ -60,4 +60,15 @@ export const inventoryApi = {
       method: "POST",
       body: JSON.stringify({ data: pdfBase64, buyerName }),
     }),
+
+  /**
+   * Triggers the backend to email the employer with two attachments:
+   *   1. The order PDF already saved in blob storage.
+   *   2. Montavimo_vadovas.docx from blob storage.
+   * Buyer info is loaded server-side from the Order — no extra payload needed.
+   */
+  sendProposalEmail: (orderId: string) =>
+    apiFetch<void>(`/orders/${orderId}/send-proposal-email`, {
+      method: "POST",
+    }),
 };

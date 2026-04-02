@@ -139,17 +139,19 @@ export default function SolarGroundCalculator() {
 
   return (
     <div className="solar-calculator">
-      <h2>{t("title.selectBattery")}</h2>
+      <h2>{t("title.selectGroundBatteryType")}</h2>
 
       <div className="solar-calculator__battery-list">
         <ImageCard
           title={t("batteryTypes.ezys")}
+          description={t("batteryTypes.ezysDescription")}
           image="/images/ezys.jpg"
           selected={batteryType === "ezys"}
           onClick={() => setBatteryType("ezys")}
         />
         <ImageCard
           title={t("batteryTypes.poline")}
+          description={t("batteryTypes.polineDescription")}
           image="/images/poline.jpg"
           selected={batteryType === "poline"}
           onClick={() => setBatteryType("poline")}
@@ -157,30 +159,6 @@ export default function SolarGroundCalculator() {
       </div>
       {batteryType && (
         <>
-            <div className="solar-calculator__orientation_select">
-              <h3 className="solar-calculator__section">{t("sections.profile")}</h3>
-              <label className="solar-calculator__radio">
-                <input
-                  type="radio"
-                  name="profileLength"
-                  value="4200"
-                  checked={profileLength === 4200}
-                  onChange={() => setProfileLength(4200)}
-                />
-                4200 mm
-              </label>
-
-              <label className="solar-calculator__radio">
-                <input
-                  type="radio"
-                  name="profileLength"
-                  value="5200"
-                  checked={profileLength === 5200}
-                  onChange={() => setProfileLength(5200)}
-                />
-                5200 mm
-              </label>
-            </div>
         <form className="solar-calculator__content"
         onSubmit={(e) => e.preventDefault()}>
           <h3>{t("sections.modules")}</h3>
@@ -273,6 +251,30 @@ export default function SolarGroundCalculator() {
             </InputField>
           </FormGrid>
         </form>
+            <div className="solar-calculator__orientation_select">
+              <h3 className="solar-calculator__section">{t("sections.profile")}</h3>
+              <label className="solar-calculator__radio">
+                <input
+                  type="radio"
+                  name="profileLength"
+                  value="4200"
+                  checked={profileLength === 4200}
+                  onChange={() => setProfileLength(4200)}
+                />
+                4200 mm
+              </label>
+
+              <label className="solar-calculator__radio">
+                <input
+                  type="radio"
+                  name="profileLength"
+                  value="5200"
+                  checked={profileLength === 5200}
+                  onChange={() => setProfileLength(5200)}
+                />
+                5200 mm
+              </label>
+            </div>
         </>
       )}
       <button

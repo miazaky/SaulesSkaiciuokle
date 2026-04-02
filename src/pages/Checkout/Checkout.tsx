@@ -158,14 +158,17 @@ export default function Checkout() {
       });
       if (!patchRes.ok) throw new Error(`Klaida atnaujinant užsakymą: ${patchRes.status}`);
 
-      // 2. Generate PDF (triggers browser download) and upload to blob storage
+      // 2. Generate PDF and upload to blob storage
       const [pdfBase64] = await generateCommercialProposalPdf(
         buyer,
         { ...state, productPrices: pricesBySku },
         systemMaterials,
         furnitureMaterials,
       );
-      inventoryApi.savePdf(completedOrderId, pdfBase64, buyer.name)
+      await inventoryApi.savePdf(completedOrderId, pdfBase64, buyer.name);
+
+      // 3. Email the employer — backend attaches the PDF + Montavimo_nurodymai.docx
+      await inventoryApi.sendProposalEmail(completedOrderId);
 
       setUpgradeState("success");
     } catch (err) {

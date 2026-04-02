@@ -3,6 +3,7 @@ import React from "react";
 type ImageCardProps = {
   title: string;
   image: string;
+  description?: string;
   selected?: boolean;
   onClick: () => void;
 };
@@ -10,6 +11,7 @@ type ImageCardProps = {
 export function ImageCard({
   title,
   image,
+  description,
   selected,
   onClick,
 }: ImageCardProps) {
@@ -45,6 +47,18 @@ export function ImageCard({
       />
 
       <p style={{ marginTop: 12, color: "var(--color-text)" }}>{title}</p>
+
+      {description && (
+        <p style={{
+          marginTop: 8,
+          fontSize: "0.82rem",
+          color: "var(--color-text-muted, #6b7280)",
+          lineHeight: 1.5,
+          textAlign: "left",
+        }}>
+          {description}
+        </p>
+      )}
     </div>
   );
 }
