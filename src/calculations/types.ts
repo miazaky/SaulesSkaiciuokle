@@ -36,6 +36,8 @@ export type CalculatorInput = {
   // ── App-level fields (not calculator inputs) ──────────────────────────────
   /** Base64 PNG snapshot of the SolarRoofCanvas drawing */
   canvasImageDataUrl?: string;
+  /** Saved module positions from canvas editor (for restoring after back navigation) */
+  savedModules?: Array<{ id: number; row: number; col: number }>;
   /** SKU → unit price (€ ex. VAT) fetched from /api/products */
   productPrices?: Record<string, number>;
 };

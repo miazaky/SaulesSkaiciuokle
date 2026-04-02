@@ -40,6 +40,11 @@ export default function SolarRoofCanvas() {
   let grid_cols = 14;
 
   const [modules, setModules] = useState<Module[]>(() => {
+    // Restore saved modules when coming back from checkout
+    if ((state as any).savedModules && (state as any).savedModules.length > 0) {
+      return (state as any).savedModules;
+    }
+
     const initial: Module[] = [];
     const spacing = 1;
 
@@ -1156,9 +1161,15 @@ export default function SolarRoofCanvas() {
             </div>
           </div>
 
+          <p style={{ margin: '12px 0', fontWeight: 600 }}>
+            Dabar bus {modules.length > 0 ? Math.max(...modules.map((m: any) => m.row)) + 1 : state.rowsCount} eilių
+          </p>
           <button
             className="solar-summary__actions_back"
-            onClick={() => navigate("/roof", { state })}
+            onClick={() => {
+              const actualRows = modules.length > 0 ? Math.max(...modules.map(m => m.row)) + 1 : state.rowsCount;
+              navigate("/roof", { state: { ...state, rowsCount: actualRows, savedModules: modules } });
+            }}
           >
             Grįžti atgal
           </button>
@@ -1170,6 +1181,7 @@ export default function SolarRoofCanvas() {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
+                  savedModules: modules,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
@@ -1202,9 +1214,15 @@ export default function SolarRoofCanvas() {
             </div>
           </div>
 
+          <p style={{ margin: '12px 0', fontWeight: 600 }}>
+            Dabar bus {modules.length > 0 ? Math.max(...modules.map((m: any) => m.row)) + 1 : state.rowsCount} eilių
+          </p>
           <button
             className="solar-summary__actions_back"
-            onClick={() => navigate("/roof", { state })}
+            onClick={() => {
+              const actualRows = modules.length > 0 ? Math.max(...modules.map(m => m.row)) + 1 : state.rowsCount;
+              navigate("/roof", { state: { ...state, rowsCount: actualRows, savedModules: modules } });
+            }}
           >
             Grįžti atgal
           </button>
@@ -1217,6 +1235,7 @@ export default function SolarRoofCanvas() {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
+                  savedModules: modules,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
@@ -1245,9 +1264,15 @@ export default function SolarRoofCanvas() {
             </div>
           </div>
 
+          <p style={{ margin: '12px 0', fontWeight: 600 }}>
+            Dabar bus {modules.length > 0 ? Math.max(...modules.map((m: any) => m.row)) + 1 : state.rowsCount} eilių
+          </p>
           <button
             className="solar-summary__actions_back"
-            onClick={() => navigate("/roof", { state })}
+            onClick={() => {
+              const actualRows = modules.length > 0 ? Math.max(...modules.map(m => m.row)) + 1 : state.rowsCount;
+              navigate("/roof", { state: { ...state, rowsCount: actualRows, savedModules: modules } });
+            }}
           >
             Grįžti atgal
           </button>
@@ -1260,6 +1285,7 @@ export default function SolarRoofCanvas() {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
+                  savedModules: modules,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
@@ -1294,9 +1320,15 @@ export default function SolarRoofCanvas() {
             </div>
           </div> */}
 
+          <p style={{ margin: '12px 0', fontWeight: 600 }}>
+            Dabar bus {modules.length > 0 ? Math.max(...modules.map((m: any) => m.row)) + 1 : state.rowsCount} eilių
+          </p>
           <button
             className="solar-summary__actions_back"
-            onClick={() => navigate("/roof", { state })}
+            onClick={() => {
+              const actualRows = modules.length > 0 ? Math.max(...modules.map(m => m.row)) + 1 : state.rowsCount;
+              navigate("/roof", { state: { ...state, rowsCount: actualRows, savedModules: modules } });
+            }}
           >
             Grįžti atgal
           </button>
@@ -1308,6 +1340,7 @@ export default function SolarRoofCanvas() {
                 state: {
                   ...state,
                       canvasImageDataUrl: img,
+                  savedModules: modules,
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,

@@ -264,7 +264,7 @@ export default function Checkout() {
 
           {upgradeState === "success" && (
             <div className="checkout-proposal-upgrade__success">
-              ✅ Pasiūlymas išsiųstas! Susisieksime su jumis.
+              ✅ Pasiūlymas ruošiamas. Susisieksime su jumis artimiausiu metu.
             </div>
           )}
         </div>
@@ -281,7 +281,15 @@ export default function Checkout() {
       <div className="checkout-actions">
         <button
           className="checkout-btn checkout-btn--submit"
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            if (state?.isEvenModules === 'false' && (state as any).savedModules) {
+              navigate('/canvasRoof', { state });
+            } else if (state?.isEvenModules === 'false') {
+              navigate('/canvasRoof', { state });
+            } else {
+              navigate(-1);
+            }
+          }}
           // disabled={submitState === "loading" || submitState === "success"}
         >
           {t("actions.back")}
@@ -293,9 +301,9 @@ export default function Checkout() {
           onClick={handleSubmit}
         >
           {submitState === "loading"
-            ? "Siunčiama..."
+            ? "Skaičiuojama kaina.."
             : submitState === "success"
-            ? "✅ Išsiųsta"
+            ? "Kaina suskaičiuota"
             : pricesLoading || productsLoading
             ? "⏳ Kraunama..."
             : "Skaičiuoti kainą"}

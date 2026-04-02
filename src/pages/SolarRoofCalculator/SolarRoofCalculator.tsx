@@ -527,52 +527,6 @@ export default function SolarRoofCalculator() {
           <h3>{t("sections.modules")}</h3>
           {/* Module Input Fields */}
           <FormGrid columns={2}>
-            {/* Block/Row count */}
-              <InputField label={t("fields.rowsCount")}>
-                <input
-                  type="number"
-                  min={2}
-                  max={50}
-                  value={rowsCountInput}
-                  onChange={(e) => setRowsCountInput(e.target.value)}
-                  onBlur={() => {
-                    const value = Number(rowsCountInput);
-                    const clamped = Math.max(2, Math.min(50, isNaN(value) ? 2 : value));
-                    setRowsCount(clamped);
-                    setRowsCountInput(String(clamped));
-                  }}
-                />
-              </InputField>
-
-            <InputField label={t("fields.moduleCountRoof")}>
-              <input
-                type="number"
-                min={0}
-                max={200}
-                value={moduleCountInput}
-                onChange={(e) => setModuleCountInput(e.target.value)}
-                onBlur={() => {
-                  const value = Number(moduleCountInput);
-                  const clamped = Math.max(0, Math.min(200, isNaN(value) ? 0 : value));
-                  setModuleCount(clamped);
-                  setModuleCountInput(String(clamped));
-                }}
-              />
-            </InputField>
-
-            <InputField label={t("fields.isEvenModules")}>
-              <select
-                value={isEvenModules ?? ""}
-                onChange={(e) => setIsEvenModules(e.target.value)}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-                <option value="true">{t("fields.yes")}</option>
-                <option value="false">{t("fields.no")}</option>
-              </select>
-            </InputField>
-
             <InputField label={t("system.systemTitle")}>
               <select
                 value={system ?? ""}
@@ -609,6 +563,16 @@ export default function SolarRoofCalculator() {
               />
             </InputField>
 
+            {/* Module Width (inactive) */}
+            <InputField label={t("fields.moduleWidth")}>
+              <input
+                type="number"
+                value={MODULE_WIDTH}
+                disabled
+                style={{ opacity: 0.5, cursor: 'not-allowed' }}
+              />
+            </InputField>
+
             {/* Module Thickness Input */}
             <InputField label={t("fields.moduleThickness")}>
               <select
@@ -624,7 +588,6 @@ export default function SolarRoofCalculator() {
             </InputField>
 
             {/* Module Color Selection */}
-
             <InputField label={t("fields.moduleColor")}>
               <select
                 value={moduleColor ?? ""}
@@ -708,15 +671,8 @@ export default function SolarRoofCalculator() {
                 </select>
               )}
             </InputField>
-          </FormGrid>
-        </div>
-      )}
 
-      {orientation === "RV" && batteryType === "ploksciasStogas" && (
-        <div className="solar-calculator__content">
-          <h3>{t("sections.modules")}</h3>
-          <FormGrid columns={2}>
-            {/* RV blocks/rows*/}
+            {/* Block/Row count */}
             <InputField label={t("fields.rowsCount")}>
               <input
                 type="number"
@@ -731,11 +687,6 @@ export default function SolarRoofCalculator() {
                   setRowsCountInput(String(clamped));
                 }}
               />
-              {rowsCountError && (
-                <div style={{ color: "var(--color-danger)", marginTop: 6 }}>
-                  {rowsCountError}
-                </div>
-              )}
             </InputField>
 
             <InputField label={t("fields.moduleCountRoof")}>
@@ -766,7 +717,14 @@ export default function SolarRoofCalculator() {
                 <option value="false">{t("fields.no")}</option>
               </select>
             </InputField>
+          </FormGrid>
+        </div>
+      )}
 
+      {orientation === "RV" && batteryType === "ploksciasStogas" && (
+        <div className="solar-calculator__content">
+          <h3>{t("sections.modules")}</h3>
+          <FormGrid columns={2}>
             <InputField label={t("system.systemTitle")}>
               <select
                 value={system ?? ""}
@@ -800,6 +758,16 @@ export default function SolarRoofCalculator() {
                   setModuleLength(clamped);
                   setModuleLengthInput(String(clamped));
                 }}
+              />
+            </InputField>
+
+            {/* Module Width (inactive) */}
+            <InputField label={t("fields.moduleWidth")}>
+              <input
+                type="number"
+                value={MODULE_WIDTH}
+                disabled
+                style={{ opacity: 0.5, cursor: 'not-allowed' }}
               />
             </InputField>
 
@@ -882,6 +850,57 @@ export default function SolarRoofCalculator() {
                   ))}
                 </select>
               )}
+            </InputField>
+
+            {/* RV blocks/rows*/}
+            <InputField label={t("fields.rowsCount")}>
+              <input
+                type="number"
+                min={2}
+                max={50}
+                value={rowsCountInput}
+                onChange={(e) => setRowsCountInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(rowsCountInput);
+                  const clamped = Math.max(2, Math.min(50, isNaN(value) ? 2 : value));
+                  setRowsCount(clamped);
+                  setRowsCountInput(String(clamped));
+                }}
+              />
+              {rowsCountError && (
+                <div style={{ color: "var(--color-danger)", marginTop: 6 }}>
+                  {rowsCountError}
+                </div>
+              )}
+            </InputField>
+
+            <InputField label={t("fields.moduleCountRoof")}>
+              <input
+                type="number"
+                min={0}
+                max={200}
+                value={moduleCountInput}
+                onChange={(e) => setModuleCountInput(e.target.value)}
+                onBlur={() => {
+                  const value = Number(moduleCountInput);
+                  const clamped = Math.max(0, Math.min(200, isNaN(value) ? 0 : value));
+                  setModuleCount(clamped);
+                  setModuleCountInput(String(clamped));
+                }}
+              />
+            </InputField>
+
+            <InputField label={t("fields.isEvenModules")}>
+              <select
+                value={isEvenModules ?? ""}
+                onChange={(e) => setIsEvenModules(e.target.value)}
+              >
+                <option value="" disabled>
+                  {t("select.placeholder")}
+                </option>
+                <option value="true">{t("fields.yes")}</option>
+                <option value="false">{t("fields.no")}</option>
+              </select>
             </InputField>
           </FormGrid>
         </div>
