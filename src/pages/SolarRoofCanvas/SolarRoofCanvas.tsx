@@ -200,7 +200,7 @@ export default function SolarRoofCanvas() {
       ctx.font = "bold 11px Arial, sans-serif";
       ctx.textAlign = "left";
       ctx.fillText(
-        `${state.system ?? state.batteryType}  |  ${modules.length} moduliai  |  ${state.rowsCount} eilės`,
+        `${state.system ?? state.batteryType}  |  ${modules.length} moduliai  |  ${modules.length > 0 ? Math.max(...modules.map(m => m.row)) + 1 : state.rowsCount} eilės`,
         8, H - 8
       );
 

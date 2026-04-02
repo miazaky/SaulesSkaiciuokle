@@ -81,9 +81,20 @@ export default function Checkout() {
   const furnitureMaterials = state && isGround ? calculateFurnitureMaterials(state) : [];
 
   const getPrice    = (code: string) => pricesBySku[(code ?? "").split("/")[0].trim()] ?? 0;
-  const systemTotal = systemMaterials.reduce((s, m) => s + getPrice(m.code ?? "") * m.quantity, 0);
+
+  const GROUND_PRICE_PER_MODULE: Record<string, number> = {
+    poline: 44,
+    ezys:   49,
+  };
+
+  const groundModuleCount = isGround ? Number(state?.moduleCount ?? 0) : 0;
+  const groundUnitPrice   = isGround ? (GROUND_PRICE_PER_MODULE[state?.batteryType ?? ""] ?? 0) : 0;
+  const groundTotal       = groundModuleCount * groundUnitPrice;
+
+  // Roof: price by materials
+  const systemTotal = !isGround ? systemMaterials.reduce((s, m) => s + getPrice(m.code ?? "") * m.quantity, 0) : 0;
   const furnTotal   = furnitureMaterials.reduce((s, m) => s + (pricesBySku[m.sku ?? ""] ?? 0) * m.quantity, 0);
-  const grandTotal  = systemTotal + furnTotal;
+  const grandTotal  = isGround ? groundTotal : (systemTotal + furnTotal);
 
   // ── Submit (always NoSpecialOffer on first submit) ────────────────────────
   const handleSubmit = async () => {
@@ -236,12 +247,17 @@ export default function Checkout() {
         <div className="checkout-price-result">
           <div className="checkout-price-result__label">Bendra sistemos kaina</div>
           <div className="checkout-price-result__value">{fmt(grandTotal)} €</div>
-          {isGround && furnTotal > 0 && (
+          {/* {isGround && (
+            <div className="checkout-price-result__breakdown">
+              <span>{groundModuleCount} moduliai × {fmt(groundUnitPrice)} €/vnt. = {fmt(groundTotal)} €</span>
+            </div>
+          )}
+          {!isGround && furnTotal > 0 && (
             <div className="checkout-price-result__breakdown">
               <span>Sistema: {fmt(systemTotal)} €</span>
               <span>Furnitūra: {fmt(furnTotal)} €</span>
             </div>
-          )}
+          )} */}
 
           {/* ── Proposal upgrade section ─────────────────────────────── */}
           {upgradeState !== "success" && (
@@ -257,7 +273,7 @@ export default function Checkout() {
                 onClick={handleRequestProposal}
                 disabled={upgradeState === "loading"}
               >
-                {upgradeState === "loading" ? "Siunčiama…" : "Noriu gauti pasiūlymą"}
+                {upgradeState === "loading" ? "Ruošiama..." : "Noriu gauti pasiūlymą"}
               </button>
             </div>
           )}

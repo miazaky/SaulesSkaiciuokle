@@ -49,6 +49,7 @@ export default function SolarRoofCalculator() {
         mountingMethod: string;
         rowModuleCounts?: number[];
         isEvenModules: string;
+        savedModules?: Array<{ id: number; row: number; col: number }>;
       }
     | undefined;
 
@@ -1094,6 +1095,13 @@ export default function SolarRoofCalculator() {
                       mountingMethod,
                       rowModuleCounts,
                       isEvenModules,
+                      // Preserve canvas layout if user hasn't changed count/rows
+                      savedModules:
+                        restoredState?.savedModules &&
+                        restoredState.moduleCount === moduleCount &&
+                        restoredState.rowsCount === rowsCount
+                          ? restoredState.savedModules
+                          : undefined,
                     },
                   })
                 }
