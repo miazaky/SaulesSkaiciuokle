@@ -65,10 +65,6 @@ export default function SolarRoofCalculator() {
     restoredState?.system ?? "PT5",
   );
 
-  const [isEvenModules, setIsEvenModules] = useState<string | null>(
-    restoredState?.isEvenModules ?? "true",
-    );
-
   const prevOrientationRef = useRef<Orientation>(
     restoredState?.orientation ?? null,
   );
@@ -177,6 +173,11 @@ export default function SolarRoofCalculator() {
     : roofMountingMethodsEntries;
 
   const prevBatteryTypeRef = useRef<BatteryType>(restoredState?.batteryType ?? null);
+
+  const isEvenModules: string =
+  moduleCount > 0 && rowsCount > 0 && moduleCount % rowsCount === 0
+    ? "true"
+    : "false";
 
   useEffect(() => {
     if (prevBatteryTypeRef.current === batteryType) {
@@ -707,16 +708,12 @@ export default function SolarRoofCalculator() {
             </InputField>
 
             <InputField label={t("fields.isEvenModules")}>
-              <select
-                value={isEvenModules ?? ""}
-                onChange={(e) => setIsEvenModules(e.target.value)}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-                <option value="true">{t("fields.yes")}</option>
-                <option value="false">{t("fields.no")}</option>
-              </select>
+              <input
+                type="text"
+                readOnly
+                value={isEvenModules === "true" ? t("fields.yes") : t("fields.no")}
+                style={{ opacity: 0.75, cursor: "default", background: "var(--surface-2, #f8fafc)" }}
+              />
             </InputField>
           </FormGrid>
         </div>
@@ -892,16 +889,12 @@ export default function SolarRoofCalculator() {
             </InputField>
 
             <InputField label={t("fields.isEvenModules")}>
-              <select
-                value={isEvenModules ?? ""}
-                onChange={(e) => setIsEvenModules(e.target.value)}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-                <option value="true">{t("fields.yes")}</option>
-                <option value="false">{t("fields.no")}</option>
-              </select>
+              <input
+                type="text"
+                readOnly
+                value={isEvenModules === "true" ? t("fields.yes") : t("fields.no")}
+                style={{ opacity: 0.75, cursor: "default", background: "var(--surface-2, #f8fafc)" }}
+              />
             </InputField>
           </FormGrid>
         </div>
