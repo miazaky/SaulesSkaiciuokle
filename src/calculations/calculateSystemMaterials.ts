@@ -50,13 +50,15 @@ export function calculateSystemMaterials(
 ): CalculatedSystemMaterial[] {
   // Ground systems (ezys, poline)
   if (input.batteryType === "ezys" || input.batteryType === "poline") {
-    return solarGroundMaterials.map((row) => ({
-      code: resolveValue(input, row.code),
-      name: row.name,
-      quantity: resolveQuantity(input, row.qty),
-      length: resolveLength(input, row.length),
-      note: row.note ?? "",
-    }));
+    return solarGroundMaterials
+      .map((row) => ({
+        code: resolveValue(input, row.code),
+        name: row.name,
+        quantity: resolveQuantity(input, row.qty),
+        length: resolveLength(input, row.length),
+        note: row.note ?? "",
+      }))
+      .filter((row) => row.quantity > 0);
   }
 
   // Roof systems

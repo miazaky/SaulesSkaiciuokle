@@ -15,10 +15,17 @@ export const legCountRules: RangeRule<number>[] = [
   { max: 32000, value: 12 },
 ];
 
-/** J8 – Ryšys R-1 pagal modulių kiekį */
+/** J8 – Ryšys R-1 pagal modulių kiekį (1134mm plotis) */
 export const rysysRules: RangeRule<number>[] = [
   { max: 32, value: 2 },
   { max: 36, value: 3 },
+  { max: 54, value: 4 },
+];
+
+/** J8 – Ryšys R-1 pagal modulių kiekį (1303mm plotis) */
+export const rysysRules1303: RangeRule<number>[] = [
+  { max: 28, value: 2 },
+  { max: 32, value: 3 },
   { max: 54, value: 4 },
 ];
 
@@ -48,14 +55,22 @@ export const grebestasRules: RangeRule<number>[] = [
   { max: 33599, value: 28 },
 ];
 
-/** J13 – Grebėstų jungtys pagal total (J11 + J12) */
+/**
+ * J13 – Grebėstų jungtys pagal total (J11 + J12).
+ * Extended to 48 to support the 1303mm/5200mm ezys system where
+ * Gb-1 + Gb-2 can each reach 24 (total 48) at max construction length.
+ */
 export const grebestuJungtysRules: RangeRule<number>[] = [
-  { max: 4, value: 0 },
-  { max: 8, value: 4 },
-  { max: 12, value: 8 },
+  { max: 4,  value: 0  },
+  { max: 8,  value: 4  },
+  { max: 12, value: 8  },
   { max: 16, value: 12 },
   { max: 20, value: 16 },
   { max: 24, value: 20 },
   { max: 28, value: 24 },
   { max: 32, value: 28 },
+  { max: 36, value: 32 },
+  { max: 40, value: 36 },
+  { max: 44, value: 40 },
+  { max: 48, value: 44 },
 ];

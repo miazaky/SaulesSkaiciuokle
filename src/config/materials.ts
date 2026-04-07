@@ -27,10 +27,17 @@ export const solarGroundMaterials: MaterialDef[] = [
   // Gegnė — code = GG-0 / GG-1 / GG-2 resolved dynamically
   { code: { from: "gegneCode" }, name: "Gegnė",                  length: { from: "gegneLength" },         qty: "legCount" },
 
-  // Grebėstas — standard pieces (length = profileLength 4200 or 5200)
+  // Gb-1: standard profileLength pieces — 1134mm systems only (qty=0 for 1303mm ezys)
   { code: "Gb-1",             name: "Grebėstas",                  length: { from: "profileLength" },       qty: "grebestasQty"      },
-  // Grebėstas — extra/remainder piece
+
+  // Gb-2: main 5200mm pieces — 1303mm ezys only (qty=0 for 1134mm)
+  { code: "Gb-2",             name: "Grebėstas",                  length: 5200,                            qty: "gb2Qty"            },
+
+  // Gb-1*: remainder piece for 1134mm systems (qty=0 for 1303mm ezys)
   { code: "Gb-1*",            name: "Grebėstas",                  length: { from: "extraGrebestasLength" },qty: "extraGrebestasQty" },
+
+  // Gb-2*: remainder piece for 1303mm ezys (qty=0 for 1134mm)
+  { code: "Gb-2*",            name: "Grebėstas",                  length: { from: "gb2ExtraLength" },      qty: "gb2ExtraQty"       },
 
   // Grebėstų jungtys — SKU Gbj, 200 mm
   { code: "Gbj",              name: "Grebėstų jungtys",           length: 200,                             qty: "grebestuJungtysQty" },

@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import "../SolarCalculator.css";
 
-const MODULE_WIDTH = 1134;
 const GAP_MM = 20;
 const MAX_LENGTH = 32000;
 
@@ -88,6 +87,7 @@ export default function SolarGroundCalculator() {
         rowsCount: number;
         profileLength: 4200 | 5200;
         moduleColor: string;
+        moduleWidth: number;
       }
     | undefined;
 
@@ -95,6 +95,7 @@ export default function SolarGroundCalculator() {
   const [batteryType, setBatteryType] = useState<BatteryType>(restoredState?.batteryType ?? null);
   const [profileLength, setProfileLength] = useState<ProfileLength>((restoredState as any)?.profileLength ?? 4200);
   const [moduleColor, setModuleColor] = useState<string>(restoredState?.moduleColor ?? "juoda");
+  const [moduleWidth, setModuleWidth] = useState<number>(restoredState?.moduleWidth ?? 1134);
 
   const [moduleCount, setModuleCount] = useState<string>(restoredState?.moduleCount.toString() ?? "36");
   const [moduleLength, setModuleLength] = useState<string>(restoredState?.moduleLength.toString() ?? "2250");
@@ -123,7 +124,7 @@ export default function SolarGroundCalculator() {
 
   const constructionLength = isModuleCountValid
     ? calculateConstructionLength({
-        moduleWidth: MODULE_WIDTH,
+        moduleWidth: moduleWidth,
         rowsCount,
         reserve,
         gap: GAP_MM,
@@ -211,7 +212,13 @@ export default function SolarGroundCalculator() {
             </InputField>
 
             <InputField label={t("fields.moduleWidth")}>
-              <input type="number" value={1134} disabled />
+              <select
+                value={moduleWidth}
+                onChange={(e) => setModuleWidth(Number(e.target.value))}
+              >
+                <option value={1134}>1134 mm</option>
+                <option value={1303}>1303 mm</option>
+              </select>
             </InputField>
 
             <InputField label={t("fields.moduleThickness")}>
@@ -304,12 +311,12 @@ export default function SolarGroundCalculator() {
         className="solar-calculator__actions"
         disabled={!isFormValid}
         onClick={() =>
-          navigate("/checkout", {
+          navigate("/summary", {
             state: {
               batteryType,
               moduleCount,
               moduleLength,
-              moduleWidth: MODULE_WIDTH,
+              moduleWidth: moduleWidth,
               moduleThickness,
               moduleColor,
               constructionLength,

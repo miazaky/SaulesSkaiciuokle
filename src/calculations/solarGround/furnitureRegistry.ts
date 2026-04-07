@@ -31,35 +31,21 @@ export const furnitureRegistry: Record<string, FormulaFn> = {
   furn_rhombic_lock: (i) => n(sys.clampGQty(i)) + n(sys.clampVQty(i)),
   furn_rhombic_nut: (i) => n(sys.clampGQty(i)) + n(sys.clampVQty(i)),
 
+  // M10 varžtas = J14 + J15
   furn_m10_bolt: (i) => {
-    const m10_1 = n(sys.varztasM10_1(i));
-    const m10_2 = n(sys.varztasM10_2(i));
-
-    if (i.batteryType === "ezys" && i.profileLength === 5200) {
-      return m10_1 + m10_2;
-    }
-
-    if (i.batteryType === "ezys") {
-      return m10_1;
-    }
-
-    return m10_1 + m10_2;
+    const j14 = n(sys.varztasM10_1(i));
+    const j15 = n(sys.varztasM10_2(i));
+    return j14 + j15;
   },
 
+  // M10 poveržlės = J14*2 + J15
   furn_m10_washer: (i) => {
-    const m10_1 = n(sys.varztasM10_1(i));
-    const m10_2 = n(sys.varztasM10_2(i));
-
-    if (i.batteryType === "ezys" && i.profileLength === 5200) {
-      return m10_1 * 2 + m10_2;
-    }
-
-    if (i.batteryType === "ezys") {
-      return m10_1 * 2;
-    }
-
-    return m10_1 * 2 + m10_2;
+    const j14 = n(sys.varztasM10_1(i));
+    const j15 = n(sys.varztasM10_2(i));
+    return j14 * 2 + j15;
   },
+
+  // M10 veržlė su sijonėliu = J14 + J15
   furn_m10_flange_nut: (i) => n(furnitureRegistry.furn_m10_bolt(i)),
 
   furn_m12_bolt: (i) => n(sys.varztasM12(i)),

@@ -2,6 +2,7 @@ import { CalculatorInput } from "../types";
 import {
   calcExtraGrebestasLength,
   calcExtraGrebestasQty,
+  calcGb2,
   calcGegneCode,
   calcGegneLength,
   calcGrebestas,
@@ -13,6 +14,10 @@ import {
 export type FormulaValue = string | number | null;
 export type FormulaFn = (i: CalculatorInput) => FormulaValue;
 
+// Gb-2/Gb-2* system: only when 1303mm wide module AND 5200mm profile
+const is1303ezys5200 = (i: CalculatorInput) =>
+  i.moduleWidth === 1303 && i.batteryType === "ezys" && i.profileLength === 5200;
+
 export const registry: Record<string, FormulaFn> = {
   k1Code: (i) => (i.batteryType === "ezys" ? "K-1E" : "K-1"),
   k2Code: (i) => (i.batteryType === "ezys" ? "K-2E" : "K-2"),
@@ -21,19 +26,41 @@ export const registry: Record<string, FormulaFn> = {
   k2Length: (i) => (i.batteryType === "ezys" ? 2400 : 3900),
 
   legCount: (i) => calcLegCount(i.constructionLength),
-  rysys: (i) => calcRysys(i.moduleCount),
+
+  // Width-aware: 1303mm uses different breakpoints
+  rysys: (i) => calcRysys(i.moduleCount, i.moduleWidth),
 
   gegneCode: (i) => calcGegneCode(i.moduleLength),
   gegneLength: (i) => calcGegneLength(i.moduleLength),
 
+  // Gb-1: only for 1134mm systems — returns 0 for 1303mm ezys
   grebestasQty: (i) =>
-    calcGrebestas(i.constructionLength, i.profileLength),
+    is1303ezys5200(i) ? 0 : calcGrebestas(i.constructionLength, i.profileLength),
+
+  // Gb-1* remainder: only for 1134mm systems — returns 0 for 1303mm ezys
   extraGrebestasQty: (i) =>
-    calcExtraGrebestasQty(i.constructionLength, i.profileLength),
+    is1303ezys5200(i) ? 0 : calcExtraGrebestasQty(i.constructionLength, i.profileLength),
   extraGrebestasLength: (i) =>
     calcExtraGrebestasLength(i.constructionLength, i.profileLength),
 
+  // Gb-2: main profile pieces for 1303mm ezys (always 5200mm); 0 for 1134mm
+  gb2Qty: (i) =>
+    is1303ezys5200(i) ? calcGb2(i.constructionLength) : 0,
+
+  // Gb-2*: remainder piece for 1303mm ezys; 0 for 1134mm
+  gb2ExtraQty: (i) =>
+    is1303ezys5200(i) ? calcExtraGrebestasQty(i.constructionLength, 5200) : 0,
+  gb2ExtraLength: (i) =>
+    calcExtraGrebestasLength(i.constructionLength, 5200),
+
   grebestuJungtysQty: (i) => {
+    if (is1303ezys5200(i)) {
+      // For 1303mm ezys: J11 = Gb-2 qty, J12 = Gb-2* qty
+      const j11 = calcGb2(i.constructionLength);
+      const j12 = calcExtraGrebestasQty(i.constructionLength, 5200);
+      return calcGrebestuJungtys(j11, j12);
+    }
+    // Standard: J11 = Gb-1, J12 = Gb-1* remainder
     const j11 = calcGrebestas(i.constructionLength, i.profileLength);
     const j12 = calcExtraGrebestasQty(i.constructionLength, i.profileLength);
     return calcGrebestuJungtys(j11, j12);
@@ -51,20 +78,26 @@ export const registry: Record<string, FormulaFn> = {
 
   rysysR2Qty: (i) => calcLegCount(i.constructionLength),
 
+  // J14 = J10*4 + J13*4
   varztasM10_1: (i) => {
     const j10 = calcLegCount(i.constructionLength);
     const j13 = registry.grebestuJungtysQty(i) as number;
     return j10 * 4 + j13 * 4;
   },
 
+  // J15 = J8*2 (width-aware rysys)
+  // Exception: 1303mm ezys + 4200mm profile has no (2sud.) kit — J15 = 0
   varztasM10_2: (i) => {
-    const r1 = calcRysys(i.moduleCount);
+    if (i.moduleWidth === 1303 && i.batteryType === "ezys" && i.profileLength === 4200) {
+      return 0;
+    }
+
+    const r1 = calcRysys(i.moduleCount, i.moduleWidth);
     const r2 = calcLegCount(i.constructionLength);
 
     if (i.batteryType === "poline" && i.profileLength === 5200) {
       return r1 * 2;
-    }
-    else if (i.batteryType === "poline" && i.profileLength === 4200) {
+    } else if (i.batteryType === "poline" && i.profileLength === 4200) {
       return r1 * 2 + r2 * 2;
     }
 

@@ -1,4 +1,4 @@
-import { gegneCodeRules, gegneLengthByCode, grebestasRules, grebestuJungtysRules, legCountRules, rysysRules } from "../../config/rules";
+import { gegneCodeRules, gegneLengthByCode, grebestuJungtysRules, legCountRules, rysysRules, rysysRules1303 } from "../../config/rules";
 import { rangeLookup } from "../utils/rangeLookup";
 
 
@@ -11,9 +11,10 @@ export function calcLegCount(constructionLength: number): number {
   );
 }
 
-/** J8 */
-export function calcRysys(moduleCount: number): number {
-  return rangeLookup(moduleCount, rysysRules, "Klaida: netinkamas modulių kiekis");
+/** J8 – width-aware */
+export function calcRysys(moduleCount: number, moduleWidth: number = 1134): number {
+  const rules = moduleWidth === 1303 ? rysysRules1303 : rysysRules;
+  return rangeLookup(moduleCount, rules, "Klaida: netinkamas modulių kiekis");
 }
 
 /** J10 code */
@@ -27,24 +28,36 @@ export function calcGegneLength(moduleLength: number): number | null {
   return gegneLengthByCode[code] ?? null;
 }
 
-/** J11 */
+/** J11 – Gb-1: standard profileLength pieces (4200mm or 5200mm) */
 export function calcGrebestas(
   constructionLength: number,
   profileLength: 4200 | 5200
 ): number {
-  const steps = Math.floor(constructionLength / profileLength); // 0..∞
+  const steps = Math.floor(constructionLength / profileLength);
 
   if (steps <= 0) return 0;
 
   // Excel limits:
-  // 4200: allowed up to 7 (=> 28), error from 8+
-  // 5200: allowed up to 6 (=> 24), error from 7+
+  // 4200: allowed up to 7 steps (=> 28 pieces), error from 8+
+  // 5200: allowed up to 6 steps (=> 24 pieces), error from 7+
   const maxSteps = profileLength === 4200 ? 7 : 6;
 
   if (steps > maxSteps) {
     throw new Error("Klaida: per didelis konstrukcijos ilgis (grebėstai)");
   }
 
+  return steps * 4;
+}
+
+/**
+ * Gb-2 qty: second 5200mm grebėstas profile used in the 1303mm-width ezys / 5200mm system.
+ * Excel formula: =IF(D11/5200=1;4; IF(D11/5200=2;8; ... IF(D11/5200<1;0; IF(D11/5200<2;4; ...))))
+ * Logic: floor(constructionLength / 5200) * 4, capped at 6 steps (24 pieces max).
+ */
+export function calcGb2(constructionLength: number): number {
+  const steps = Math.floor(constructionLength / 5200);
+  if (steps <= 0) return 0;
+  if (steps > 6) throw new Error("Klaida: per didelis konstrukcijos ilgis (Gb-2)");
   return steps * 4;
 }
 
@@ -71,5 +84,4 @@ export function calcExtraGrebestasLength(constructionLength: number, profileLeng
 /** J13 */
 export function calcGrebestuJungtys(j11: number, j12: number): number {
   return rangeLookup(j11 + j12, grebestuJungtysRules, "Klaida: per daug grebėstų");
-
 }
