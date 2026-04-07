@@ -87,12 +87,14 @@ export default function SolarGroundCalculator() {
         constructionLength: number;
         rowsCount: number;
         profileLength: 4200 | 5200;
+        moduleColor: string;
       }
     | undefined;
 
   
   const [batteryType, setBatteryType] = useState<BatteryType>(restoredState?.batteryType ?? null);
   const [profileLength, setProfileLength] = useState<ProfileLength>((restoredState as any)?.profileLength ?? 4200);
+  const [moduleColor, setModuleColor] = useState<string>(restoredState?.moduleColor ?? "juoda");
 
   const [moduleCount, setModuleCount] = useState<string>(restoredState?.moduleCount.toString() ?? "36");
   const [moduleLength, setModuleLength] = useState<string>(restoredState?.moduleLength.toString() ?? "2250");
@@ -221,6 +223,16 @@ export default function SolarGroundCalculator() {
                 <option value={35}>35 mm</option>
               </select>
             </InputField>
+
+            <InputField label={t("fields.moduleColor")}>
+              <select
+                value={moduleColor}
+                onChange={(e) => setModuleColor(e.target.value)}
+              >
+                <option value="juoda">{t("color.black")}</option>
+                <option value="pilka">{t("color.grey")}</option>
+              </select>
+            </InputField>
           </FormGrid>
 
           <h3 className="solar-calculator__section">{t("sections.construction")}</h3>
@@ -299,6 +311,7 @@ export default function SolarGroundCalculator() {
               moduleLength,
               moduleWidth: MODULE_WIDTH,
               moduleThickness,
+              moduleColor,
               constructionLength,
               rowsCount,
               reserve,

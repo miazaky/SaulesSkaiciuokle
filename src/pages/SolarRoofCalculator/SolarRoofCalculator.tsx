@@ -707,14 +707,6 @@ export default function SolarRoofCalculator() {
               />
             </InputField>
 
-            <InputField label={t("fields.isEvenModules")}>
-              <input
-                type="text"
-                readOnly
-                value={isEvenModules === "true" ? t("fields.yes") : t("fields.no")}
-                style={{ opacity: 0.75, cursor: "default", background: "var(--surface-2, #f8fafc)" }}
-              />
-            </InputField>
           </FormGrid>
         </div>
       )}
@@ -888,14 +880,6 @@ export default function SolarRoofCalculator() {
               />
             </InputField>
 
-            <InputField label={t("fields.isEvenModules")}>
-              <input
-                type="text"
-                readOnly
-                value={isEvenModules === "true" ? t("fields.yes") : t("fields.no")}
-                style={{ opacity: 0.75, cursor: "default", background: "var(--surface-2, #f8fafc)" }}
-              />
-            </InputField>
           </FormGrid>
         </div>
       )}
@@ -1045,15 +1029,10 @@ export default function SolarRoofCalculator() {
       {(() => {
         const hasErrors = Boolean(rowsCountError);
 
-        const isDrawMode =
-          isEvenModules === "false" &&
-          moduleCount !== 0 &&
-          batteryType === "ploksciasStogas";
-
         const isFieldsFilled =
           batteryType === "slaitinisStogas"
             ? roofMaterial !== null && mountingMethod !== null && orientation !== null && moduleLength !== null && rowsCount !== null && rowModuleCounts.every((count) => count !== null) && rowModuleCounts.some((count) => count !== 0)
-            : moduleCount !== 0 && isEvenModules !== null && orientation !== null;
+            : moduleCount !== 0 && orientation !== null;
 
         const actionDisabled = hasErrors || !isFieldsFilled;
 
@@ -1066,7 +1045,7 @@ export default function SolarRoofCalculator() {
               {t("actions.back")}
             </button>
 
-            {isDrawMode ? (
+            {batteryType === "ploksciasStogas" ? (
               <button
                 className="solar-calculator__actions"
                 disabled={actionDisabled}
