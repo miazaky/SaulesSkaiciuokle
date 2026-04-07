@@ -31,21 +31,27 @@ export const furnitureRegistry: Record<string, FormulaFn> = {
   furn_rhombic_lock: (i) => n(sys.clampGQty(i)) + n(sys.clampVQty(i)),
   furn_rhombic_nut: (i) => n(sys.clampGQty(i)) + n(sys.clampVQty(i)),
 
-  // M10 varžtas = J14 + J15
+  // M10 varžtas:
+  //   ezys 4200mm → J14 only
+  //   ezys 5200mm + poline → J14 + J15
   furn_m10_bolt: (i) => {
     const j14 = n(sys.varztasM10_1(i));
+    if (i.profileLength === 4200) return j14;
     const j15 = n(sys.varztasM10_2(i));
     return j14 + j15;
   },
 
-  // M10 poveržlės = J14*2 + J15
+  // M10 poveržlės:
+  //   ezys 4200mm → J14*2
+  //   ezys 5200mm + poline → J14*2 + J15
   furn_m10_washer: (i) => {
     const j14 = n(sys.varztasM10_1(i));
+    if (i.profileLength === 4200) return j14 * 2;
     const j15 = n(sys.varztasM10_2(i));
     return j14 * 2 + j15;
   },
 
-  // M10 veržlė su sijonėliu = J14 + J15
+  // M10 veržlė su sijonėliu = same as M10 varžtas
   furn_m10_flange_nut: (i) => n(furnitureRegistry.furn_m10_bolt(i)),
 
   furn_m12_bolt: (i) => n(sys.varztasM12(i)),

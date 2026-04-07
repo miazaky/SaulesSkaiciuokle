@@ -85,32 +85,15 @@ export const registry: Record<string, FormulaFn> = {
     return j10 * 4 + j13 * 4;
   },
 
-  // J15 = J8*2 (width-aware rysys)
-  // Exception: 1303mm ezys + 4200mm profile has no (2sud.) kit — J15 = 0
+  // J15 = J8*2 = rysys*2 for all cases
   varztasM10_2: (i) => {
-    if (i.moduleWidth === 1303 && i.batteryType === "ezys" && i.profileLength === 4200) {
-      return 0;
-    }
-
     const r1 = calcRysys(i.moduleCount, i.moduleWidth);
-    const r2 = calcLegCount(i.constructionLength);
-
-    if (i.batteryType === "poline" && i.profileLength === 5200) {
-      return r1 * 2;
-    } else if (i.batteryType === "poline" && i.profileLength === 4200) {
-      return r1 * 2 + r2 * 2;
-    }
-
     return r1 * 2;
   },
 
+  // (J5*2) + J8*2 = legCount*2 + legCount*2 = legCount*4 for all cases
   varztasM12: (i) => {
     const leg = calcLegCount(i.constructionLength);
-
-    if (i.batteryType === "poline" && i.profileLength === 4200) {
-      return leg * 2;
-    }
-
     return leg * 4;
   },
 
