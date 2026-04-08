@@ -314,7 +314,46 @@
   margin-left: 8px;
 }
 
-/* ── Proposal checkbox ───────────────────────────────────────────────────── */
+/* ── Company toggle ──────────────────────────────────────────────────────── */
+.company-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 4px;
+  cursor: pointer;
+  font-family: 'Hind', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-brand);
+  user-select: none;
+}
+
+.company-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Animated company fields reveal ─────────────────────────────────────── */
+.company-fields {
+  margin-top: 12px;
+  padding: 16px;
+  background: rgba(216, 137, 45, 0.06);
+  border: 1px dashed var(--color-accent);
+  border-radius: 8px;
+  animation: slideDown 0.2s ease;
+}
+
+.company-fields .input-group:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .proposal-checkbox {
   display: flex;
   align-items: flex-start;

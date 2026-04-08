@@ -13,6 +13,8 @@ export const initialBuyer = {
   name: '',
   email: '',
   phone: '',
+  companyCode: '',
+  vatCode: '',
 };
 
 export const buyerFields: Array<{

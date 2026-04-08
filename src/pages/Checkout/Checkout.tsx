@@ -52,6 +52,7 @@ export default function Checkout() {
   const [touched, setTouched]         = useState<Record<string, boolean>>({});
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMsg, setErrorMsg]       = useState("");
+  const [isCompany, setIsCompany]     = useState(false);
 
   // Stored after a successful NoSpecialOffer submit so we can upgrade it later
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
@@ -65,11 +66,12 @@ export default function Checkout() {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
   const errors = {
-    name:  validateName(buyer.name),
-    email: validateEmail(buyer.email),
-    phone: validatePhone(buyer.phone),
+    name:        validateName(buyer.name),
+    email:       validateEmail(buyer.email),
+    phone:       validatePhone(buyer.phone),
+    companyCode: isCompany && !buyer.companyCode.trim() ? "Įmonės kodas yra privalomas" : "",
   };
-  const isFormValid = !errors.name && !errors.email && !errors.phone;
+  const isFormValid = !errors.name && !errors.email && !errors.phone && !errors.companyCode;
 
   const { pricesBySku: fetchedPrices, loading: pricesLoading } = useProductPrices();
   const { productsBySku, loading: productsLoading }             = useProducts();
@@ -109,10 +111,12 @@ export default function Checkout() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name:      buyer.name.trim(),
-          email:     buyer.email.trim(),
-          phone:     buyer.phone.replace(/\s/g, "").trim(),
-          orderType: ORDER_TYPE.NoSpecialOffer,
+          name:        buyer.name.trim(),
+          email:       buyer.email.trim(),
+          phone:       buyer.phone.replace(/\s/g, "").trim(),
+          orderType:   ORDER_TYPE.NoSpecialOffer,
+          ...(isCompany && { companyCode: buyer.companyCode.trim() }),
+          ...(isCompany && buyer.vatCode.trim() && { vatCode: buyer.vatCode.trim() }),
         }),
       });
       if (!orderRes.ok) throw new Error(`Klaida kuriant užsakymą: ${orderRes.status}`);
@@ -219,17 +223,18 @@ export default function Checkout() {
         <div>
           <h3>Pirkėjo informacija</h3>
           {buyerFields.map(({ key, placeholder, required }) => {
-            const err = touched[key] ? errors[key] : "";
+            const resolvedPlaceholder = key === "name" && isCompany ? "Įmonės pavadinimas" : placeholder;
+            const err = touched[key] ? errors[key as keyof typeof errors] : "";
             return (
               <div key={key} className="input-group">
                 <label className="input-label">
-                  {placeholder}
+                  {resolvedPlaceholder}
                   {required && <span className="required-star"> *</span>}
                 </label>
                 <input
                   className={`invoice-input${err ? " invoice-input--error" : ""}`}
                   type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
-                  placeholder={key === "phone" ? "+370XXXXXXXX arba 0XXXXXXXX" : placeholder}
+                  placeholder={key === "phone" ? "+370XXXXXXXX arba 0XXXXXXXX" : resolvedPlaceholder}
                   value={buyer[key]}
                   onChange={(e) => updateBuyer(key, e.target.value)}
                   onBlur={() => markTouched(key)}
@@ -239,6 +244,51 @@ export default function Checkout() {
               </div>
             );
           })}
+
+          {/* ── Company toggle ───────────────────────────────────────────── */}
+          <label className="company-toggle">
+            <input
+              type="checkbox"
+              checked={isCompany}
+              onChange={(e) => setIsCompany(e.target.checked)}
+              disabled={isLocked}
+            />
+            <span>Pirkti kaip įmonė</span>
+          </label>
+
+          {/* ── Company fields ───────────────────────────────────────────── */}
+          {isCompany && (
+            <div className="company-fields">
+              <div className="input-group">
+                <label className="input-label">
+                  Įmonės kodas <span className="required-star"> *</span>
+                </label>
+                <input
+                  className={`invoice-input${touched.companyCode && errors.companyCode ? " invoice-input--error" : ""}`}
+                  type="text"
+                  placeholder="605556630"
+                  value={buyer.companyCode}
+                  onChange={(e) => updateBuyer("companyCode", e.target.value)}
+                  onBlur={() => markTouched("companyCode")}
+                  disabled={isLocked}
+                />
+                {touched.companyCode && errors.companyCode && (
+                  <span className="input-error-msg">{errors.companyCode}</span>
+                )}
+              </div>
+              <div className="input-group">
+                <label className="input-label">PVM kodas</label>
+                <input
+                  className="invoice-input"
+                  type="text"
+                  placeholder="LT100013188519"
+                  value={buyer.vatCode}
+                  onChange={(e) => updateBuyer("vatCode", e.target.value)}
+                  disabled={isLocked}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
