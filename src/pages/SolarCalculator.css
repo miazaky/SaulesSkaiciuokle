@@ -25,6 +25,15 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.radio-option input[type="radio"] {
+  transform: translateY(-1px);
+}
+
 .solar-calculator__battery-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 20rem));
