@@ -93,7 +93,7 @@ export default function SolarGroundCalculator() {
 
   
   const [batteryType, setBatteryType] = useState<BatteryType>(restoredState?.batteryType ?? null);
-  const [profileLength, setProfileLength] = useState<ProfileLength>((restoredState as any)?.profileLength ?? 4200);
+  const [profileLength, setProfileLength] = useState<ProfileLength>((restoredState as any)?.profileLength ?? 5200);
   const [moduleColor, setModuleColor] = useState<string>(restoredState?.moduleColor ?? "juoda");
   const [moduleWidth, setModuleWidth] = useState<number>(restoredState?.moduleWidth ?? 1134);
 
@@ -242,6 +242,32 @@ export default function SolarGroundCalculator() {
             </InputField>
           </FormGrid>
 
+          <h3 className="solar-calculator__section">{t("fields.profileLength")}</h3>
+          <InputField label={t("")}>
+            <div style={{ display: "flex", gap: "20px" }}>
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="profileLength"
+                  value="5200"
+                  checked={profileLength === 5200}
+                  onChange={() => setProfileLength(5200)}
+                />
+                5200 mm
+              </label>
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="profileLength"
+                  value="4200"
+                  checked={profileLength === 4200}
+                  onChange={() => setProfileLength(4200)}
+                />
+                4200 mm
+              </label>
+            </div>
+          </InputField>
+
           <h3 className="solar-calculator__section">{t("sections.construction")}</h3>
           <FormGrid columns={2}>
             <InputField label={t("fields.constructionLength")}>
@@ -261,39 +287,15 @@ export default function SolarGroundCalculator() {
               />
             </InputField>
 
-            <InputField label={t("fields.reserve")}>
+            {/* <InputField label={t("fields.reserve")}>
               <input type="number" value={reserve} disabled />
             </InputField>
 
             <InputField label={t("fields.gap")}>
               <input type="number" value={GAP_MM} disabled />
-            </InputField>
+            </InputField> */}
           </FormGrid>
         </form>
-            <div className="solar-calculator__orientation_select">
-              <h3 className="solar-calculator__section">{t("sections.profile")}</h3>
-              <label className="solar-calculator__radio">
-                <input
-                  type="radio"
-                  name="profileLength"
-                  value="4200"
-                  checked={profileLength === 4200}
-                  onChange={() => setProfileLength(4200)}
-                />
-                4200 mm
-              </label>
-
-              <label className="solar-calculator__radio">
-                <input
-                  type="radio"
-                  name="profileLength"
-                  value="5200"
-                  checked={profileLength === 5200}
-                  onChange={() => setProfileLength(5200)}
-                />
-                5200 mm
-              </label>
-            </div>
         </>
       )}
       <button
