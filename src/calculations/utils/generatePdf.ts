@@ -120,22 +120,22 @@ function getDocTitle(input: CalculatorInput): { header: string; sub: string } {
     case "ezys":
       return {
         header: "ANTŽEMINĖ SAULĖS MODULIŲ MONTAVIMO SISTEMA",
-        sub: "Ežio saulės modulių montavimo sistema",
+        sub: `Ežio saulės modulių montavimo sistema | Matmenys: ${input.moduleLength}x${input.moduleWidth}x${input.moduleThickness}, mm | Kiekis: ${input.moduleCount} | Spalva: ${input.moduleColor}`,
       };
     case "poline":
       return {
         header: "ANTŽEMINĖ SAULĖS MODULIŲ MONTAVIMO SISTEMA",
-        sub: "Polinė saulės modulių montavimo sistema",
+        sub: `Polinė saulės modulių montavimo sistema | Matmenys: ${input.moduleLength}x${input.moduleWidth}x${input.moduleThickness}, mm | Kiekis: ${input.moduleCount} | Spalva: ${input.moduleColor}`,
       };
     case "ploksciasStogas":
       return {
         header: "PLOKŠČIO STOGO SAULĖS MODULIŲ MONTAVIMO SISTEMA",
-        sub: `Sistema: ${input.system ?? ""}  |  Orientacija: ${input.orientation ?? ""}`,
+        sub: `Sistema: ${input.system ?? ""}  | Matmenys: ${input.moduleLength}x${input.moduleWidth}x${input.moduleThickness}, mm | Kiekis: ${input.moduleCount} | Spalva: ${input.moduleColor} |  Orientacija: ${input.orientation ?? ""}`,
       };
     case "slaitinisStogas":
       return {
         header: "ŠLAITINIO STOGO SAULĖS MODULIŲ MONTAVIMO SISTEMA",
-        sub: `Stogo danga: ${input.roofMaterial ?? ""}  |  Montavimo būdas: ${input.mountingMethod ?? ""}`,
+        sub: `Stogo danga: ${input.roofMaterial ?? ""}  | Matmenys: ${input.moduleLength}x${input.moduleWidth}x${input.moduleThickness}, mm | Kiekis: ${input.moduleCount} | Spalva: ${input.moduleColor} |  Montavimo būdas: ${input.mountingMethod ?? ""}`,
       };
     default:
       return { header: "SAULĖS MODULIŲ MONTAVIMO SISTEMA", sub: "" };

@@ -295,7 +295,7 @@ export default function Checkout() {
       {/* ── Price shown after submit ─────────────────────────────────────── */}
       {priceVisible && (
         <div className="checkout-price-result">
-          <div className="checkout-price-result__label">Bendra sistemos kaina</div>
+          <div className="checkout-price-result__label">Sistemos kaina</div>
           <div className="checkout-price-result__value">{fmt(grandTotal)} €</div>
           {/* {isGround && (
             <div className="checkout-price-result__breakdown">
