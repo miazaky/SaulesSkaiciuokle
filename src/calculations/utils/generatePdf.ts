@@ -29,6 +29,7 @@ export interface BuyerInfo {
   name: string;
   email: string;
   phone: string;
+  address: string;
 }
 
 // ─── Brand colors matching the Word document ──────────────────────────────────
@@ -255,6 +256,7 @@ function drawPageHeader(
   ctx.font      = `10.5px ${FONT}`;
   ctx.fillStyle = MUTED;
   [
+    `Adresas: ${buyer.address || "__________________________"}`,
     `Tel.: ${buyer.phone  || "__________________________"}`,
     `El. paštas: ${buyer.email || "__________________________"}`,
   ].forEach((ln, i) => ctx.fillText(ln, bx, y + 40 + i * 13));

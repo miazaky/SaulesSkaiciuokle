@@ -42,6 +42,26 @@ function validateName(v: string) {
   if (!v.trim()) return "Vardas yra privalomas";
   return "";
 }
+function validateAddress(v: string) {
+  if (!v.trim()) return "Adresas yra privalomas";
+  return "";
+}
+
+function getSystemName(input: CalculatorInput): string {
+  const batteryMap: Record<string, string> = {
+    ezys: "Ežio",
+    poline: "Polinė",
+    ploksciasStogas: "Plokščio",
+    slaitinisStogas: "Šlaitinio",
+  };
+  const batteryName = batteryMap[input.batteryType] ?? input.batteryType;
+  
+  if (input.batteryType === "ezys" || input.batteryType === "poline") {
+    return batteryName;
+  }
+  
+  return `${batteryName}${input.system == null ? "" : `-${input.system}`}`;
+}
 
 export default function Checkout() {
   const navigate  = useNavigate();
@@ -69,9 +89,10 @@ export default function Checkout() {
     name:        validateName(buyer.name),
     email:       validateEmail(buyer.email),
     phone:       validatePhone(buyer.phone),
+    address:     validateAddress(buyer.address),
     companyCode: isCompany && !buyer.companyCode.trim() ? "Įmonės kodas yra privalomas" : "",
   };
-  const isFormValid = !errors.name && !errors.email && !errors.phone && !errors.companyCode;
+  const isFormValid = !errors.name && !errors.email && !errors.phone && !errors.address && !errors.companyCode;
 
   const { pricesBySku: fetchedPrices, loading: pricesLoading } = useProductPrices();
   const { productsBySku, loading: productsLoading }             = useProducts();
@@ -100,7 +121,7 @@ export default function Checkout() {
 
   // ── Submit (always NoSpecialOffer on first submit) ────────────────────────
   const handleSubmit = async () => {
-    setTouched({ name: true, email: true, phone: true });
+    setTouched({ name: true, email: true, phone: true, address: true });
     if (!isFormValid || !state) return;
 
     setSubmitState("loading");
@@ -114,6 +135,7 @@ export default function Checkout() {
           name:        buyer.name.trim(),
           email:       buyer.email.trim(),
           phone:       buyer.phone.replace(/\s/g, "").trim(),
+          address:     buyer.address.trim(),
           orderType:   ORDER_TYPE.NoSpecialOffer,
           ...(isCompany && { companyCode: buyer.companyCode.trim() }),
           ...(isCompany && buyer.vatCode.trim() && { vatCode: buyer.vatCode.trim() }),
@@ -146,7 +168,11 @@ export default function Checkout() {
           fetch(`${API_BASE}/orders/${orderId}/items`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productId: productsBySku[m.sku].id, quantity: m.quantity }),
+            body: JSON.stringify({
+              productId: productsBySku[m.sku].id,
+              quantity: m.quantity,
+              systemName: getSystemName(state),
+            }),
           })
         )
       );
