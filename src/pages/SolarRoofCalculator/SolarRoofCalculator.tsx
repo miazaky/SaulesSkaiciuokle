@@ -311,6 +311,19 @@ export default function SolarRoofCalculator() {
     });
   }, [batteryType, rowsCount]);
 
+  useEffect(() => {
+    if (batteryType !== "slaitinisStogas") return;
+
+    const totalModules = rowModuleCounts.reduce(
+      (sum, count) => sum + (Number.isFinite(count) ? count : 0),
+      0,
+    );
+
+    if (moduleCount !== totalModules) {
+      setModuleCount(totalModules);
+    }
+  }, [batteryType, rowModuleCounts, moduleCount]);
+
   // Dropdown options/lock state (PT + RV)
   const constructionSelectDisabled =
     !system || system.startsWith("RV") || !(system === "PT15-L" && !isOver2m); // only PT15-L <=2m is selectable
@@ -954,6 +967,15 @@ export default function SolarRoofCalculator() {
               />
             </InputField>
 
+            <InputField label={t("fields.moduleWidth")}>
+              <input
+                type="number"
+                value={MODULE_WIDTH}
+                disabled
+                style={{ opacity: 0.5, cursor: 'not-allowed' }}
+              />
+            </InputField>
+
             <InputField label={t("fields.moduleThickness")}>
               <select
                 value={moduleThickness ?? ""}
@@ -1014,8 +1036,6 @@ export default function SolarRoofCalculator() {
                           copy[idx] = n;
                           return copy;
                         });
-                        
-                        if (idx === 0) setModuleCount(n);
                       }}
                     />
                   </label>

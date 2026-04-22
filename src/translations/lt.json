@@ -98,7 +98,7 @@
     "gapBetweenRows": "Atstumas tarp eilių, mm",
     "moduleConstruction": "Modulio tvirtinimas",
     "moduleConstructionNote": "PT5 ir PT20 sistemoms, kai modulis didesnis nei 2m – kreipkitės individualiai.",
-    "moduleColor": "Modulio spalva",
+    "moduleColor": "Modulio rėmelio spalva",
     "constructionLength": "Konstrukcijos ilgis, mm (max 32000)",
     "rowsCount": "Modulių kiekis eilėje, vnt.",
     "blockCount": "Modulių blokų kiekis, vnt.",

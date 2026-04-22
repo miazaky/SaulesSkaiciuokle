@@ -2,6 +2,7 @@ import { seller } from "../../config/checkoutConfig";
 import { CalculatedFurnitureMaterial } from "../calculateFurnitureMaterials";
 import { CalculatedSystemMaterial } from "../calculateSystemMaterials";
 import { CalculatorInput } from "../types";
+import { getGroundSystemPricing, getGroundSystemTotal, isGroundSystem } from "../groundPricing";
 
 const MATERIAL_NAMES: Record<string, string> = {
   "materials.squareRail":      "Kvadratinis bėgelis",
@@ -23,6 +24,10 @@ const MATERIAL_NAMES: Record<string, string> = {
 
 function resolveName(name: string): string {
   return MATERIAL_NAMES[name] ?? name;
+}
+
+function displayGroundSku(code: string): string {
+  return code.replace(/^__GROUND_PRICE__[_-]?/i, "");
 }
 
 export interface BuyerInfo {
@@ -400,13 +405,15 @@ async function buildMaterialsPage(
   logo: HTMLImageElement,
 ): Promise<HTMLCanvasElement> {
   const SCALE    = 2;
-  const isGround = input.batteryType === "ezys" || input.batteryType === "poline";
+  const isGround = isGroundSystem(input);
   const prices   = input.productPrices ?? {};
+  const groundPricing = isGround ? getGroundSystemPricing(input, prices) : null;
+  const groundTotal = isGround ? getGroundSystemTotal(input, prices) : 0;
 
   const cNr    = 26;
-  const cCode  = 52;
+  const cCode  = 100;
   const cQty   = 44;
-  const cLen   = isGround ? 52 : 0;
+  const cLen   = isGround ? 60 : 0;
   const cPrice = 64;
   const cSum   = 68;
   const cName  = COL_W - cNr - cCode - cQty - cLen - cPrice - cSum;
@@ -421,21 +428,35 @@ async function buildMaterialsPage(
     { label: "Suma, €",  width: cSum,   align: "center" as Align },
   ];
 
-  let sysTotal = 0;
-  const sysRows: RowCell[][] = systemMaterials.map((m, i) => {
-    const price  = getPriceFromMap(m.code ?? "", prices);
-    const rowSum = price != null ? price * m.quantity : null;
-    if (rowSum != null) sysTotal += rowSum;
-    return [
-      { text: String(i + 1) },
-      { text: shortCode(m.code ?? "") },
-      { text: resolveName(m.name), align: "left" },
-      { text: String(m.quantity) },
-      ...(isGround ? [{ text: m.length != null ? String(m.length) : "–" }] : []),
-      { text: fmt(price ?? 0) },
-      { text: fmt(rowSum ?? 0) },
-    ];
-  });
+  const sysRows: RowCell[][] = isGround && groundPricing
+    ? [[
+        { text: "1" },
+        { text: displayGroundSku(groundPricing.code) },
+        { text: resolveName(groundPricing.name), align: "left" },
+        { text: String(input.moduleCount) },
+        { text: String(groundPricing.moduleWidth) },
+        { text: fmt(groundPricing.unitPrice) },
+        { text: fmt(groundTotal) },
+      ]]
+    : systemMaterials.map((m, i) => {
+        const price  = getPriceFromMap(m.code ?? "", prices);
+        const rowSum = price != null ? price * m.quantity : null;
+        return [
+          { text: String(i + 1) },
+          { text: shortCode(m.code ?? "") },
+          { text: resolveName(m.name), align: "left" },
+          { text: String(m.quantity) },
+          ...(isGround ? [{ text: m.length != null ? String(m.length) : "–" }] : []),
+          { text: fmt(price ?? 0) },
+          { text: fmt(rowSum ?? 0) },
+        ];
+      });
+  const sysTotal = isGround
+    ? groundTotal
+    : systemMaterials.reduce((sum, m) => {
+        const price = getPriceFromMap(m.code ?? "", prices);
+        return price != null ? sum + price * m.quantity : sum;
+      }, 0);
   sysRows.push([
     { text: "__total__" },
     ...Array(sysCols.length - 3).fill({ text: "" }),
@@ -443,7 +464,7 @@ async function buildMaterialsPage(
     { text: fmt(sysTotal) + " €" },
   ]);
 
-  const fCode  = 52;
+  const fCode  = 72;
   const fQty   = 44;
   const fPrice = 64;
   const fSum   = 68;
@@ -484,7 +505,7 @@ async function buildMaterialsPage(
   const hdrH  = LOGO_H + 14 + 30 + 20 + 18 + 14 + 110 + 12;
   const secH  = 20;
   const sysH  = ROW_H * (sysRows.length + 1);
-  const furnH = isGround ? ROW_H * (furnRows.length + 1) + secH + 14 : 0;
+  const furnH = !isGround && furnitureMaterials.length > 0 ? ROW_H * (furnRows.length + 1) + secH + 14 : 0;
   const H     = Math.max(1123, MARGIN + hdrH + secH + sysH + 14 + furnH + 30 + 40 + 20);
 
   const canvas  = document.createElement("canvas");
@@ -506,7 +527,7 @@ async function buildMaterialsPage(
   y = drawTable(ctx, MARGIN, y, sysCols, sysRows, COL_W);
   y += 16;
 
-  if (isGround && furnitureMaterials.length > 0) {
+  if (!isGround && furnitureMaterials.length > 0) {
     ctx.font      = `bold 11px ${FONT}`;
     ctx.fillStyle = TEXT;
     ctx.textAlign = "left";
@@ -516,7 +537,7 @@ async function buildMaterialsPage(
     y += 14;
   }
 
-  const grand = sysTotal + furnTotal;
+  const grand = isGround ? sysTotal : sysTotal + furnTotal;
   fillR(ctx, MARGIN, y, COL_W, 24, MAGENTA);
   ctx.font      = `bold 12px ${FONT}`;
   ctx.fillStyle = "#ffffff";

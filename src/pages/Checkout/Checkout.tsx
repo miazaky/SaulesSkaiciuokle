@@ -6,6 +6,7 @@ import { buyerFields, initialBuyer, seller } from "../../config/checkoutConfig";
 import { CalculatorInput } from "../../calculations/types";
 import { calculateSystemMaterials } from "../../calculations/calculateSystemMaterials";
 import { calculateFurnitureMaterials } from "../../calculations/calculateFurnitureMaterials";
+import { getGroundSystemPricing, getGroundSystemTotal, isGroundSystem } from "../../calculations/groundPricing";
 import { useProductPrices } from "../../hooks/useProductPrices";
 import { useProducts } from "../../hooks/useProducts";
 import { generateCommercialProposalPdf } from "../../calculations/utils/generatePdf";
@@ -56,7 +57,7 @@ function getSystemName(input: CalculatorInput): string {
   };
   const batteryName = batteryMap[input.batteryType] ?? input.batteryType;
   
-  if (input.batteryType === "ezys" || input.batteryType === "poline") {
+  if (isGroundSystem(input)) {
     return batteryName;
   }
   
@@ -99,20 +100,15 @@ export default function Checkout() {
   const pricesBySku = (state?.productPrices && Object.keys(state.productPrices).length > 0)
     ? state.productPrices : fetchedPrices;
 
-  const isGround           = state?.batteryType === "ezys" || state?.batteryType === "poline";
+  const isGround           = state ? isGroundSystem(state) : false;
   const systemMaterials    = state ? calculateSystemMaterials(state) : [];
   const furnitureMaterials = state && isGround ? calculateFurnitureMaterials(state) : [];
 
   const getPrice    = (code: string) => pricesBySku[(code ?? "").split("/")[0].trim()] ?? 0;
 
-  const GROUND_PRICE_PER_MODULE: Record<string, number> = {
-    poline: 44,
-    ezys:   49,
-  };
-
-  const groundModuleCount = isGround ? Number(state?.moduleCount ?? 0) : 0;
-  const groundUnitPrice   = isGround ? (GROUND_PRICE_PER_MODULE[state?.batteryType ?? ""] ?? 0) : 0;
-  const groundTotal       = groundModuleCount * groundUnitPrice;
+  const groundPricing   = state && isGround ? getGroundSystemPricing(state, pricesBySku) : null;
+  const groundUnitPrice = groundPricing?.unitPrice ?? 0;
+  const groundTotal     = state && isGround ? getGroundSystemTotal(state, pricesBySku) : 0;
 
   // Roof: price by materials
   const systemTotal = !isGround ? systemMaterials.reduce((s, m) => s + getPrice(m.code ?? "") * m.quantity, 0) : 0;
@@ -187,7 +183,7 @@ export default function Checkout() {
   // ── Upgrade to SpecialOffer after price is shown ──────────────────────────
   const handleRequestProposal = async () => {
     if (!completedOrderId || !state) return;
-    setUpgradeState("loading");
+    setUpgradeState("success");
     setUpgradeError("");
 
     try {
@@ -349,7 +345,7 @@ export default function Checkout() {
                 onClick={handleRequestProposal}
                 disabled={upgradeState === "loading"}
               >
-                {upgradeState === "loading" ? "Ruošiama..." : "Noriu gauti pasiūlymą"}
+                Noriu gauti pasiūlymą
               </button>
             </div>
           )}

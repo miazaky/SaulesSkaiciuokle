@@ -576,12 +576,63 @@ export default function SolarRoofCanvas() {
   };
 
   const clamps = getClamps();
+  const rv10ModuleStats = (() => {
+    const occ = new Set(modules.map((m) => `${m.row},${m.col}`));
+    const has = (row: number, col: number) => occ.has(`${row},${col}`);
+
+    let exposedRowEdges = 0;
+    let rowAdjacencies = 0;
+
+    modules.forEach((module) => {
+      if (!has(module.row - STEP, module.col)) exposedRowEdges++;
+      if (!has(module.row + STEP, module.col)) exposedRowEdges++;
+      if (has(module.row + STEP, module.col)) rowAdjacencies++;
+    });
+
+    const rows = [...new Set(modules.map((m) => m.row))].sort((a, b) => a - b);
+    const colsByRow = new Map<number, number[]>();
+
+    modules.forEach((module) => {
+      const cols = colsByRow.get(module.row) ?? [];
+      cols.push(module.col);
+      colsByRow.set(module.row, cols);
+    });
+
+    const firstRowCols = rows.length > 0 ? [...(colsByRow.get(rows[0]) ?? [])].sort((a, b) => a - b) : [];
+    const hasConsecutiveRows = rows.every(
+      (row, index) => index === 0 || row - rows[index - 1] === STEP,
+    );
+    const hasConsecutiveCols =
+      firstRowCols.length > 0 &&
+      firstRowCols.every(
+        (col, index) => index === 0 || col - firstRowCols[index - 1] === STEP,
+      );
+    const hasSameColsInEveryRow = rows.every((row) => {
+      const cols = [...(colsByRow.get(row) ?? [])].sort((a, b) => a - b);
+      return (
+        cols.length === firstRowCols.length &&
+        cols.every((col, index) => col === firstRowCols[index])
+      );
+    });
+
+    return {
+      exposedRowEdges,
+      rowAdjacencies,
+      rowCount: rows.length,
+      moduleColumns: firstRowCols.length,
+      isSolidRectangle:
+        modules.length > 0 &&
+        hasConsecutiveRows &&
+        hasConsecutiveCols &&
+        hasSameColsInEveryRow,
+    };
+  })();
 
   const hasModulesBelowRow = (row: number) => {
     return modules.some((m) => m.row > row);
   };
 
-  const clampGCount =
+  let clampGCount =
     clamps.filter(
       (c) =>
         c.clampType === "G" &&
@@ -591,7 +642,63 @@ export default function SolarRoofCanvas() {
           !hasModulesBelowRow(c.row)
         ),
     ).length * 2;
-  const clampVCount = clamps.filter((c) => c.clampType === "V").length * 2;
+  let clampVCount = clamps.filter((c) => c.clampType === "V").length * 2;
+
+  if (state.system === "RV10" && state.orientation === "RV") {
+    clampGCount = rv10ModuleStats.exposedRowEdges * 2;
+    clampVCount = rv10ModuleStats.rowAdjacencies * 2;
+  }
+
+  const moduleColsByRow = new Map<number, number[]>();
+  modules.forEach((module) => {
+    const cols = moduleColsByRow.get(module.row) ?? [];
+    cols.push(module.col);
+    moduleColsByRow.set(module.row, cols);
+  });
+  moduleColsByRow.forEach((cols) => cols.sort((a, b) => a - b));
+
+  const shouldSkipPtTrailingInnerGHolder = (clamp: {
+    row: number;
+    col: number;
+    topHolder: "G" | "V" | "L" | "P" | "VA" | "VZ" | "Z" | "";
+    clampType: "G" | "V";
+  }) => {
+    if (
+      state.orientation !== "PT" ||
+      state.system === "PT15-L" ||
+      clamp.clampType !== "V" ||
+      clamp.topHolder !== "G"
+    ) {
+      return false;
+    }
+
+    const rowCols = moduleColsByRow.get(clamp.row) ?? [];
+    const leftCol = clamp.col - 0.5;
+    const rightCol = clamp.col + 0.5;
+
+    if (!rowCols.includes(leftCol) || !rowCols.includes(rightCol)) {
+      return false;
+    }
+
+    let runStart = leftCol;
+    let runEnd = rightCol;
+
+    while (rowCols.includes(runStart - STEP)) {
+      runStart -= STEP;
+    }
+    while (rowCols.includes(runEnd + STEP)) {
+      runEnd += STEP;
+    }
+
+    const aboveColsInRun = (moduleColsByRow.get(clamp.row - STEP) ?? []).filter(
+      (col) => col >= runStart && col <= runEnd,
+    );
+    if (aboveColsInRun.length === 0) {
+      return false;
+    }
+
+    return leftCol > Math.max(...aboveColsInRun);
+  };
 
   let GholderCount = 0;
   let VholderCount = 0;
@@ -640,7 +747,11 @@ export default function SolarRoofCanvas() {
         }
       }
     } else {
-      if (clamp.topHolder === "G" || clamp.topHolder === "Z") GholderCount++;
+      if (
+        (clamp.topHolder === "G" || clamp.topHolder === "Z") &&
+        !shouldSkipPtTrailingInnerGHolder(clamp)
+      )
+        GholderCount++;
       if (clamp.topHolder === "P") PholderCount++;
       if (clamp.topHolder === "V") VholderCount++;
       if (clamp.bottomHolder === "P") PholderCount++;
@@ -651,6 +762,19 @@ export default function SolarRoofCanvas() {
   if (state.system === "RV10-Z" && state.orientation === "RV") {
     const zBottomCount = clamps.filter((c) => c.bottomHolder === "Z").length;
     GholderCount = zBottomCount % 2 === 0 ? zBottomCount : zBottomCount + 1;
+  }
+
+  if (
+    state.system === "RV10" &&
+    state.orientation === "RV" &&
+    rv10ModuleStats.isSolidRectangle
+  ) {
+    const holderPositions = rv10ModuleStats.moduleColumns + 1;
+    const innerRows = Math.max(0, rv10ModuleStats.rowCount - 1);
+
+    GholderCount = holderPositions * 2;
+    VAHolderCount = holderPositions * Math.ceil(innerRows / 2);
+    VZHolderCount = holderPositions * Math.floor(innerRows / 2);
   }
 
   const [unpairedModules] = useState<Set<number>>(new Set());
@@ -1236,6 +1360,7 @@ export default function SolarRoofCanvas() {
                   ...state,
                       canvasImageDataUrl: img,
                   savedModules: modules,
+                  isEvenModules: "false",
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,
@@ -1300,7 +1425,7 @@ export default function SolarRoofCanvas() {
         </>
       ) : (
         <>
-          {/* <div style={{ marginTop: 20 }}>
+          { <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
               <p>
                 {t("fields.backHolder")} (G): {GholderCount}
@@ -1318,7 +1443,7 @@ export default function SolarRoofCanvas() {
                 {t("fields.middleClamp")} (Clamp V): {clampVCount}
               </p>
             </div>
-          </div> */}
+          </div> }
 
           <p style={{ margin: '12px 0', fontWeight: 600 }}>
             Dabar bus {modules.length > 0 ? Math.max(...modules.map((m: any) => m.row)) + 1 : state.rowsCount} eilių

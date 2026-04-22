@@ -36,7 +36,6 @@ export const furnitureRegistry: Record<string, FormulaFn> = {
   //   ezys 5200mm + poline → J14 + J15
   furn_m10_bolt: (i) => {
     const j14 = n(sys.varztasM10_1(i));
-    if (i.batteryType === "ezys" && i.profileLength === 4200) return j14;
     const j15 = n(sys.varztasM10_2(i));
     return j14 + j15;
   },
@@ -46,7 +45,6 @@ export const furnitureRegistry: Record<string, FormulaFn> = {
   //   ezys 5200mm + poline → J14*2 + J15
   furn_m10_washer: (i) => {
     const j14 = n(sys.varztasM10_1(i));
-    if (i.batteryType === "ezys" && i.profileLength === 4200) return j14 * 2;
     const j15 = n(sys.varztasM10_2(i));
     return j14 * 2 + j15;
   },
