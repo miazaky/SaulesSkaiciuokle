@@ -38,6 +38,14 @@ export interface SavePdfResponse {
   url: string;
 }
 
+export interface ZemesPdfParams {
+  moduleCount: number;
+  moduleWidth: number;
+  profileLength: number;
+  ggCode: string;
+  systemType: string;
+}
+
 export const inventoryApi = {
   getWarehouses: () => apiFetch<Warehouse[]>("/api/warehouses"),
 
@@ -62,13 +70,23 @@ export const inventoryApi = {
     }),
 
   /**
-   * Triggers the backend to email the employer with two attachments:
+   * Triggers the backend to email the employer with attachments:
    *   1. The order PDF already saved in blob storage.
    *   2. Montavimo_vadovas.docx from blob storage.
-   * Buyer info is loaded server-side from the Order — no extra payload needed.
+   *   3. (For Žemės systems) The matching installation PDF, e.g. "8 mod 1134 4200 GG-0 ezys.pdf".
+   * Buyer info is loaded server-side from the Order — only the optional zemes params need sending.
    */
-  sendProposalEmail: (orderId: string) =>
+  sendProposalEmail: (orderId: string, zemesPdf?: ZemesPdfParams) =>
     apiFetch<void>(`/orders/${orderId}/send-proposal-email`, {
       method: "POST",
+      body: JSON.stringify(zemesPdf
+        ? {
+            moduleCount: zemesPdf.moduleCount,
+            moduleWidth: zemesPdf.moduleWidth,
+            profileLength: zemesPdf.profileLength,
+            ggCode: zemesPdf.ggCode,
+            systemType: zemesPdf.systemType,
+          }
+        : {}),
     }),
 };

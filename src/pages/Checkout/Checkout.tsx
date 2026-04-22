@@ -48,6 +48,12 @@ function validateAddress(v: string) {
   return "";
 }
 
+function getGgCode(moduleLengthMm: number): string {
+  if (moduleLengthMm <= 1794) return "GG-0";
+  if (moduleLengthMm <= 2112) return "GG-1";
+  return "GG-2";
+}
+
 function getSystemName(input: CalculatorInput): string {
   const batteryMap: Record<string, string> = {
     ezys: "Ežio",
@@ -205,7 +211,18 @@ export default function Checkout() {
       await inventoryApi.savePdf(completedOrderId, pdfBase64, buyer.name);
 
       // 3. Email the employer — backend attaches the PDF + Montavimo_nurodymai.docx
-      await inventoryApi.sendProposalEmail(completedOrderId);
+      await inventoryApi.sendProposalEmail(
+        completedOrderId,
+        isGround
+          ? {
+              moduleCount: Number(state.moduleCount),
+              moduleWidth: state.moduleWidth,
+              profileLength: state.profileLength,
+              ggCode: getGgCode(state.moduleLength),
+              systemType: state.batteryType,
+            }
+          : undefined
+      );
 
       setUpgradeState("success");
     } catch (err) {
