@@ -537,30 +537,34 @@ export default function SolarRoofCalculator() {
         </div>
       )}
 
-      {orientation === "PT" && batteryType === "ploksciasStogas" && (
-        <div className="solar-calculator__content">
-          <h3>{t("sections.modules")}</h3>
-          {/* Module Input Fields */}
-          <FormGrid columns={2}>
-            <InputField label={t("system.systemTitle")}>
-              <select
-                value={system ?? ""}
-                onChange={(e) =>
-                  setSystem((e.target.value || null) as SystemKey)
-                }
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
+      {batteryType === "ploksciasStogas" && (orientation === "PT" || orientation === "RV") && (
+        <div className="solar-calculator__system_select">
+          <h3>{t("system.systemTitle")}</h3>
+            <select
+              value={system ?? ""}
+              onChange={(e) =>
+                setSystem((e.target.value || null) as SystemKey)
+              }
+            >
+              <option value="" disabled>
+                {t("select.placeholder")}
+              </option>
+
+              {(orientation === "PT" ? systemEntriesPT : systemEntriesRV).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
                 </option>
+              ))}
+            </select>
+        </div>
+      )}
 
-                {systemEntriesPT.map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </InputField>
-
+      {orientation === "PT" && batteryType === "ploksciasStogas" && (
+        <>
+          <div className="solar-calculator__content">
+            <h3>{t("sections.modules")}</h3>
+            {/* Module Input Fields */}
+            <FormGrid columns={2}>
             {/* Module Length Input */}
             <InputField label={t("fields.moduleLengthRoof")}>
               <input
@@ -602,19 +606,25 @@ export default function SolarRoofCalculator() {
               </select>
             </InputField>
 
-            {/* Module Color Selection */}
-            <InputField label={t("fields.moduleColor")}>
-              <select
-                value={moduleColor ?? ""}
-                onChange={(e) => setModuleColor(e.target.value)}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-                <option value="juoda">{t("color.black")}</option>
-                <option value="pilka">{t("color.grey")}</option>
-              </select>
-            </InputField>
+              {/* Module Color Selection */}
+              <InputField label={t("fields.moduleColor")}>
+                <select
+                  value={moduleColor ?? ""}
+                  onChange={(e) => setModuleColor(e.target.value)}
+                >
+                  <option value="" disabled>
+                    {t("select.placeholder")}
+                  </option>
+                  <option value="juoda">{t("color.black")}</option>
+                  <option value="pilka">{t("color.grey")}</option>
+                </select>
+              </InputField>
+            </FormGrid>
+          </div>
+
+          <div className="solar-calculator__system_data_box">
+            <h3>Sistemos duomenys</h3>
+            <FormGrid columns={2}>
 
             {/* Module Construction Selection */}
             <InputField label={t("fields.moduleConstruction")}>
@@ -719,34 +729,16 @@ export default function SolarRoofCalculator() {
                 }}
               />
             </InputField>
-
-          </FormGrid>
-        </div>
+            </FormGrid>
+          </div>
+        </>
       )}
 
       {orientation === "RV" && batteryType === "ploksciasStogas" && (
-        <div className="solar-calculator__content">
-          <h3>{t("sections.modules")}</h3>
-          <FormGrid columns={2}>
-            <InputField label={t("system.systemTitle")}>
-              <select
-                value={system ?? ""}
-                onChange={(e) =>
-                  setSystem((e.target.value || null) as SystemKey)
-                }
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-
-                {systemEntriesRV.map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </InputField>
-
+        <>
+          <div className="solar-calculator__content">
+            <h3>{t("sections.modules")}</h3>
+            <FormGrid columns={2}>
             {/* RV module length*/}
             <InputField label={t("fields.moduleLengthRoof")}>
               <input
@@ -788,18 +780,24 @@ export default function SolarRoofCalculator() {
               </select>
             </InputField>
 
-            <InputField label={t("fields.moduleColor")}>
-              <select
-                value={moduleColor ?? ""}
-                onChange={(e) => setModuleColor(e.target.value)}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-                <option value="juoda">{t("color.black")}</option>
-                <option value="pilka">{t("color.grey")}</option>
-              </select>
-            </InputField>
+              <InputField label={t("fields.moduleColor")}>
+                <select
+                  value={moduleColor ?? ""}
+                  onChange={(e) => setModuleColor(e.target.value)}
+                >
+                  <option value="" disabled>
+                    {t("select.placeholder")}
+                  </option>
+                  <option value="juoda">{t("color.black")}</option>
+                  <option value="pilka">{t("color.grey")}</option>
+                </select>
+              </InputField>
+            </FormGrid>
+          </div>
+
+          <div className="solar-calculator__system_data_box">
+            <h3>{t("sections.systemData")}</h3>
+            <FormGrid columns={2}>
 
             {/* RV model construction */}
             <InputField label={t("fields.moduleConstruction")}>
@@ -892,158 +890,169 @@ export default function SolarRoofCalculator() {
                 }}
               />
             </InputField>
-
-          </FormGrid>
-        </div>
+            </FormGrid>
+          </div>
+        </>
       )}
 
       {batteryType === "slaitinisStogas" && (
-        <div className="solar-calculator__content">
-          <FormGrid columns={2}>
-            <InputField label={t("fields.roofMaterial")}>
-              <select
-                value={roofMaterial ?? ""}
-                onChange={(e) =>
-                  setRoofMaterial((e.target.value || null) as RoofMaterial)
-                }
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
+        <>
+          <div className="solar-calculator__system_select">
+            <h3>{t("fields.roofMaterial")}</h3>
+            <select
+              value={roofMaterial ?? ""}
+              onChange={(e) =>
+                setRoofMaterial((e.target.value || null) as RoofMaterial)
+              }
+            >
+              <option value="" disabled>
+                {t("select.placeholder")}
+              </option>
 
-                {roofMaterialEntries.map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
+              {roofMaterialEntries.map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="solar-calculator__content">
+            <h3>{t("sections.modules")}</h3>
+            <FormGrid columns={2}>
+              <InputField label={orientation === "vertical" ? t("fields.moduleWidth") : t("fields.moduleLength")}>
+                <input
+                  type="number"
+                  min={1762}
+                  max={2400}
+                  value={moduleLengthInput}
+                  onChange={(e) => setModuleLengthInput(e.target.value)}
+                  onBlur={() => {
+                    const value = Number(moduleLengthInput);
+                    const clamped = Math.max(1762, Math.min(2400, isNaN(value) ? 1762 : value));
+                    setModuleLength(clamped);
+                    setModuleLengthInput(String(clamped));
+                  }}
+                />
+              </InputField>
+
+              <InputField label={t("fields.moduleWidth")}>
+                <input
+                  type="number"
+                  value={MODULE_WIDTH}
+                  disabled
+                  style={{ opacity: 0.5, cursor: "not-allowed" }}
+                />
+              </InputField>
+
+              <InputField label={t("fields.moduleThickness")}>
+                <select
+                  value={moduleThickness ?? ""}
+                  onChange={(e) => setModuleThickness(Number(e.target.value))}
+                >
+                  <option value="">{t("select.placeholder")}</option>
+                  <option value="30">30 mm</option>
+                  <option value="33">33 mm</option>
+                  <option value="35">35 mm</option>
+                </select>
+              </InputField>
+
+              <InputField label={t("fields.moduleColor")}>
+                <select
+                  value={moduleColor ?? ""}
+                  onChange={(e) => setModuleColor(e.target.value)}
+                >
+                  <option value="" disabled>
+                    {t("select.placeholder")}
                   </option>
-                ))}
-              </select>
-            </InputField>
-            <InputField label={t("fields.mountingMethod")}>
-              <select
-                value={mountingMethod ?? ""}
-                onChange={(e) => setMountingMethod(e.target.value)}
-                disabled={roofMountingMethodDisabled}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
+                  <option value="juoda">{t("color.black")}</option>
+                  <option value="pilka">{t("color.grey")}</option>
+                </select>
+              </InputField>
+            </FormGrid>
+          </div>
 
-                {filteredRoofMountingMethodsEntries.map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
+          <div className="solar-calculator__system_data_box">
+            <h3>Sistemos duomenys</h3>
+            <FormGrid columns={2}>
+              <InputField label={t("fields.mountingMethod")}>
+                <select
+                  value={mountingMethod ?? ""}
+                  onChange={(e) => setMountingMethod(e.target.value)}
+                  disabled={roofMountingMethodDisabled}
+                >
+                  <option value="" disabled>
+                    {t("select.placeholder")}
                   </option>
-                ))}
-              </select>
-            </InputField>
 
-            <InputField label={t("sections.moduleOrientation")}>
-              <select
-                value={orientation ?? ""}
-                onChange={(e) => setOrientation(e.target.value as Orientation)}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-                <option value="vertical">{t("orientation.vertical")}</option>
-                <option value="horizontal">
-                  {t("orientation.horizontal")}
-                </option>
-              </select>
-            </InputField>
+                  {filteredRoofMountingMethodsEntries.map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </InputField>
 
-            <InputField label={orientation === "vertical" ? t("fields.moduleWidth"): t("fields.moduleLength")}>
-              <input
-                type="number"
-                min={1762}
-                max={2400}
-                value={moduleLengthInput}
-                onChange={(e) => setModuleLengthInput(e.target.value)}
-                onBlur={() => {
-                  const value = Number(moduleLengthInput);
-                  const clamped = Math.max(1762, Math.min(2400, isNaN(value) ? 1762 : value));
-                  setModuleLength(clamped);
-                  setModuleLengthInput(String(clamped));
-                }}
-              />
-            </InputField>
+              <InputField label={t("sections.moduleOrientation")}>
+                <select
+                  value={orientation ?? ""}
+                  onChange={(e) => setOrientation(e.target.value as Orientation)}
+                >
+                  <option value="" disabled>
+                    {t("select.placeholder")}
+                  </option>
+                  <option value="vertical">{t("orientation.vertical")}</option>
+                  <option value="horizontal">
+                    {t("orientation.horizontal")}
+                  </option>
+                </select>
+              </InputField>
 
-            <InputField label={t("fields.moduleWidth")}>
-              <input
-                type="number"
-                value={MODULE_WIDTH}
-                disabled
-                style={{ opacity: 0.5, cursor: 'not-allowed' }}
-              />
-            </InputField>
+              <InputField label={t("fields.rowsCount")}>
+                <input
+                  type="number"
+                  min={1}
+                  value={rowsCountInput}
+                  onChange={(e) => setRowsCountInput(e.target.value)}
+                  onBlur={() => {
+                    const value = Number(rowsCountInput);
+                    const clamped = Math.max(1, isNaN(value) ? 1 : value);
+                    setRowsCount(clamped);
+                    setRowsCountInput(String(clamped));
+                  }}
+                />
+              </InputField>
 
-            <InputField label={t("fields.moduleThickness")}>
-              <select
-                value={moduleThickness ?? ""}
-                onChange={(e) => setModuleThickness(Number(e.target.value))}
-              >
-                <option value="">
-                  {t("select.placeholder")}
-                </option>
-                <option value="30">30 mm</option>
-                <option value="33">33 mm</option>
-                <option value="35">35 mm</option>
-              </select>
-            </InputField>
-
-            <InputField label={t("fields.moduleColor")}>
-              <select
-                value={moduleColor ?? ""}
-                onChange={(e) => setModuleColor(e.target.value)}
-              >
-                <option value="" disabled>
-                  {t("select.placeholder")}
-                </option>
-                <option value="juoda">{t("color.black")}</option>
-                <option value="pilka">{t("color.grey")}</option>
-              </select>
-            </InputField>
-
-            <InputField label={t("fields.rowsCount")}>
-              <input
-                type="number"
-                min={1}
-                value={rowsCountInput}
-                onChange={(e) => setRowsCountInput(e.target.value)}
-                onBlur={() => {
-                  const value = Number(rowsCountInput);
-                  const clamped = Math.max(1, isNaN(value) ? 1 : value);
-                  setRowsCount(clamped);
-                  setRowsCountInput(String(clamped));
-                }}
-              />
-            </InputField>
-
-            <InputField label={t("fields.moduleCountRoof")}>
-              <div style={{ display: "grid", gap: 8 }}>
-                {rowModuleCounts.map((v, idx) => (
-                  <label key={idx} style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 12, alignItems: "center" }}>
-                    <span>{idx + 1} eilė</span>
-                    <input
-                      type="number"
-                      min={0}
-                      max={200}
-                      value={v}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        const n = Math.max(0, Math.min(200, value));
-                        setRowModuleCounts((prev) => {
-                          const copy = [...prev];
-                          copy[idx] = n;
-                          return copy;
-                        });
-                      }}
-                    />
-                  </label>
-                ))}
-              </div>
-            </InputField>
-          </FormGrid>
-        </div>
+              <InputField label={t("fields.moduleCountRoof")}>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {rowModuleCounts.map((v, idx) => (
+                    <label
+                      key={idx}
+                      style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 12, alignItems: "center" }}
+                    >
+                      <span>{idx + 1} eilė</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={200}
+                        value={v}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          const n = Math.max(0, Math.min(200, value));
+                          setRowModuleCounts((prev) => {
+                            const copy = [...prev];
+                            copy[idx] = n;
+                            return copy;
+                          });
+                        }}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </InputField>
+            </FormGrid>
+          </div>
+        </>
       )}
 
       {(() => {

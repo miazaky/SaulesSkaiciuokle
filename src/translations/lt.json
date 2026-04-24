@@ -1,6 +1,6 @@
 {
   "title": {
-    "selectBattery": "Pasirinkite saulės baterijos tipą",
+    "selectBattery": "Pasirinkite stogo tipą",
     "selectGroundBatteryType": "Pasirinkite montavimo būdą",
     "whereInstall": "Kur planuojate įsirengti saulės elektrinę?",
     "materialCount": "MEDŽIAGŲ KIEKIŲ SKAIČIAVIMO SCHEMA PT05/PT10/PT15/PT20",
@@ -11,8 +11,8 @@
   "batteryTypes": {
     "ezys": "Šakninė „ežio“ sistema",
     "poline": "Polinė sistema",
-    "ploksciasStogas": "Plokščio stogo modulis",
-    "slaitinisStogas": "Šlaitinio stogo modulis",
+    "ploksciasStogas": "Saulės elektrinių konstrukcijos plokštiems stogams",
+    "slaitinisStogas": "Saulės elektrinių konstrukcijos šlaitiniams stogams",
     "ezysDescription": "Greito montavimo konstrukcija tvirtinama į gruntą kalamais strypais, be betonavimo. Skirta vidutiniam ir stipriam gruntui. Standartinis modulių pasvirimo kampas -35˚.",
     "polineDescription": "Konstrukcijos poliai gali būti tvirtinami į gruntą dviem būdais – kalami arba betonuojami. Skirta įvairiems grunto tipams. Standartinis modulių pasvirimo kampas -35˚."
   },
@@ -21,10 +21,11 @@
     "roof": "Ant stogo"
   },
   "sections": {
-    "modules": "Modulių matmenys",
-    "moduleOrientation": "Modulio orientacija",
+    "modules": "Modulio duomenys",
+    "moduleOrientation": "Sistemos orientacija",
     "construction": "Konstrukcijos duomenys",
-    "profile": "Grebėsto ilgis"
+    "profile": "Grebėsto ilgis",
+    "systemData": "Sistemos duomenys"
   },
   "orientation": {
     "PT": "Pietų",
@@ -100,7 +101,7 @@
     "moduleConstructionNote": "PT5 ir PT20 sistemoms, kai modulis didesnis nei 2m – kreipkitės individualiai.",
     "moduleColor": "Modulio rėmelio spalva",
     "constructionLength": "Konstrukcijos ilgis, mm (max 32000)",
-    "rowsCount": "Modulių kiekis eilėje, vnt.",
+    "rowsCount": "Eilių kiekis",
     "blockCount": "Modulių blokų kiekis, vnt.",
     "reserve": "Grebėsto rezervas (mm)",
     "gap": "Tarpas tarp modulių prispaudėjams (mm)",
@@ -115,7 +116,7 @@
     "unpairAllModules": "Atkabinti visus modulius",
     "yes": "Taip",
     "no": "Ne",
-    "profileLength": "Grebėsto ilgis"
+    "profileLength": "Ilgiausias konstrukcijos elementas"
   },
   "actions": {
     "next": "Kitas žingsnis",
