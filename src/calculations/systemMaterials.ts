@@ -648,22 +648,22 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
       calculateGrebestas(i.constructionLength, i.profileLength),
     calculateLength: (i) => i.profileLength,
   },
-  {
-    code: "Gb-1*",
-    name: "Grebėstas",
-    length: null,
-    calculateQuantity: (i) =>
-      calculateExtraGrebestasQuantity(
-        i.constructionLength,
-        i.profileLength
-      ),
+  // {
+  //   code: "Gb-1*",
+  //   name: "Grebėstas",
+  //   length: null,
+  //   calculateQuantity: (i) =>
+  //     calculateExtraGrebestasQuantity(
+  //       i.constructionLength,
+  //       i.profileLength
+  //     ),
 
-    calculateLength: (i) =>
-      calculateExtraGrebestasLength(
-        i.constructionLength,
-        i.profileLength
-      ),
-  },
+  //   calculateLength: (i) =>
+  //     calculateExtraGrebestasLength(
+  //       i.constructionLength,
+  //       i.profileLength
+  //     ),
+  // },
   {
     code: "Gbj",
     name: "Grebėstų jungtys",

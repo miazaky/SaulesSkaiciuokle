@@ -106,16 +106,22 @@ export default function SolarGroundCalculator() {
   const moduleLengthNumber = Number(moduleLength);
   const moduleThicknessNumber = moduleThickness;
 
+  // Validation limits depend on selected module width
+  const moduleCountMin = moduleWidth === 1303 ? 6 : 8;
+  const moduleCountMax = moduleWidth === 1303 ? 48 : 54;
+  const moduleLengthMin = moduleWidth === 1303 ? 2201 : 1700;
+  const moduleLengthMax = 2400;
+
   const isModuleCountValid =
     moduleCount !== "" &&
-    moduleCountNumber >= 8 &&
-    moduleCountNumber <= 54 &&
+    moduleCountNumber >= moduleCountMin &&
+    moduleCountNumber <= moduleCountMax &&
     moduleCountNumber % 2 === 0;
 
   const isModuleLengthValid =
     moduleLength !== "" &&
-    moduleLengthNumber >= 1700 &&
-    moduleLengthNumber <= 2400;
+    moduleLengthNumber >= moduleLengthMin &&
+    moduleLengthNumber <= moduleLengthMax;
 
   const isModuleThicknessValid = true; // always valid - dropdown enforces 30 or 35
 
@@ -162,11 +168,98 @@ export default function SolarGroundCalculator() {
       </div>
       {batteryType && (
         <>
+<<<<<<< HEAD
         <form onSubmit={(e) => e.preventDefault()}>
           <div className="solar-calculator__content">
             <h3>Modulio duomenys</h3>
             <FormGrid columns={2}>
               <InputField label={t("fields.moduleLength")}>
+=======
+        <form className="solar-calculator__content"
+        onSubmit={(e) => e.preventDefault()}>
+          <h3>{t("sections.modules")}</h3>
+          <FormGrid columns={2}>
+            <InputField label={t("fields.moduleCount", { min: moduleCountMin, max: moduleCountMax })}>
+              <input
+                className={!isModuleCountValid ? "input-error" : ""}
+                type="number"
+                value={moduleCount}
+                onKeyDown={handleEnterAsTab}
+                onChange={(e) => setModuleCount(e.target.value)}
+                onBlur={() => {
+                  if (moduleCount === "") {
+                    return;
+                  }
+
+                  let number = Number(moduleCount);
+
+                  if (isNaN(number)) {
+                    return;
+                  }
+
+                  if (number % 2 !== 0) {
+                    setModuleCount(String(number + 1));
+                  }
+                }}
+              />
+              {!isModuleCountValid && (
+                <div className="error-text">
+                  {t("errors.moduleCount", { min: moduleCountMin, max: moduleCountMax })}
+                </div>
+              )}
+            </InputField>
+
+            <InputField label={t("fields.moduleLength", { min: moduleLengthMin, max: moduleLengthMax })}>
+              <input
+                className={!isModuleLengthValid ? "input-error" : ""}
+                type="number"
+                value={moduleLength}
+                onChange={(e) => setModuleLength(e.target.value)}
+                onKeyDown={handleEnterAsTab}
+              />
+              {!isModuleLengthValid && (
+                <div className="error-text">
+                  {t("errors.moduleLength", { min: moduleLengthMin, max: moduleLengthMax })}
+                </div>
+              )}
+            </InputField>
+
+            <InputField label={t("fields.moduleWidth")}>
+              <select
+                value={moduleWidth}
+                onChange={(e) => setModuleWidth(Number(e.target.value))}
+              >
+                <option value={1134}>1134 mm</option>
+                <option value={1303}>1303 mm</option>
+              </select>
+            </InputField>
+
+            <InputField label={t("fields.moduleThickness")}>
+              <select
+                value={moduleThickness}
+                onChange={(e) => setModuleThickness(Number(e.target.value))}
+              >
+                <option value={30}>30 mm</option>
+                <option value={35}>35 mm</option>
+              </select>
+            </InputField>
+
+            <InputField label={t("fields.moduleColor")}>
+              <select
+                value={moduleColor}
+                onChange={(e) => setModuleColor(e.target.value)}
+              >
+                <option value="juoda">{t("color.black")}</option>
+                <option value="pilka">{t("color.grey")}</option>
+              </select>
+            </InputField>
+          </FormGrid>
+
+          <h3 className="solar-calculator__section">{t("fields.profileLength")}</h3>
+          <InputField label={t("")}>
+            <div style={{ display: "flex", gap: "20px" }}>
+              <label className="radio-option">
+>>>>>>> ef78c13c596f32ec4e9d4aab89d72d824447df85
                 <input
                   className={!isModuleLengthValid ? "input-error" : ""}
                   type="number"

@@ -88,10 +88,10 @@
     "placeholder": "Pasirinkti..."
   },
   "fields": {
-    "moduleCount": "Modulių kiekis, vnt. (lyg. sk., min 8, max 54)",
+    "moduleCount": "Modulių kiekis, vnt. (lyg. sk., min {{min}}, max {{max}})",
     "moduleCountRoof": "Modulių kiekis, vnt.",
     "mountingMethod": "Montavimo būdas",
-    "moduleLength": "Modulio ilgis, mm (1700-2400)",
+    "moduleLength": "Modulio ilgis, mm ({{min}}-{{max}})",
     "roofMaterial": "Stogo danga",
     "moduleLengthRoof": "Modulio ilgis, mm (nuo 1762)",
     "moduleWidth": "Modulio plotis, mm",
@@ -126,8 +126,8 @@
     "submit": "Pateikti paraišką"
   },
   "errors": {
-    "moduleCount": "Modulių kiekis turi būti skaičius nuo 8 iki 54.",
-    "moduleLength": "Modulio ilgis turi būti tarp 1700 mm ir 2400 mm.",
+    "moduleCount": "Modulio kiekis turi būti lyginis skaičius nuo {{min}} iki {{max}}",
+    "moduleLength": "Modulio ilgis turi būti nuo {{min}} iki {{max}} mm",
     "moduleThickness": "Modulio storis turi būti teigiamas skaičius.",
     "horizontalPairingRequired": "Moduliai turi būti horizontaliai greta vienas kito",
     "isolatedModules": "⚠️ Kai kurie moduliai yra pavieniai. Norėdami patvirtinti medžiagų kiekius, susisiekite asmeniškai."
