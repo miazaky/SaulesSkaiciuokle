@@ -167,99 +167,15 @@ export default function SolarGroundCalculator() {
         />
       </div>
       {batteryType && (
-        <>
-<<<<<<< HEAD
-        <form onSubmit={(e) => e.preventDefault()}>
-          <div className="solar-calculator__content">
-            <h3>Modulio duomenys</h3>
+        <form className="solar-calculator__ground-form" onSubmit={(e) => e.preventDefault()}>
+          <div className="solar-calculator__section_box">
+            <h3>{t("sections.modules")}</h3>
             <FormGrid columns={2}>
-              <InputField label={t("fields.moduleLength")}>
-=======
-        <form className="solar-calculator__content"
-        onSubmit={(e) => e.preventDefault()}>
-          <h3>{t("sections.modules")}</h3>
-          <FormGrid columns={2}>
-            <InputField label={t("fields.moduleCount", { min: moduleCountMin, max: moduleCountMax })}>
-              <input
-                className={!isModuleCountValid ? "input-error" : ""}
-                type="number"
-                value={moduleCount}
-                onKeyDown={handleEnterAsTab}
-                onChange={(e) => setModuleCount(e.target.value)}
-                onBlur={() => {
-                  if (moduleCount === "") {
-                    return;
-                  }
 
-                  let number = Number(moduleCount);
+                
+              
 
-                  if (isNaN(number)) {
-                    return;
-                  }
-
-                  if (number % 2 !== 0) {
-                    setModuleCount(String(number + 1));
-                  }
-                }}
-              />
-              {!isModuleCountValid && (
-                <div className="error-text">
-                  {t("errors.moduleCount", { min: moduleCountMin, max: moduleCountMax })}
-                </div>
-              )}
-            </InputField>
-
-            <InputField label={t("fields.moduleLength", { min: moduleLengthMin, max: moduleLengthMax })}>
-              <input
-                className={!isModuleLengthValid ? "input-error" : ""}
-                type="number"
-                value={moduleLength}
-                onChange={(e) => setModuleLength(e.target.value)}
-                onKeyDown={handleEnterAsTab}
-              />
-              {!isModuleLengthValid && (
-                <div className="error-text">
-                  {t("errors.moduleLength", { min: moduleLengthMin, max: moduleLengthMax })}
-                </div>
-              )}
-            </InputField>
-
-            <InputField label={t("fields.moduleWidth")}>
-              <select
-                value={moduleWidth}
-                onChange={(e) => setModuleWidth(Number(e.target.value))}
-              >
-                <option value={1134}>1134 mm</option>
-                <option value={1303}>1303 mm</option>
-              </select>
-            </InputField>
-
-            <InputField label={t("fields.moduleThickness")}>
-              <select
-                value={moduleThickness}
-                onChange={(e) => setModuleThickness(Number(e.target.value))}
-              >
-                <option value={30}>30 mm</option>
-                <option value={35}>35 mm</option>
-              </select>
-            </InputField>
-
-            <InputField label={t("fields.moduleColor")}>
-              <select
-                value={moduleColor}
-                onChange={(e) => setModuleColor(e.target.value)}
-              >
-                <option value="juoda">{t("color.black")}</option>
-                <option value="pilka">{t("color.grey")}</option>
-              </select>
-            </InputField>
-          </FormGrid>
-
-          <h3 className="solar-calculator__section">{t("fields.profileLength")}</h3>
-          <InputField label={t("")}>
-            <div style={{ display: "flex", gap: "20px" }}>
-              <label className="radio-option">
->>>>>>> ef78c13c596f32ec4e9d4aab89d72d824447df85
+              <InputField label={t("fields.moduleLength", { min: moduleLengthMin, max: moduleLengthMax })}>
                 <input
                   className={!isModuleLengthValid ? "input-error" : ""}
                   type="number"
@@ -269,10 +185,12 @@ export default function SolarGroundCalculator() {
                 />
                 {!isModuleLengthValid && (
                   <div className="error-text">
-                    {t("errors.moduleLength")}
+                    {t("errors.moduleLength", { min: moduleLengthMin, max: moduleLengthMax })}
                   </div>
                 )}
               </InputField>
+
+              
 
               <InputField label={t("fields.moduleWidth")}>
                 <select
@@ -306,10 +224,11 @@ export default function SolarGroundCalculator() {
             </FormGrid>
           </div>
 
-          <div className="solar-calculator__system_data_box">
-            <h3>Sistemos duomenys</h3>
+          <div className="solar-calculator__section_box solar-calculator__system_data_box">
+            <h3>{t("sections.systemData")}</h3>
             <FormGrid columns={2}>
-              <InputField label={t("fields.moduleCount")}>
+
+<InputField label={t("fields.moduleCount", { min: moduleCountMin, max: moduleCountMax })}>
                 <input
                   className={!isModuleCountValid ? "input-error" : ""}
                   type="number"
@@ -321,7 +240,7 @@ export default function SolarGroundCalculator() {
                       return;
                     }
 
-                    let number = Number(moduleCount);
+                    const number = Number(moduleCount);
 
                     if (isNaN(number)) {
                       return;
@@ -334,7 +253,7 @@ export default function SolarGroundCalculator() {
                 />
                 {!isModuleCountValid && (
                   <div className="error-text">
-                    {t("errors.moduleCount")}
+                    {t("errors.moduleCount", { min: moduleCountMin, max: moduleCountMax })}
                   </div>
                 )}
               </InputField>
@@ -351,22 +270,22 @@ export default function SolarGroundCalculator() {
                 </select>
               </InputField>
 
-            <InputField label={t("fields.constructionLength")}>
-              <input
-                type="number"
-                max={32000}
-                value={constructionLength}
-                disabled
-              />
-            </InputField>
+              <InputField label={t("fields.constructionLength")}>
+                <input
+                  type="number"
+                  max={32000}
+                  value={constructionLength}
+                  disabled
+                />
+              </InputField>
 
-            <InputField label={t("fields.rowsCount")}>
-              <input
-                type="number"
-                value={rowsCount}
-                disabled
-              />
-            </InputField>
+              <InputField label={t("fields.rowsCount")}>
+                <input
+                  type="number"
+                  value={rowsCount}
+                  disabled
+                />
+              </InputField>
 
               {/* <InputField label={t("fields.reserve")}>
                 <input type="number" value={reserve} disabled />
@@ -378,7 +297,6 @@ export default function SolarGroundCalculator() {
             </FormGrid>
           </div>
         </form>
-        </>
       )}
       <button
         type="button"

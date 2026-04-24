@@ -51,6 +51,25 @@
   padding: 32px;
 }
 
+.solar-calculator__ground-form {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.solar-calculator__section_box {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 248, 250, 0.96));
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 32px;
+}
+
+.solar-calculator__section_box h3 {
+  margin: 0 0 16px;
+}
+
 
 .solar-calculator__orientation_select {
   margin-top: 28px;
@@ -103,11 +122,14 @@
 }
 
 .solar-calculator__system_data_box {
-  margin-top: 22px;
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  padding: 18px 20px 20px;
+  padding: 22px 20px 20px;
+}
+
+.solar-calculator__content + .solar-calculator__system_data_box {
+  margin-top: 24px;
 }
 
 .solar-calculator__system_data_box h3 {
@@ -198,9 +220,14 @@
   }
 
   .solar-calculator__content,
+  .solar-calculator__section_box,
   .solar-calculator__orientation_select,
   .solar-calculator__system_select {
     padding: 20px 16px;
+  }
+
+  .solar-calculator__system_data_box {
+    padding: 18px 16px 16px;
   }
 
   .solar-calculator__battery-list {
