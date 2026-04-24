@@ -76,6 +76,17 @@ export const inventoryApi = {
    *   3. (For Žemės systems) The matching installation PDF, e.g. "8 mod 1134 4200 GG-0 ezys.pdf".
    * Buyer info is loaded server-side from the Order — only the optional zemes params need sending.
    */
+  /**
+   * Saves the solar module parameters (count, width, length) on the order entity.
+   * Called immediately after order creation so the inventory system can use
+   * these values when sending the offer email without re-prompting the user.
+   */
+  updateModuleParams: (orderId: string, params: { moduleCount: number; moduleArea: number; moduleLength: number }) =>
+    apiFetch<void>(`/orders/${orderId}/module-params`, {
+      method: "PATCH",
+      body: JSON.stringify(params),
+    }),
+
   sendProposalEmail: (orderId: string, zemesPdf?: ZemesPdfParams) =>
     apiFetch<void>(`/orders/${orderId}/send-proposal-email`, {
       method: "POST",
