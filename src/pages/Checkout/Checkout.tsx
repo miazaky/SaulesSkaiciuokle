@@ -147,6 +147,12 @@ export default function Checkout() {
       const orderId: string = await orderRes.json();
       setCompletedOrderId(orderId);
 
+      await inventoryApi.updateModuleParams(orderId, {
+        moduleCount: Number(state.moduleCount),
+        moduleArea:   state.moduleWidth,
+        moduleLength:    state.profileLength,
+      });
+
       // Add items — warn on SKU mismatches but never silently drop items
       const allMaterials = [
         ...systemMaterials.map((m) => ({ sku: (m.code ?? "").split("/")[0].trim(), quantity: m.quantity })),
