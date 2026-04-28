@@ -649,57 +649,6 @@ export default function SolarRoofCanvas() {
     clampVCount = rv10ModuleStats.rowAdjacencies * 2;
   }
 
-  const moduleColsByRow = new Map<number, number[]>();
-  modules.forEach((module) => {
-    const cols = moduleColsByRow.get(module.row) ?? [];
-    cols.push(module.col);
-    moduleColsByRow.set(module.row, cols);
-  });
-  moduleColsByRow.forEach((cols) => cols.sort((a, b) => a - b));
-
-  const shouldSkipPtTrailingInnerGHolder = (clamp: {
-    row: number;
-    col: number;
-    topHolder: "G" | "V" | "L" | "P" | "VA" | "VZ" | "Z" | "";
-    clampType: "G" | "V";
-  }) => {
-    if (
-      state.orientation !== "PT" ||
-      state.system === "PT15-L" ||
-      clamp.clampType !== "V" ||
-      clamp.topHolder !== "G"
-    ) {
-      return false;
-    }
-
-    const rowCols = moduleColsByRow.get(clamp.row) ?? [];
-    const leftCol = clamp.col - 0.5;
-    const rightCol = clamp.col + 0.5;
-
-    if (!rowCols.includes(leftCol) || !rowCols.includes(rightCol)) {
-      return false;
-    }
-
-    let runStart = leftCol;
-    let runEnd = rightCol;
-
-    while (rowCols.includes(runStart - STEP)) {
-      runStart -= STEP;
-    }
-    while (rowCols.includes(runEnd + STEP)) {
-      runEnd += STEP;
-    }
-
-    const aboveColsInRun = (moduleColsByRow.get(clamp.row - STEP) ?? []).filter(
-      (col) => col >= runStart && col <= runEnd,
-    );
-    if (aboveColsInRun.length === 0) {
-      return false;
-    }
-
-    return leftCol > Math.max(...aboveColsInRun);
-  };
-
   let GholderCount = 0;
   let VholderCount = 0;
   let PholderCount = 0;
@@ -747,10 +696,7 @@ export default function SolarRoofCanvas() {
         }
       }
     } else {
-      if (
-        (clamp.topHolder === "G" || clamp.topHolder === "Z") &&
-        !shouldSkipPtTrailingInnerGHolder(clamp)
-      )
+      if (clamp.topHolder === "G" || clamp.topHolder === "Z")
         GholderCount++;
       if (clamp.topHolder === "P") PholderCount++;
       if (clamp.topHolder === "V") VholderCount++;
