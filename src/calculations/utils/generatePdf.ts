@@ -38,7 +38,7 @@ export interface BuyerInfo {
 }
 
 // ─── Brand colors matching the Word document ──────────────────────────────────
-const MAGENTA         = "#CC1E8C";
+const BLACK         = "#000000";
 const DARK_BAR        = "#3D1A35";
 const TEXT            = "#1a1a1a";
 const MUTED           = "#666666";
@@ -153,17 +153,17 @@ function getOrderNum(): string {
   return `MK${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-1`;
 }
 
-// ─── Footer: magenta line + dark bar with text ────────────────────────────────
+// ─── Footer: BLACK line + dark bar with text ────────────────────────────────
 // Matches the Word document footer exactly:
-//   • thin magenta line
+//   • thin BLACK line
 //   • thin dark bar below it
 //   • company info text centred in the dark bar
 function drawPageFooter(ctx: CanvasRenderingContext2D, pageH: number) {
   const lineH = 3;
   const fy    = pageH - lineH - 22;
 
-  // Magenta line only
-  fillR(ctx, MARGIN, fy, COL_W, lineH, MAGENTA);
+  // BLACK line only
+  fillR(ctx, MARGIN, fy, COL_W, lineH, BLACK);
 
   // Footer text on white background
   ctx.font      = `9.5px ${FONT}`;
@@ -180,8 +180,8 @@ function drawLogoHeader(ctx: CanvasRenderingContext2D, logo: HTMLImageElement) {
     const aspect = logo.naturalWidth / logo.naturalHeight;
     ctx.drawImage(logo, MARGIN, MARGIN, LOGO_H * aspect, LOGO_H);
   }
-  // Magenta line
-  fillR(ctx, MARGIN, MARGIN + LOGO_H + 4, COL_W, 3.5, MAGENTA);
+  // BLACK line
+  fillR(ctx, MARGIN, MARGIN + LOGO_H + 4, COL_W, 3.5, BLACK);
 }
 
 // ─── Materials-page header (logo + offer info + seller/buyer) ─────────────────
@@ -200,8 +200,8 @@ function drawPageHeader(
     const aspect = logo.naturalWidth / logo.naturalHeight;
     ctx.drawImage(logo, MARGIN, y, LOGO_H * aspect, LOGO_H);
   }
-  // Magenta line
-  fillR(ctx, MARGIN, y + LOGO_H + 3, COL_W, 3.5, MAGENTA);
+  // BLACK line
+  fillR(ctx, MARGIN, y + LOGO_H + 3, COL_W, 3.5, BLACK);
   y += LOGO_H + 14;
 
   // Offer number
@@ -326,7 +326,7 @@ function drawTable(
         ? (ci === cols.length - 2 ? "right" : ci === cols.length - 1 ? "center" : "left")
         : (cell.align ?? col.align);
 
-      ctx.fillStyle = isTotalRow && ci >= cols.length - 2 ? MAGENTA : TEXT;
+      ctx.fillStyle = isTotalRow && ci >= cols.length - 2 ? BLACK : TEXT;
       ctx.textAlign = align === "left" ? "left" : align === "right" ? "right" : "center";
 
       let tx: number;
@@ -357,7 +357,7 @@ async function buildCoverPage(
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, W, H);
 
-  // Header logo + magenta line
+  // Header logo + BLACK line
   drawLogoHeader(ctx, logo);
 
   // Document title — centred vertically in upper third
@@ -538,7 +538,7 @@ async function buildMaterialsPage(
   }
 
   const grand = isGround ? sysTotal : sysTotal + furnTotal;
-  fillR(ctx, MARGIN, y, COL_W, 24, MAGENTA);
+  fillR(ctx, MARGIN, y, COL_W, 24, BLACK);
   ctx.font      = `bold 12px ${FONT}`;
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "right";

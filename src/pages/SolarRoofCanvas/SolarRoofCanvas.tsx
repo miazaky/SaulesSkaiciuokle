@@ -917,7 +917,7 @@ export default function SolarRoofCanvas() {
       ) : state.system === "RV10" ? (
         <h2 className="solar-canvas__title">{t("title.materialCountRV10")}</h2>
       ) : (
-        <h2 className="solar-canvas__title">{t("title.materialCount")}</h2>
+        <h2 className="solar-canvas__title">{t("title.materialCount")} {state.system === "PT5" ? ` - PT5` : state.system === "PT10" ? ` - PT10` : state.system === "PT15" ? ` - PT15` : state.system === "PT20" ? ` - PT20` : ``}</h2>
       )}
 
       {/* checkbox for RV */}
@@ -1220,7 +1220,7 @@ export default function SolarRoofCanvas() {
           <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
               <p>
-                {t("fields.backHolder")} (G): {GholderCount}
+                {t("fields.oneHolder")} (G): {GholderCount}
               </p>
               <p>
                 {t("fields.frontClamps")} (Clamp G): {clampGCount}
@@ -1266,6 +1266,11 @@ export default function SolarRoofCanvas() {
         <>
           <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
+                <p>
+                {t("fields.middleRVHolderA")} : {VAHolderCount}
+              </p>
+              <p>
+                {t("fields.middleRVHolderZ")}: {VZHolderCount}
               <p>
                 {t("fields.backHolder")} (G): {GholderCount}
               </p>
@@ -1275,11 +1280,7 @@ export default function SolarRoofCanvas() {
               <p>
                 {t("fields.middleClamp")} (Clamp V): {clampVCount}
               </p>
-              <p>
-                {t("fields.middleRVHolderA")} : {VAHolderCount}
-              </p>
-              <p>
-                {t("fields.middleRVHolderZ")}: {VZHolderCount}
+            
               </p>
             </div>
           </div>

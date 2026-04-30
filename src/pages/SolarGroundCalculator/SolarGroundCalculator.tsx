@@ -226,6 +226,7 @@ export default function SolarGroundCalculator() {
 
           <div className="solar-calculator__section_box solar-calculator__system_data_box">
             <h3>{t("sections.systemData")}</h3>
+            <span>{t("fields.descriptionText")}</span>
             <FormGrid columns={2}>
 
 <InputField label={t("fields.moduleCount", { min: moduleCountMin, max: moduleCountMax })}>

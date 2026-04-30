@@ -74,10 +74,10 @@ export default function SolarRoofCalculator() {
   );
 
   const [moduleLength, setModuleLength] = useState<number>(
-    restoredState?.moduleLength ?? 1762,
+    restoredState?.moduleLength ?? 1700,
   );
   const [moduleLengthInput, setModuleLengthInput] = useState<string>(
-    String(restoredState?.moduleLength ?? 1762),
+    String(restoredState?.moduleLength ?? 1700),
   );
 
   const [moduleCount, setModuleCount] = useState<number>(
@@ -510,7 +510,7 @@ export default function SolarRoofCalculator() {
       </div>
 
       {batteryType === "ploksciasStogas" && (
-        <div className="solar-calculator__orientation_select">
+        <div className="solar-calculator__system_select">
           <h3>{t("sections.moduleOrientation")}</h3>
           {/* Orientation Radio Buttons */}
           <label>
@@ -556,6 +556,14 @@ export default function SolarRoofCalculator() {
                 </option>
               ))}
             </select>
+            {system === "PT5" ?  (<span>{t("fields.descriptionTextPT5")}</span>)
+            : system === "PT10" ? (<span>{t("fields.descriptionTextPT10")}</span>)
+            : system === "PT15" ? (<span>{t("fields.descriptionTextPT15")}</span>)
+            : system === "PT20" ? (<span>{t("fields.descriptionTextPT20")}</span>)
+            : system === "PT15-L" ? (<span>{t("fields.descriptionTextPT-15L")}</span>)
+            : system === "RV10" ? (<span>{t("fields.descriptionTextRV10")}</span>)
+            : (<span>{t("fields.descriptionTextRV10-Z")}</span>)
+            }
         </div>
       )}
 
@@ -569,13 +577,13 @@ export default function SolarRoofCalculator() {
             <InputField label={t("fields.moduleLengthRoof")}>
               <input
                 type="number"
-                min={1762}
+                min={1700}
                 max={9999}
                 value={moduleLengthInput}
                 onChange={(e) => setModuleLengthInput(e.target.value)}
                 onBlur={() => {
                   const value = Number(moduleLengthInput);
-                  const clamped = Math.max(1762, Math.min(9999, isNaN(value) ? 1762 : value));
+                  const clamped = Math.max(1700, Math.min(9999, isNaN(value) ? 1700 : value));
                   setModuleLength(clamped);
                   setModuleLengthInput(String(clamped));
                 }}
@@ -622,7 +630,7 @@ export default function SolarRoofCalculator() {
             </FormGrid>
           </div>
 
-          <div className="solar-calculator__system_data_box">
+          <div className="solar-calculator__system_select">
             <h3>Sistemos duomenys</h3>
             <FormGrid columns={2}>
 
@@ -743,13 +751,13 @@ export default function SolarRoofCalculator() {
             <InputField label={t("fields.moduleLengthRoof")}>
               <input
                 type="number"
-                min={1762}
+                min={1700}
                 max={9999}
                 value={moduleLengthInput}
                 onChange={(e) => setModuleLengthInput(e.target.value)}
                 onBlur={() => {
                   const value = Number(moduleLengthInput);
-                  const clamped = Math.max(1762, Math.min(9999, isNaN(value) ? 1762 : value));
+                  const clamped = Math.max(1700, Math.min(9999, isNaN(value) ? 1700 : value));
                   setModuleLength(clamped);
                   setModuleLengthInput(String(clamped));
                 }}
@@ -795,8 +803,9 @@ export default function SolarRoofCalculator() {
             </FormGrid>
           </div>
 
-          <div className="solar-calculator__system_data_box">
+          <div className="solar-calculator__system_select">
             <h3>{t("sections.systemData")}</h3>
+            <span>{t("fields.descriptionText")}</span>
             <FormGrid columns={2}>
 
             {/* RV model construction */}
@@ -923,13 +932,13 @@ export default function SolarRoofCalculator() {
               <InputField label={orientation === "vertical" ? t("fields.moduleWidth") : t("fields.moduleLength")}>
                 <input
                   type="number"
-                  min={1762}
+                  min={1700}
                   max={2400}
                   value={moduleLengthInput}
                   onChange={(e) => setModuleLengthInput(e.target.value)}
                   onBlur={() => {
                     const value = Number(moduleLengthInput);
-                    const clamped = Math.max(1762, Math.min(2400, isNaN(value) ? 1762 : value));
+                    const clamped = Math.max(1700, Math.min(2400, isNaN(value) ? 1700 : value));
                     setModuleLength(clamped);
                     setModuleLengthInput(String(clamped));
                   }}
@@ -972,7 +981,7 @@ export default function SolarRoofCalculator() {
             </FormGrid>
           </div>
 
-          <div className="solar-calculator__system_data_box">
+          <div className="solar-calculator__system_select">
             <h3>Sistemos duomenys</h3>
             <FormGrid columns={2}>
               <InputField label={t("fields.mountingMethod")}>
