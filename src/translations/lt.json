@@ -116,6 +116,8 @@
     "backHolder": "Galinis laikiklis",
     "oneHolder": "Viengubo montavimo laikiklis",
     "frontHolder": "Priekinis laikiklis",
+    "frontHelperHolder": "Pagalbinis priekinis laikiklis",
+    "backHelperHolder": "Pagalbinis galinis laikiklis",
     "middleHolder": "Vidurinis laikiklis",
     "middleRVHolderA": "Vidurinis laikiklis aukštas",
     "middleRVHolderZ": "Vidurinis laikiklis žemas",

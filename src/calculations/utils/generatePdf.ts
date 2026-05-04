@@ -148,9 +148,28 @@ function getDocTitle(input: CalculatorInput): { header: string; sub: string } {
   }
 }
 
-function getOrderNum(): string {
+export function getOrderNum(): string {
   const d = new Date();
-  return `MK${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-1`;
+  const datePart = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  const storageKey = "mkPdfOrderSequence";
+
+  let sequence = 1;
+
+  try {
+    const raw = window.localStorage.getItem(storageKey);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { datePart?: string; sequence?: number };
+      if (parsed.datePart === datePart && Number.isFinite(parsed.sequence)) {
+        sequence = Number(parsed.sequence) + 1;
+      }
+    }
+
+    window.localStorage.setItem(storageKey, JSON.stringify({ datePart, sequence }));
+  } catch {
+    sequence = 1;
+  }
+
+  return `MK${datePart}-${sequence}`;
 }
 
 // ─── Footer: BLACK line + dark bar with text ────────────────────────────────
@@ -527,6 +546,21 @@ async function buildMaterialsPage(
   y = drawTable(ctx, MARGIN, y, sysCols, sysRows, COL_W);
   y += 16;
 
+  const tableComments = [
+    "*Užsakyti galima sumokant nurodytais rekvizitais, būtina nurodyti pasiūlymo numerį.",
+    "*Pasiūlymas galioja 5 d.d.",
+    "* Dėl transportavimo paslaugų prašome susisiekti atskirai. Šios paslaugos teikiamos už papildomą mokestį.",
+  ];
+  ctx.font = `11px ${FONT}`;
+  ctx.fillStyle = MUTED;
+  ctx.textAlign = "left";
+  const commentStartY = y + 6;
+  const commentLineH = 14;
+  for (let i = 0; i < tableComments.length; i++) {
+    ctx.fillText(tableComments[i], MARGIN, commentStartY + i * commentLineH);
+  }
+  y = commentStartY + tableComments.length * commentLineH;
+
   if (!isGround && furnitureMaterials.length > 0) {
     ctx.font      = `bold 11px ${FONT}`;
     ctx.fillStyle = TEXT;
@@ -602,8 +636,8 @@ export async function buildPdfPages(
   input: CalculatorInput,
   systemMaterials: CalculatedSystemMaterial[],
   furnitureMaterials: CalculatedFurnitureMaterial[],
+  offerNum = getOrderNum(),
 ): Promise<{ offerNum: string; imgs: string[] }> {
-  const offerNum = getOrderNum();
   const logo     = await loadLogo();
 
   const cover  = await buildCoverPage(input, logo);
@@ -621,8 +655,9 @@ export async function generateCommercialProposalPdf(
   input: CalculatorInput,
   systemMaterials: CalculatedSystemMaterial[],
   furnitureMaterials: CalculatedFurnitureMaterial[],
+  offerNum = getOrderNum(),
 ): Promise<string[]> {
-  const { offerNum, imgs } = await buildPdfPages(buyer, input, systemMaterials, furnitureMaterials);
+  const { imgs } = await buildPdfPages(buyer, input, systemMaterials, furnitureMaterials, offerNum);
 
   const { jsPDF } = await import("jspdf");
   const pdf   = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });

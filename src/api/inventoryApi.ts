@@ -8,7 +8,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "Unknown error");
-    throw new Error(text || `HTTP ${res.status}`);
+    throw new Error(text ? `HTTP ${res.status}: ${text}` : `HTTP ${res.status}`);
   }
 
   const text = await res.text();
@@ -85,6 +85,12 @@ export const inventoryApi = {
     apiFetch<void>(`/orders/${orderId}/module-params`, {
       method: "PATCH",
       body: JSON.stringify(params),
+      }).catch((err) => {
+      if (err instanceof Error && /HTTP 404|Not Found/i.test(err.message)) {
+        console.warn(`[inventoryApi] module-params endpoint not found for order ${orderId}; skipping update.`);
+        return;
+      }
+      throw err;
     }),
 
   sendProposalEmail: (orderId: string, zemesPdf?: ZemesPdfParams) =>
