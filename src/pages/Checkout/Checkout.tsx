@@ -131,7 +131,7 @@ export default function Checkout() {
     setErrorMsg("");
 
     try {
-      const orderNumber = getOrderNum();
+      const orderNumber = await getOrderNum();
       const orderRes = await fetch(`${API_BASE}/orders/guest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
