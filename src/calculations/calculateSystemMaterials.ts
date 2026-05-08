@@ -45,6 +45,27 @@ function resolveQuantity(input: CalculatorInput, key: string) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function normalizeFlatRoofFormulaInput(input: CalculatorInput): CalculatorInput {
+  if (
+    input.batteryType !== "ploksciasStogas" ||
+    input.isEvenModules !== "true" ||
+    !input.rowsCount ||
+    input.moduleCount <= 0
+  ) {
+    return input;
+  }
+
+  const modulesPerRow = input.moduleCount / input.rowsCount;
+  if (!Number.isFinite(modulesPerRow) || !Number.isInteger(modulesPerRow)) {
+    return input;
+  }
+
+  return {
+    ...input,
+    moduleCount: modulesPerRow,
+  };
+}
+
 export function calculateSystemMaterials(
   input: CalculatorInput,
 ): CalculatedSystemMaterial[] {
@@ -92,12 +113,14 @@ export function calculateSystemMaterials(
     return true;
   });
 
+  const formulaInput = normalizeFlatRoofFormulaInput(input);
+
   return filtered.map((row) => ({
-    code: typeof row.code === "function" ? row.code(input) : row.code,
+    code: typeof row.code === "function" ? row.code(formulaInput) : row.code,
     name: row.name,
-    quantity: row.calculateQuantity ? row.calculateQuantity(input) : 0,
+    quantity: row.calculateQuantity ? row.calculateQuantity(formulaInput) : 0,
     length: row.calculateLength
-      ? row.calculateLength(input)
+      ? row.calculateLength(formulaInput)
       : (row.length ?? null),
     note: row.note ?? "",
   }));

@@ -95,6 +95,7 @@ export default function SolarRoofCanvas() {
         const col = Math.floor(i / state.rowsCount);
         initial.push({ id: i, row: row * spacing, col: col * spacing });
       }
+
     }
 
     return initial;
@@ -1208,6 +1209,20 @@ export default function SolarRoofCanvas() {
   const getPtPreviewQuantity = (name: string) =>
     ptPreviewMaterials.find((material) => material.name === name)?.quantity ?? 0;
 
+  const checkoutStateBase: CalculatorInput = {
+    ...state,
+    rowsCount: actualRows,
+    isEvenModules: previewIsEvenModules,
+    savedModules: modules,
+    clampGCount,
+    clampVCount,
+    holderGCount: GholderCount,
+    holderVCount: VholderCount,
+    holderPCount: PholderCount,
+    holderVACount: VAHolderCount,
+    holderVZCount: VZHolderCount,
+  };
+
   return (
     <div className="solar-canvas">
       {toastMessage && (
@@ -1577,12 +1592,8 @@ export default function SolarRoofCanvas() {
               const img = captureGridImage();
               navigate("/checkout", {
                 state: {
-                  ...state,
+                  ...checkoutStateBase,
                   canvasImageDataUrl: img,
-                  savedModules: modules,
-                  clampGCount,
-                  clampVCount,
-                  holderGCount: GholderCount,
                 },
               });
             }}
@@ -1651,14 +1662,8 @@ export default function SolarRoofCanvas() {
               const img = captureGridImage();
               navigate("/checkout", {
                 state: {
-                  ...state,
+                  ...checkoutStateBase,
                   canvasImageDataUrl: img,
-                  savedModules: modules,
-                  clampGCount,
-                  clampVCount,
-                  holderGCount: GholderCount,
-                  holderVACount: VAHolderCount,
-                  holderVZCount: VZHolderCount,
                 },
               });
             }}
@@ -1721,14 +1726,8 @@ export default function SolarRoofCanvas() {
               const img = captureGridImage();
               navigate("/checkout", {
                 state: {
-                  ...state,
+                  ...checkoutStateBase,
                   canvasImageDataUrl: img,
-                  savedModules: modules,
-                  clampGCount,
-                  clampVCount,
-                  holderGCount: GholderCount,
-                  holderVACount: VAHolderCount,
-                  holderVZCount: VZHolderCount,
                 },
               });
             }}
@@ -1799,14 +1798,8 @@ export default function SolarRoofCanvas() {
               const img = captureGridImage();
               navigate("/checkout", {
                 state: {
-                  ...state,
+                  ...checkoutStateBase,
                   canvasImageDataUrl: img,
-                  savedModules: modules,
-                  clampGCount,
-                  clampVCount,
-                  holderGCount: GholderCount,
-                  holderVCount: VholderCount,
-                  holderPCount: PholderCount,
                 },
               });
             }}

@@ -158,43 +158,32 @@ export default function Checkout() {
         moduleLength:    state.profileLength,
       });
 
-      // Add items — aggregate by SKU first to avoid duplicate posts
+      // Add items — keep the material rows as calculated, matching the proven checkout flow.
       const allMaterials = [
         ...systemMaterials.map((m) => ({ sku: (m.code ?? "").split("/")[0].trim(), quantity: m.quantity })),
         ...furnitureMaterials.map((m) => ({ sku: m.sku ?? "", quantity: m.quantity })),
       ];
 
-      const aggregated: Record<string, number> = {};
-      const missingSkus: string[] = [];
-      for (const m of allMaterials) {
-        if (!m.sku || m.quantity <= 0) continue;
-        const sku = m.sku;
-        const prod = productsBySku[sku];
-        if (!prod) {
-          if (!missingSkus.includes(sku)) missingSkus.push(sku);
-          continue;
-        }
-        aggregated[sku] = (aggregated[sku] ?? 0) + m.quantity;
-      }
+      const matchedMaterials = allMaterials.filter((m) => {
+        if (!m.sku || m.quantity <= 0) return false;
+        const found = !!productsBySku[m.sku];
+        if (!found) console.warn(`[Checkout] SKU not found in productsBySku: "${m.sku}"`);
+        return found;
+      });
 
-      if (Object.keys(aggregated).length === 0) {
+      if (matchedMaterials.length === 0) {
         console.warn("[Checkout] No items matched — productsBySku keys:", Object.keys(productsBySku).slice(0, 10));
-        console.warn("[Checkout] Missing SKUs:", missingSkus.slice(0, 20));
+        console.warn("[Checkout] Material SKUs:", allMaterials.map((m) => m.sku));
       }
-
-      const itemsToSend = Object.keys(aggregated).map((sku) => ({
-        productId: productsBySku[sku].id,
-        quantity: aggregated[sku],
-      }));
 
       await Promise.allSettled(
-        itemsToSend.map((it) =>
+        matchedMaterials.map((m) =>
           fetch(`${API_BASE}/orders/${orderId}/items`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              productId: it.productId,
-              quantity: it.quantity,
+              productId: productsBySku[m.sku].id,
+              quantity: m.quantity,
               systemName: getSystemName(state),
             }),
           })
