@@ -677,55 +677,7 @@ export const groundSystemMaterials: SystemMaterialDefinition[] = [
       return calculateGrebestuJungtys(j11, j12); // J13
     },
   },
-  {
-    code: "",
-    name: "Varžto M10 kompl. (1sud.)",
-    length: null,
-    calculateQuantity: (i) => {
-      const j10 = calculateLegCount(i.constructionLength);
-      const j13 = calculateGrebestuJungtys(
-        calculateGrebestas(i.constructionLength, i.profileLength),
-        calculateExtraGrebestasQuantity(i.constructionLength, i.profileLength),
-      );
-      return j10 * 4 + j13 * 4; // J14
-    },
-  },
-  {
-    code: "",
-    name: "Varžto M10 kompl. (2sud.)",
-    length: null,
-    calculateQuantity: (i) => calculateRysys(i.moduleCount) * 2, // J15
-  },
-  {
-    code: "",
-    name: "Varžto M12 kompl.",
-    length: null,
-    calculateQuantity: (i) => {
-      const j5 = calculateLegCount(i.constructionLength);
-      if (i.batteryType === "poline") {
-        return j5 * 2;
-      }
-      const j9 = j5;
-      return j5 * 2 + j9 * 2; // J16
-    },
-  },
-  {
-    code: (i) => {
-      const isBlack = i.moduleColor === "juoda";
-      const t = Number(i.moduleThickness) <= 30 ? 30 : 35;
-      if (isBlack) return t === 30 ? "Clamp G30J" : "Clamp G35J";
-      return t === 30 ? "Clamp G30" : "Clamp G35";
-    },
-    name: "Galinių prispaudėjų kompl.",
-    length: null,
-    calculateQuantity: () => 8, // J17
-  },
-  {
-    code: (i) => i.moduleColor === "juoda" ? "Clamp VJ" : "Clamp V",
-    name: "Vidinių prispaudėjų kompl.",
-    length: null,
-    calculateQuantity: (i) => (i.moduleCount - 2) * 2,
-  },
+
 ];
 
 export const roofSystemMaterials: SystemMaterialDefinition[] = [

@@ -42,14 +42,5 @@ export const solarGroundMaterials: MaterialDef[] = [
   // Grebėstų jungtys — SKU Gbj, 200 mm
   { code: "Gbj",              name: "Grebėstų jungtys",           length: 200,                             qty: "grebestuJungtysQty" },
 
-  // M10 bolt kits
-  { code: "M10-30/M10-pov/M10-VS", name: "Varžto M10 kompl. (1sud.)", length: null,                      qty: "varztasM10_1" },
-  { code: "M10-30/M10-pov/M10-VS", name: "Varžto M10 kompl. (2sud.)", length: null,                      qty: "varztasM10_2" },
 
-  // M12 bolt kit
-  { code: "M12-30/M12-pov/M12-spp/M12-Ve", name: "Varžto M12 kompl.", length: null,                      qty: "varztasM12" },
-
-  // Clamps
-  { code: { from: "clampGCode" }, name: "Galinių prispaudėjų kompl.", length: null,                       qty: "clampGQty" },
-  { code: { from: "clampVCode" }, name: "Vidinių prispaudėjų kompl.", length: null,                          qty: "clampVQty" },
 ];

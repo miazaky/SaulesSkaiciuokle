@@ -171,7 +171,11 @@ export default function SolarRoofSummary() {
           disabled={loading}
           onClick={() =>
             navigate("/checkout", {
-              state: { ...state, productPrices: pricesBySku },
+              state: {
+                ...state,
+                productPrices: pricesBySku,
+                systemMaterials,
+              },
             })
           }
         >

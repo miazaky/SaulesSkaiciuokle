@@ -595,12 +595,18 @@ export default function SolarRoofCanvas() {
     // );
     // if (isAdjacent) return;
 
-    setModules((prev) =>
-      prev.map((m) => {
+    setModules((prev) => {
+      const next = prev.map((m) => {
         const t = targets.find((x) => x.id === m.id);
         return t ? { ...m, row: t.row, col: t.col } : m;
-      }),
-    );
+      });
+
+      if (state.orientation === "RV" && !globalUnpairAll) {
+        pairMapRef.current = buildPairMapFromModules(next);
+      }
+
+      return next;
+    });
   };
 
   const handleMouseUp = () => {
@@ -663,6 +669,151 @@ export default function SolarRoofCanvas() {
     };
   })();
 
+  const rv10InnerHolderStats = (() => {
+    if (!(state.system === "RV10" && state.orientation === "RV")) {
+      return { vaCount: 0, vzCount: 0 };
+    }
+
+    const cols = [...new Set(modules.map((m) => m.col))].sort((a, b) => a - b);
+    const rowsByCol = new Map<number, number[]>();
+
+    cols.forEach((col) => {
+      const rows = modules
+        .filter((m) => m.col === col)
+        .map((m) => m.row)
+        .sort((a, b) => a - b);
+
+      rowsByCol.set(
+        col,
+        rows.filter((row, index) => index === 0 || row !== rows[index - 1]),
+      );
+    });
+
+    const supportLinesByCol = new Map<number, number[]>();
+
+    cols.forEach((col) => {
+      const supportLines = new Set<number>();
+      (rowsByCol.get(col) ?? []).forEach((row) => {
+        supportLines.add(row);
+        supportLines.add(row + STEP);
+      });
+
+      supportLinesByCol.set(col, [...supportLines].sort((a, b) => a - b));
+    });
+
+    let vaCount = 0;
+    let vzCount = 0;
+
+    const applySegment = (segmentCols: number[]) => {
+      if (segmentCols.length < 2) {
+        return;
+      }
+
+      const segmentSupportLines = segmentCols.flatMap(
+        (col) => supportLinesByCol.get(col) ?? [],
+      );
+      const southSupportLine = Math.min(...segmentSupportLines);
+      const supportLineSets = new Map<number, Set<number>>();
+
+      segmentCols.forEach((col) => {
+        supportLineSets.set(col, new Set(supportLinesByCol.get(col) ?? []));
+      });
+
+      const getSupportRunLength = (supportLine: number, fromCol: number) => {
+        const activeCols = new Set(
+          segmentCols.filter((col) =>
+            supportLineSets.get(col)?.has(supportLine),
+          ),
+        );
+
+        if (!activeCols.has(fromCol)) {
+          return 0;
+        }
+
+        let start = fromCol;
+        while (activeCols.has(start - STEP)) {
+          start -= STEP;
+        }
+
+        let end = fromCol;
+        while (activeCols.has(end + STEP)) {
+          end += STEP;
+        }
+
+        return Math.floor((end - start) / STEP) + 1;
+      };
+
+      const shouldSkipSouthSupportLine = (
+        supportLine: number,
+        previousCol: number,
+        currentCol: number,
+      ) => {
+        if (supportLine !== southSupportLine) {
+          return false;
+        }
+
+        const previousHas = supportLineSets
+          .get(previousCol)
+          ?.has(supportLine);
+        const currentHas = supportLineSets.get(currentCol)?.has(supportLine);
+
+        return (
+          Boolean(previousHas && currentHas) &&
+          getSupportRunLength(supportLine, previousCol) <= 2
+        );
+      };
+
+      for (let i = 1; i < segmentCols.length; i++) {
+        const previousCol = segmentCols[i - 1];
+        const currentCol = segmentCols[i];
+        const previousSupportLines = supportLinesByCol.get(previousCol) ?? [];
+        const currentSupportLines = supportLinesByCol.get(currentCol) ?? [];
+
+        if ((i - 1) % 2 === 0) {
+          const unionSupportLines = new Set([
+            ...previousSupportLines,
+            ...currentSupportLines,
+          ]);
+          vaCount += [...unionSupportLines].filter(
+            (supportLine) =>
+              !shouldSkipSouthSupportLine(
+                supportLine,
+                previousCol,
+                currentCol,
+              ),
+          ).length;
+        } else {
+          const currentSupportLineSet = new Set(currentSupportLines);
+          const intersectionCount = previousSupportLines.filter(
+            (supportLine) =>
+              currentSupportLineSet.has(supportLine) &&
+              !shouldSkipSouthSupportLine(
+                supportLine,
+                previousCol,
+                currentCol,
+              ),
+          ).length;
+          vzCount += intersectionCount;
+        }
+      }
+    };
+
+    let segmentStart = 0;
+    for (let i = 1; i <= cols.length; i++) {
+      const currentCol = cols[i];
+      const previousCol = cols[i - 1];
+      const isSegmentBreak =
+        i === cols.length || currentCol - previousCol !== STEP;
+
+      if (isSegmentBreak) {
+        applySegment(cols.slice(segmentStart, i));
+        segmentStart = i;
+      }
+    }
+
+    return { vaCount, vzCount };
+  })();
+
   const hasModulesBelowRow = (row: number) => {
     return modules.some((m) => m.row > row);
   };
@@ -689,6 +840,58 @@ export default function SolarRoofCanvas() {
   let PholderCount = 0;
   let VAHolderCount = 0;
   let VZHolderCount = 0;
+
+  const ptSecondarySegmentRightEdgeVerticalJoints = (() => {
+    if (state.orientation !== "PT" || state.system === "PT15-L") {
+      return 0;
+    }
+
+    const colsByRow = new Map<number, number[]>();
+    modules.forEach((module) => {
+      const cols = colsByRow.get(module.row) ?? [];
+      cols.push(module.col);
+      colsByRow.set(module.row, cols);
+    });
+
+    const splitIntoSegments = (cols: number[]) => {
+      const sortedCols = [...new Set(cols)].sort((a, b) => a - b);
+      const segments: number[][] = [];
+
+      sortedCols.forEach((col) => {
+        const lastSegment = segments[segments.length - 1];
+        const previousCol = lastSegment?.[lastSegment.length - 1];
+
+        if (!lastSegment || previousCol === undefined || col - previousCol !== STEP) {
+          segments.push([col]);
+        } else {
+          lastSegment.push(col);
+        }
+      });
+
+      return segments;
+    };
+
+    let skippedJoints = 0;
+
+    colsByRow.forEach((cols, row) => {
+      const segments = splitIntoSegments(cols);
+      if (segments.length < 2) return;
+
+      const previousRowCols = new Set(colsByRow.get(row - STEP) ?? []);
+
+      segments.slice(1).forEach((segment) => {
+        const lastCol = segment[segment.length - 1];
+        const hasVerticalJoint =
+          previousRowCols.has(lastCol) || previousRowCols.has(lastCol + STEP);
+
+        if (hasVerticalJoint) {
+          skippedJoints++;
+        }
+      });
+    });
+
+    return skippedJoints;
+  })();
 
   clamps.forEach((clamp) => {
     if (state.orientation === "RV") {
@@ -739,6 +942,13 @@ export default function SolarRoofCanvas() {
     }
   });
 
+  if (state.orientation === "PT" && state.system !== "PT15-L") {
+    VholderCount = Math.max(
+      0,
+      VholderCount - ptSecondarySegmentRightEdgeVerticalJoints,
+    );
+  }
+
   if (state.system === "RV10-Z" && state.orientation === "RV") {
     const zBottomCount = clamps.filter((c) => c.bottomHolder === "Z").length;
     GholderCount = zBottomCount % 2 === 0 ? zBottomCount : zBottomCount + 1;
@@ -750,11 +960,13 @@ export default function SolarRoofCanvas() {
     rv10ModuleStats.isSolidRectangle
   ) {
     const holderPositions = rv10ModuleStats.moduleColumns + 1;
-    const innerRows = Math.max(0, rv10ModuleStats.rowCount - 1);
 
     GholderCount = holderPositions * 2;
-    VAHolderCount = holderPositions * Math.ceil(innerRows / 2);
-    VZHolderCount = holderPositions * Math.floor(innerRows / 2);
+  }
+
+  if (state.system === "RV10" && state.orientation === "RV") {
+    VAHolderCount = rv10InnerHolderStats.vaCount;
+    VZHolderCount = rv10InnerHolderStats.vzCount;
   }
 
   const [unpairedModules] = useState<Set<number>>(new Set());
@@ -943,17 +1155,41 @@ export default function SolarRoofCanvas() {
     modules.length > 0
       ? Math.max(...modules.map((m) => m.row)) + 1
       : state.rowsCount;
+
+  const layoutIsEvenModules = (() => {
+    if (modules.length === 0) return false;
+
+    const rows = [...new Set(modules.map((m) => m.row))].sort((a, b) => a - b);
+    const colsByRow = new Map<number, number[]>();
+
+    modules.forEach((module) => {
+      const cols = colsByRow.get(module.row) ?? [];
+      cols.push(module.col);
+      colsByRow.set(module.row, cols);
+    });
+
+    const firstRowCols = [...new Set(colsByRow.get(rows[0]) ?? [])].sort((a, b) => a - b);
+    const hasConsecutiveRows = rows.every(
+      (row, index) => index === 0 || row - rows[index - 1] === STEP,
+    );
+    const hasConsecutiveCols = firstRowCols.every(
+      (col, index) => index === 0 || col - firstRowCols[index - 1] === STEP,
+    );
+    const hasSameColsInEveryRow = rows.every((row) => {
+      const cols = [...new Set(colsByRow.get(row) ?? [])].sort((a, b) => a - b);
+      return cols.length === firstRowCols.length && cols.every((col, index) => col === firstRowCols[index]);
+    });
+
+    return hasConsecutiveRows && hasConsecutiveCols && hasSameColsInEveryRow;
+  })();
+  const previewIsEvenModules = layoutIsEvenModules ? "true" : "false";
   const helperFrontHolderCount =
     state.moduleLength > 2000
-      ? String(state.isEvenModules) === "true"
-        ? state.moduleCount * state.rowsCount
+      ? layoutIsEvenModules
+        ? state.moduleCount * actualRows
         : state.moduleCount
       : 0;
   const helperBackHolderCount = helperFrontHolderCount;
-  const previewIsEvenModules =
-    state.moduleCount > 0 && actualRows > 0 && state.moduleCount % actualRows === 0
-      ? "true"
-      : "false";
   const ptPreviewMaterials =
     state.system !== "PT15-L" &&
     state.system !== "RV10" &&
@@ -984,10 +1220,12 @@ export default function SolarRoofCanvas() {
         <h2 className="solar-canvas__title">
           {t("title.materialCountPT15-L")}
         </h2>
-      ) : state.system === "RV10" ? (
+      ) : state.system === "RV10" ? 
         <h2 className="solar-canvas__title">{t("title.materialCountRV10")}</h2>
+        : state.system === "RV10-Z" ? (
+          <h2 className="solar-canvas__title">{t("title.materialCountRV10-Z")}</h2>
       ) : (
-        <h2 className="solar-canvas__title">{t("title.materialCount")}</h2>
+        <h2 className="solar-canvas__title">{t("title.materialCount")} {state.system === "PT5" ? ` - PT5` : state.system === "PT10" ? ` - PT10` : state.system === "PT15" ? ` - PT15` : state.system === "PT20" ? ` - PT20` : ``}</h2>
       )}
 
       {/* checkbox for RV */}
@@ -1416,7 +1654,6 @@ export default function SolarRoofCanvas() {
                   ...state,
                   canvasImageDataUrl: img,
                   savedModules: modules,
-                  isEvenModules: "false",
                   clampGCount,
                   clampVCount,
                   holderGCount: GholderCount,

@@ -85,16 +85,21 @@ export const registry: Record<string, FormulaFn> = {
     return j10 * 4 + j13 * 4;
   },
 
-  // J15 = J8*2 = rysys*2 for all cases
+  //   J14 = J7*2 + J8*2
+  //   J7  = rysys
+  //   J8  = gegne qty for GG-1 / GG-2, otherwise 0
   varztasM10_2: (i) => {
     const r1 = calcRysys(i.moduleCount, i.moduleWidth);
-    return r1 * 2;
+    const leg = calcLegCount(i.constructionLength);
+    const gegneCode = calcGegneCode(i.moduleLength);
+    const gegneQty = gegneCode === "GG-1" || gegneCode === "GG-2" ? leg : 0;
+    return r1 * 2 + gegneQty * 2;
   },
 
-  // (J5*2) + J8*2 = legCount*2 + legCount*2 = legCount*4 for all cases
+  //   J15 = J5 * 2
   varztasM12: (i) => {
     const leg = calcLegCount(i.constructionLength);
-    return leg * 4;
+    return leg * 2;
   },
 
   clampGQty: () => 8,
