@@ -10,14 +10,8 @@ const n = (v: FormulaValue) => {
   return num;
 };
 
-const profileLength = (i: CalculatorInput) =>
-  Number(i.profileLength) === 4200 ? 4200 : 5200;
-
-const includeSecondM10Set = (i: CalculatorInput) =>
-  !(i.batteryType === "ezys" && profileLength(i) === 4200);
-
 const secondM10Set = (i: CalculatorInput) =>
-  includeSecondM10Set(i) ? n(sys.varztasM10_2(i)) : 0;
+   n(sys.varztasM10_2(i)) ;
 
 export const furnitureRegistry: Record<string, FormulaFn> = {
   furn_end_clamp: (i) => n(sys.clampGQty(i)), // 8

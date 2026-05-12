@@ -470,8 +470,9 @@ function calculateFrontBackRVHolderQuantity(
   if (isEqual(String(isEvenModules))) {
     return (moduleCount + 1) * 2;
   } else {
-    return (holderPCount ?? 0) + (holderGCount ?? 0);
+    return (holderGCount ?? 0);
   }
+
 }
 
 function calcualteClampInnerJointAQuantity(moduleCount: number, rowsCount: number, holderVACount?: number, isEvenModules?: string): number {

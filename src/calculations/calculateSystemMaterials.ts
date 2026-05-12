@@ -89,6 +89,7 @@ export function calculateSystemMaterials(
       ? roofSystemMaterials
       : groundSystemMaterials;
 
+
   const filtered = materials.filter((row) => {
     if (input.batteryType === "slaitinisStogas") {
       if (row.systems) return false;

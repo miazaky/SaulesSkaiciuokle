@@ -164,6 +164,7 @@ export default function Checkout() {
         ...furnitureMaterials.map((m) => ({ sku: m.sku ?? "", quantity: m.quantity })),
       ];
 
+
       const matchedMaterials = allMaterials.filter((m) => {
         if (!m.sku || m.quantity <= 0) return false;
         const found = !!productsBySku[m.sku];
@@ -189,6 +190,7 @@ export default function Checkout() {
           })
         )
       );
+
 
       setSubmitState("success");
     } catch (err) {
