@@ -4,21 +4,20 @@ import { registry as sys } from "./formulaRegistry";
 export type FormulaValue = string | number | null;
 export type FormulaFn = (i: CalculatorInput) => FormulaValue;
 
-const byBattery = <T extends number | string | null>(
-  ezys: T | ((i: CalculatorInput) => T),
-  poline: T | ((i: CalculatorInput) => T)
-) => {
-  return (i: CalculatorInput) => {
-    const v = i.batteryType === "ezys" ? ezys : poline;
-    return typeof v === "function" ? (v as any)(i) : v;
-  };
-};
-
 const n = (v: FormulaValue) => {
   const num = Number(v);
   if (!Number.isFinite(num)) throw new Error(`Furniture formula returned non-number: ${String(v)}`);
   return num;
 };
+
+const profileLength = (i: CalculatorInput) =>
+  Number(i.profileLength) === 4200 ? 4200 : 5200;
+
+const includeSecondM10Set = (i: CalculatorInput) =>
+  !(i.batteryType === "ezys" && profileLength(i) === 4200);
+
+const secondM10Set = (i: CalculatorInput) =>
+  includeSecondM10Set(i) ? n(sys.varztasM10_2(i)) : 0;
 
 export const furnitureRegistry: Record<string, FormulaFn> = {
   furn_end_clamp: (i) => n(sys.clampGQty(i)), // 8
@@ -32,21 +31,21 @@ export const furnitureRegistry: Record<string, FormulaFn> = {
   furn_rhombic_nut: (i) => n(sys.clampGQty(i)) + n(sys.clampVQty(i)),
 
   // M10 varžtas:
-  //   ezys 4200mm → J14 only
-  //   ezys 5200mm + poline → J14 + J15
+  //   ezys 4200mm -> first set only
+  //   ezys 5200mm and poline -> first + second set
   furn_m10_bolt: (i) => {
-    const j14 = n(sys.varztasM10_1(i));
-    const j15 = n(sys.varztasM10_2(i));
-    return j14 + j15;
+    const firstSet = n(sys.varztasM10_1(i));
+    const secondSet = secondM10Set(i);
+    return firstSet + secondSet;
   },
 
   // M10 poveržlės:
-  //   ezys 4200mm → J14*2
-  //   ezys 5200mm + poline → J14*2 + J15
+  //   ezys 4200mm -> first set * 2
+  //   ezys 5200mm and poline -> first set * 2 + second set
   furn_m10_washer: (i) => {
-    const j14 = n(sys.varztasM10_1(i));
-    const j15 = n(sys.varztasM10_2(i));
-    return j14 * 2 + j15;
+    const firstSet = n(sys.varztasM10_1(i));
+    const secondSet = secondM10Set(i);
+    return firstSet * 2 + secondSet;
   },
 
   // M10 veržlė su sijonėliu = same as M10 varžtas

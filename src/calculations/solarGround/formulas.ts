@@ -1,4 +1,4 @@
-import { gegneCodeRules, gegneLengthByCode, grebestuJungtysRules, legCountRules, rysysRules, rysysRules1303 } from "../../config/rules";
+import { gegneCodeRules, gegneLengthByCode, grebestuJungtysRules, legCountRules, rysysRules } from "../../config/rules";
 import { rangeLookup } from "../utils/rangeLookup";
 
 
@@ -11,10 +11,9 @@ export function calcLegCount(constructionLength: number): number {
   );
 }
 
-/** J8 – width-aware */
-export function calcRysys(moduleCount: number, moduleWidth: number = 1134): number {
-  const rules = moduleWidth === 1303 ? rysysRules1303 : rysysRules;
-  return rangeLookup(moduleCount, rules, "Klaida: netinkamas modulių kiekis");
+/** J8 */
+export function calcRysys(moduleCount: number, _moduleWidth: number = 1134): number {
+  return rangeLookup(moduleCount, rysysRules, "Klaida: netinkamas modulių kiekis");
 }
 
 /** J10 code */

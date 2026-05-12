@@ -27,16 +27,16 @@ export const solarGroundMaterials: MaterialDef[] = [
   // Gegnė — code = GG-0 / GG-1 / GG-2 resolved dynamically
   { code: { from: "gegneCode" }, name: "Gegnė",                  length: { from: "gegneLength" },         qty: "legCount" },
 
-  // Gb-1: standard profileLength pieces — 1134mm systems only (qty=0 for 1303mm ezys)
+  // Gb-1: standard profileLength pieces
   { code: "Gb-1",             name: "Grebėstas",                  length: { from: "profileLength" },       qty: "grebestasQty"      },
 
-  // Gb-2: main 5200mm pieces — 1303mm ezys only (qty=0 for 1134mm)
+  // Gb-2: legacy 1303 row; current Excel templates keep 5200mm profiles under Gb-1
   { code: "Gb-2",             name: "Grebėstas",                  length: 5200,                            qty: "gb2Qty"            },
 
-  // Gb-1*: remainder piece for 1134mm systems (qty=0 for 1303mm ezys)
+  // Gb-1*: remainder piece
   { code: "Gb-1*",            name: "Grebėstas",                  length: { from: "extraGrebestasLength" },qty: "extraGrebestasQty" },
 
-  // Gb-2*: remainder piece for 1303mm ezys (qty=0 for 1134mm)
+  // Gb-2*: legacy 1303 remainder row; currently disabled by formulaRegistry
   { code: "Gb-2*",            name: "Grebėstas",                  length: { from: "gb2ExtraLength" },      qty: "gb2ExtraQty"       },
 
   // Grebėstų jungtys — SKU Gbj, 200 mm
