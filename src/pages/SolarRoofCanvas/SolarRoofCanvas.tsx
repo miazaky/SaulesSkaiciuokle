@@ -842,58 +842,7 @@ export default function SolarRoofCanvas() {
   let VAHolderCount = 0;
   let VZHolderCount = 0;
 
-  const ptSecondarySegmentRightEdgeVerticalJoints = (() => {
-    if (state.orientation !== "PT" || state.system === "PT15-L") {
-      return 0;
-    }
-
-    const colsByRow = new Map<number, number[]>();
-    modules.forEach((module) => {
-      const cols = colsByRow.get(module.row) ?? [];
-      cols.push(module.col);
-      colsByRow.set(module.row, cols);
-    });
-
-    const splitIntoSegments = (cols: number[]) => {
-      const sortedCols = [...new Set(cols)].sort((a, b) => a - b);
-      const segments: number[][] = [];
-
-      sortedCols.forEach((col) => {
-        const lastSegment = segments[segments.length - 1];
-        const previousCol = lastSegment?.[lastSegment.length - 1];
-
-        if (!lastSegment || previousCol === undefined || col - previousCol !== STEP) {
-          segments.push([col]);
-        } else {
-          lastSegment.push(col);
-        }
-      });
-
-      return segments;
-    };
-
-    let skippedJoints = 0;
-
-    colsByRow.forEach((cols, row) => {
-      const segments = splitIntoSegments(cols);
-      if (segments.length < 2) return;
-
-      const previousRowCols = new Set(colsByRow.get(row - STEP) ?? []);
-
-      segments.slice(1).forEach((segment) => {
-        const lastCol = segment[segment.length - 1];
-        const hasVerticalJoint =
-          previousRowCols.has(lastCol) || previousRowCols.has(lastCol + STEP);
-
-        if (hasVerticalJoint) {
-          skippedJoints++;
-        }
-      });
-    });
-
-    return skippedJoints;
-  })();
-
+ 
   clamps.forEach((clamp) => {
     if (state.orientation === "RV") {
       // RV: topHolder
@@ -943,12 +892,6 @@ export default function SolarRoofCanvas() {
     }
   });
 
-  if (state.orientation === "PT" && state.system !== "PT15-L") {
-    VholderCount = Math.max(
-      0,
-      VholderCount - ptSecondarySegmentRightEdgeVerticalJoints,
-    );
-  }
 
   if (state.system === "RV10-Z" && state.orientation === "RV") {
     const zBottomCount = clamps.filter((c) => c.bottomHolder === "Z").length;
@@ -1015,33 +958,7 @@ export default function SolarRoofCanvas() {
     );
   };
 
-  const getInvalidPairModuleIds = () => {
-    const invalid = new Set<number>();
-    const visited = new Set<number>();
-    const pairMap = pairMapRef.current;
-    if (!pairMap) return invalid;
 
-    pairMap.forEach((pairId, id) => {
-      if (visited.has(id) || visited.has(pairId)) return;
-      visited.add(id);
-      visited.add(pairId);
-
-      if (unpairedModules.has(id) || unpairedModules.has(pairId)) return;
-
-      const a = modules.find((m) => m.id === id);
-      const b = modules.find((m) => m.id === pairId);
-      if (!a || !b) return;
-
-      const isHorizontalNeighbor =
-        a.row === b.row && Math.abs(a.col - b.col) === STEP;
-      if (!isHorizontalNeighbor) {
-        invalid.add(id);
-        invalid.add(pairId);
-      }
-    });
-
-    return invalid;
-  };
 
   const handleGlobalUnpairAllChange = (checked: boolean) => {
     if (checked) {
