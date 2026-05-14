@@ -621,52 +621,82 @@ export default function SolarRoofCanvas() {
 
     let exposedRowEdges = 0;
     let rowAdjacencies = 0;
-
     modules.forEach((module) => {
       if (!has(module.row - STEP, module.col)) exposedRowEdges++;
       if (!has(module.row + STEP, module.col)) exposedRowEdges++;
       if (has(module.row + STEP, module.col)) rowAdjacencies++;
     });
 
-    const rows = [...new Set(modules.map((m) => m.row))].sort((a, b) => a - b);
-    const colsByRow = new Map<number, number[]>();
+    const cols = [...new Set(modules.map((m) => m.col))].sort((a, b) => a - b);
+    const supportLinesByCol = new Map<number, Set<number>>();
 
-    modules.forEach((module) => {
-      const cols = colsByRow.get(module.row) ?? [];
-      cols.push(module.col);
-      colsByRow.set(module.row, cols);
+    cols.forEach((col) => {
+      const supportLines = new Set<number>();
+      modules
+        .filter((m) => m.col === col)
+        .forEach((m) => {
+          supportLines.add(m.row);
+          supportLines.add(m.row + STEP);
+        });
+
+      supportLinesByCol.set(col, supportLines);
     });
 
-    const firstRowCols =
-      rows.length > 0
-        ? [...(colsByRow.get(rows[0]) ?? [])].sort((a, b) => a - b)
-        : [];
-    const hasConsecutiveRows = rows.every(
-      (row, index) => index === 0 || row - rows[index - 1] === STEP,
-    );
-    const hasConsecutiveCols =
-      firstRowCols.length > 0 &&
-      firstRowCols.every(
-        (col, index) => index === 0 || col - firstRowCols[index - 1] === STEP,
-      );
-    const hasSameColsInEveryRow = rows.every((row) => {
-      const cols = [...(colsByRow.get(row) ?? [])].sort((a, b) => a - b);
-      return (
-        cols.length === firstRowCols.length &&
-        cols.every((col, index) => col === firstRowCols[index])
-      );
-    });
+    let sideHolderCount = 0;
+
+    const supportLineDifferenceCount = (a: Set<number>, b: Set<number>) => {
+      let count = 0;
+
+      a.forEach((line) => {
+        if (!b.has(line)) count++;
+      });
+
+      b.forEach((line) => {
+        if (!a.has(line)) count++;
+      });
+
+      return count;
+    };
+
+    const applyColumnSegment = (segmentCols: number[]) => {
+      if (segmentCols.length === 0) return;
+
+      const firstLines = supportLinesByCol.get(segmentCols[0]) ?? new Set();
+      const lastLines =
+        supportLinesByCol.get(segmentCols[segmentCols.length - 1]) ??
+        new Set();
+
+      sideHolderCount += firstLines.size + lastLines.size;
+
+      for (let i = 1; i < segmentCols.length; i++) {
+        const previousLines =
+          supportLinesByCol.get(segmentCols[i - 1]) ?? new Set();
+        const currentLines = supportLinesByCol.get(segmentCols[i]) ?? new Set();
+
+        sideHolderCount += supportLineDifferenceCount(
+          previousLines,
+          currentLines,
+        );
+      }
+    };
+
+    let segmentStart = 0;
+    for (let i = 1; i <= cols.length; i++) {
+      const currentCol = cols[i];
+      const previousCol = cols[i - 1];
+      const isSegmentBreak =
+        i === cols.length || currentCol - previousCol !== STEP;
+
+      if (isSegmentBreak) {
+        applyColumnSegment(cols.slice(segmentStart, i));
+        segmentStart = i;
+      }
+    }
 
     return {
       exposedRowEdges,
       rowAdjacencies,
-      rowCount: rows.length,
-      moduleColumns: firstRowCols.length,
-      isSolidRectangle:
-        modules.length > 0 &&
-        hasConsecutiveRows &&
-        hasConsecutiveCols &&
-        hasSameColsInEveryRow,
+      sideHolderCount,
     };
   })();
 
@@ -898,14 +928,8 @@ export default function SolarRoofCanvas() {
     GholderCount = zBottomCount % 2 === 0 ? zBottomCount : zBottomCount + 1;
   }
 
-  if (
-    state.system === "RV10" &&
-    state.orientation === "RV" &&
-    rv10ModuleStats.isSolidRectangle
-  ) {
-    const holderPositions = rv10ModuleStats.moduleColumns + 1;
-
-    GholderCount = holderPositions * 2;
+  if (state.system === "RV10" && state.orientation === "RV") {
+    GholderCount = rv10ModuleStats.sideHolderCount;
   }
 
   if (state.system === "RV10" && state.orientation === "RV") {
@@ -1074,38 +1098,12 @@ export default function SolarRoofCanvas() {
       ? Math.max(...modules.map((m) => m.row)) + 1
       : state.rowsCount;
 
-  const layoutIsEvenModules = (() => {
-    if (modules.length === 0) return false;
-
-    const rows = [...new Set(modules.map((m) => m.row))].sort((a, b) => a - b);
-    const colsByRow = new Map<number, number[]>();
-
-    modules.forEach((module) => {
-      const cols = colsByRow.get(module.row) ?? [];
-      cols.push(module.col);
-      colsByRow.set(module.row, cols);
-    });
-
-    const firstRowCols = [...new Set(colsByRow.get(rows[0]) ?? [])].sort((a, b) => a - b);
-    const hasConsecutiveRows = rows.every(
-      (row, index) => index === 0 || row - rows[index - 1] === STEP,
-    );
-    const hasConsecutiveCols = firstRowCols.every(
-      (col, index) => index === 0 || col - firstRowCols[index - 1] === STEP,
-    );
-    const hasSameColsInEveryRow = rows.every((row) => {
-      const cols = [...new Set(colsByRow.get(row) ?? [])].sort((a, b) => a - b);
-      return cols.length === firstRowCols.length && cols.every((col, index) => col === firstRowCols[index]);
-    });
-
-    return hasConsecutiveRows && hasConsecutiveCols && hasSameColsInEveryRow;
-  })();
-  const previewIsEvenModules = layoutIsEvenModules ? "true" : "false";
+  // Canvas quantities are already layout-derived. Keep checkout in custom mode
+  // so inventory uses these counts instead of the legacy rectangular formulas.
+  const previewIsEvenModules = "false";
   const helperFrontHolderCount =
     state.moduleLength > 2000
-      ? layoutIsEvenModules
-        ? state.moduleCount * actualRows
-        : state.moduleCount
+      ? state.moduleCount
       : 0;
   const helperBackHolderCount = helperFrontHolderCount;
   const ptPreviewMaterials =
