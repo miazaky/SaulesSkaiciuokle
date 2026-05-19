@@ -1455,7 +1455,7 @@ export default function SolarRoofCanvas() {
 
       {state.system === "PT15-L" ? (
         <>
-          <div style={{ marginTop: 20 }}>
+          {/* <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
               <p>
                 {t("fields.backHolder")} (G): {GholderCount}
@@ -1473,7 +1473,7 @@ export default function SolarRoofCanvas() {
                 {t("fields.middleClamp")} (Clamp V): {clampVCount}
               </p>
             </div>
-          </div>
+          </div> */}
 
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
             Dabar bus{" "}
@@ -1518,7 +1518,7 @@ export default function SolarRoofCanvas() {
         </>
       ) : state.system === "RV10" ? (
         <>
-          <div style={{ marginTop: 20 }}>
+          {/* <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
               <p>
                 {t("fields.backHolder")} (G): {GholderCount}
@@ -1542,7 +1542,7 @@ export default function SolarRoofCanvas() {
                 {t("fields.middleRVHolderZ")}: {VZHolderCount}
               </p>
             </div>
-          </div>
+          </div> */}
 
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
             Dabar bus{" "}
@@ -1588,7 +1588,7 @@ export default function SolarRoofCanvas() {
         </>
       ) : state.system === "RV10-Z" ? (
         <>
-          <div style={{ marginTop: 20 }}>
+          {/* <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 20 }}>
               <p>
                 {t("fields.backHolder")} (Z): {GholderCount}
@@ -1606,7 +1606,7 @@ export default function SolarRoofCanvas() {
                 {t("fields.middleClamp")} (Clamp V): {clampVCount}
               </p>
             </div>
-          </div>
+          </div> */}
 
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
             Dabar bus{" "}
@@ -1653,31 +1653,31 @@ export default function SolarRoofCanvas() {
       ) : (
         <>
           {
-            <div style={{ marginTop: 20 }}>
-              <div style={{ marginBottom: 20 }}>
-                <p>
-                  {t("fields.backHolder")} (G): {getPtPreviewQuantity("Galinis laikiklis")}
-                </p>
-                <p>
-                  {t("fields.frontHolder")} (P): {getPtPreviewQuantity("Priekinis laikiklis")}
-                </p>
-                {getPtPreviewQuantity("Pagalbinis priekinis laikiklis") > 0 && (
-                  <p>{t("fields.frontHelperHolder")}: {getPtPreviewQuantity("Pagalbinis priekinis laikiklis")}</p>
-                )}
-                {getPtPreviewQuantity("Pagalbinis galinis laikiklis") > 0 && (
-                  <p>{t("fields.backHelperHolder")}: {getPtPreviewQuantity("Pagalbinis galinis laikiklis")}</p>
-                )}
-                <p>
-                  {t("fields.middleHolder")} (V): {getPtPreviewQuantity("Vidurinis (jungiamasis) laikiklis")}
-                </p>
-                <p>
-                  {t("fields.frontClamps")} (Clamp G): {getPtPreviewQuantity("Prispaudėjas galinis")}
-                </p>
-                <p>
-                  {t("fields.middleClamp")} (Clamp V): {getPtPreviewQuantity("Prispaudėjas vidinis")}
-                </p>
-              </div>
-            </div>
+            // <div style={{ marginTop: 20 }}>
+            //   <div style={{ marginBottom: 20 }}>
+            //     <p>
+            //       {t("fields.backHolder")} (G): {getPtPreviewQuantity("Galinis laikiklis")}
+            //     </p>
+            //     <p>
+            //       {t("fields.frontHolder")} (P): {getPtPreviewQuantity("Priekinis laikiklis")}
+            //     </p>
+            //     {getPtPreviewQuantity("Pagalbinis priekinis laikiklis") > 0 && (
+            //       <p>{t("fields.frontHelperHolder")}: {getPtPreviewQuantity("Pagalbinis priekinis laikiklis")}</p>
+            //     )}
+            //     {getPtPreviewQuantity("Pagalbinis galinis laikiklis") > 0 && (
+            //       <p>{t("fields.backHelperHolder")}: {getPtPreviewQuantity("Pagalbinis galinis laikiklis")}</p>
+            //     )}
+            //     <p>
+            //       {t("fields.middleHolder")} (V): {getPtPreviewQuantity("Vidurinis (jungiamasis) laikiklis")}
+            //     </p>
+            //     <p>
+            //       {t("fields.frontClamps")} (Clamp G): {getPtPreviewQuantity("Prispaudėjas galinis")}
+            //     </p>
+            //     <p>
+            //       {t("fields.middleClamp")} (Clamp V): {getPtPreviewQuantity("Prispaudėjas vidinis")}
+            //     </p>
+            //   </div>
+            // </div>
           }
 
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
