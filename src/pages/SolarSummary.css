@@ -137,7 +137,8 @@
     padding: 7px 8px;
   }
 
-  .solar-summary__actions {
+  .solar-summary__actions,
+  .solar-summary__actions_back {
     width: 100%;
     text-align: center;
     margin-right: 0;

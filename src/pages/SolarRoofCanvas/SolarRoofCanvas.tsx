@@ -83,9 +83,12 @@ export default function SolarRoofCanvas() {
       }
 
       let id = 0;
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < rowCounts[row]; col++) {
-          initial.push({ id, row: row * spacing, col: col * spacing });
+      for (let rvRow = 0; rvRow < rows; rvRow++) {
+        for (let moduleIndex = 0; moduleIndex < rowCounts[rvRow]; moduleIndex++) {
+          const row = Math.floor(moduleIndex / 2) * spacing;
+          const col = (rvRow * 2 + (moduleIndex % 2)) * spacing;
+
+          initial.push({ id, row, col });
           id++;
         }
       }
@@ -233,7 +236,7 @@ export default function SolarRoofCanvas() {
       ctx.font = "bold 11px Arial, sans-serif";
       ctx.textAlign = "left";
       ctx.fillText(
-        `${state.system ?? state.batteryType}  |  ${modules.length} moduliai  |  ${formatRowCount(modules.length > 0 ? Math.max(...modules.map((m) => m.row)) + 1 : state.rowsCount)}`,
+        `${state.system ?? state.batteryType}  |  ${modules.length} moduliai  |  ${formatRowCount(actualRows)}`,
         8,
         H - 8,
       );
@@ -1093,13 +1096,42 @@ export default function SolarRoofCanvas() {
 
   const isolatedModules = getIsolatedModules(globalUnpairAll);
   const hasIsolatedModules = isolatedModules.size > 0;
+  const getRvActualRows = () => {
+    if (modules.length === 0) return state.rowsCount;
+
+    const pairColumns = new Set<number>();
+    const visited = new Set<number>();
+
+    modules.forEach((module) => {
+      if (visited.has(module.id)) return;
+
+      const pairId = pairMapRef.current?.get(module.id);
+      const pairedModule =
+        pairId !== undefined
+          ? modules.find((m) => m.id === pairId)
+          : undefined;
+
+      visited.add(module.id);
+
+      if (pairedModule) {
+        visited.add(pairedModule.id);
+        pairColumns.add(Math.min(module.col, pairedModule.col));
+      } else {
+        pairColumns.add(module.col);
+      }
+    });
+
+    return pairColumns.size;
+  };
+
   const actualRows =
     modules.length > 0
-      ? Math.max(...modules.map((m) => m.row)) + 1
+      ? state.orientation === "RV"
+        ? getRvActualRows()
+        : Math.max(...modules.map((m) => m.row)) + 1
       : state.rowsCount;
 
-  // Canvas quantities are already layout-derived. Keep checkout in custom mode
-  // so inventory uses these counts instead of the legacy rectangular formulas.
+
   const previewIsEvenModules = "false";
   const helperFrontHolderCount =
     state.moduleLength > 2000
@@ -1477,19 +1509,11 @@ export default function SolarRoofCanvas() {
 
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
             Dabar bus{" "}
-            {formatRowCount(
-              modules.length > 0
-                ? Math.max(...modules.map((m: any) => m.row)) + 1
-                : state.rowsCount,
-            )}
+            {formatRowCount(actualRows)}
           </p>
           <button
             className="solar-summary__actions_back"
             onClick={() => {
-              const actualRows =
-                modules.length > 0
-                  ? Math.max(...modules.map((m) => m.row)) + 1
-                  : state.rowsCount;
               navigate("/roof", {
                 state: {
                   ...state,
@@ -1546,19 +1570,11 @@ export default function SolarRoofCanvas() {
 
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
             Dabar bus{" "}
-            {formatRowCount(
-              modules.length > 0
-                ? Math.max(...modules.map((m: any) => m.row)) + 1
-                : state.rowsCount,
-            )}
+            {formatRowCount(actualRows)}
           </p>
           <button
             className="solar-summary__actions_back"
             onClick={() => {
-              const actualRows =
-                modules.length > 0
-                  ? Math.max(...modules.map((m) => m.row)) + 1
-                  : state.rowsCount;
               navigate("/roof", {
                 state: {
                   ...state,
@@ -1610,19 +1626,11 @@ export default function SolarRoofCanvas() {
 
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
             Dabar bus{" "}
-            {formatRowCount(
-              modules.length > 0
-                ? Math.max(...modules.map((m: any) => m.row)) + 1
-                : state.rowsCount,
-            )}
+            {formatRowCount(actualRows)}
           </p>
           <button
             className="solar-summary__actions_back"
             onClick={() => {
-              const actualRows =
-                modules.length > 0
-                  ? Math.max(...modules.map((m) => m.row)) + 1
-                  : state.rowsCount;
               navigate("/roof", {
                 state: {
                   ...state,
@@ -1683,19 +1691,11 @@ export default function SolarRoofCanvas() {
           <p style={{ margin: "12px 0", fontWeight: 600 }}>
           
   Dabar bus{" "}
-            {formatRowCount(
-              modules.length > 0
-                ? Math.max(...modules.map((m: any) => m.row)) + 1
-                : state.rowsCount,
-            )}
+            {formatRowCount(actualRows)}
           </p>
           <button
             className="solar-summary__actions_back"
             onClick={() => {
-              const actualRows =
-                modules.length > 0
-                  ? Math.max(...modules.map((m) => m.row)) + 1
-                  : state.rowsCount;
               navigate("/roof", {
                 state: {
                   ...state,

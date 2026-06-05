@@ -8,11 +8,10 @@ type FormGridProps = {
 export function FormGrid({ children, columns = 2 }: FormGridProps) {
   return (
     <div
+      className="form-grid"
       style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: 24,
-      }}
+        "--form-grid-columns": columns,
+      } as React.CSSProperties}
     >
       {children}
     </div>

@@ -166,7 +166,9 @@
   }
 
   .solar-summary__actions,
-  .solar-calculator__actions {
+  .solar-summary__actions_back,
+  .solar-calculator__actions,
+  .solar-calculator__actions_back {
     width: 100%;
     text-align: center;
     display: block;

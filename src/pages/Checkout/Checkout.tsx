@@ -399,7 +399,7 @@ export default function Checkout() {
       {/* ── Buttons ─────────────────────────────────────────────────────── */}
       <div className="checkout-actions">
         <button
-          className="checkout-btn checkout-btn--submit"
+          className="checkout-btn checkout-btn--back"
           onClick={() => {
             if (state?.isEvenModules === 'false' && (state as any).savedModules) {
               navigate('/canvasRoof', { state });

@@ -101,7 +101,7 @@
     "moduleConstructionNote": "PT5 ir PT20 sistemoms, kai modulis didesnis nei 2m – kreipkitės individualiai.",
     "moduleColor": "Modulio rėmelio spalva",
     "constructionLength": "Konstrukcijos ilgis, mm (max 32000)",
-    "rowsCount": "Modulių kiekis eilėje",
+    "rowsCount": "Eilių kiekis",
     "descriptionText": "Sistema skirta modulių montavimui dviem eilėmis vertikaliai, modulių skaičių nuo 8 iki 54, didžiausias vienos konstrukcijos ilgis  - 32 m.",
     "descriptionTextPT5": "5 ˚ pasvirimo kampo, ypač aerodinamiška konstrukcija, leidžianti modulius montuoti arčiau vienas kito ir sutalpinti daugiau modulių. Kadangi konstrukcijos aukštis nedidelis, jai nereikalinga vėjalentė ir naudojamas mažesnis balasto kiekis.",
     "descriptionTextPT10": "10 ˚ pasvirimo kampo konstrukcija užtikrina gerą metinį elektros gamybos efektyvumą optimaliai išnaudojant stogo plotą. Ši montavimo sistema pasižymi subalansuotomis vėjo apkrovomis ir pakankamu savaiminiu nusivalymu.",

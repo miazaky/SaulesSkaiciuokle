@@ -805,7 +805,6 @@ export default function SolarRoofCalculator() {
 
           <div className="solar-calculator__system_select">
             <h3>{t("sections.systemData")}</h3>
-            <span>{t("fields.descriptionText")}</span>
             <FormGrid columns={2}>
 
             {/* RV model construction */}
