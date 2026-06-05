@@ -997,7 +997,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5", "PT20"],
-    code: "Užsakyti individualiai",
+    code: "PT10-1(P)",
     name: "Pagalbinis priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
@@ -1010,7 +1010,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
   },
   {
     systems: ["PT5", "PT20"],
-    code: "Užsakyti individualiai",
+    code: "PT10-4(P)",
     name: "Pagalbinis galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
