@@ -996,8 +996,23 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       calculateMiddleHolderQuantity(i.moduleCount, i.rowsCount, i.holderVCount, i.isEvenModules),
   },
   {
-    systems: ["PT5", "PT20"],
-    code: "PT10-1(P)",
+    systems: ["PT5"],
+    code: "PT5-1(P)",
+    name: "Pagalbinis priekinis laikiklis",
+    length: null,
+    calculateQuantity: (i) =>
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+        i.isEvenModules,
+      ),
+  },
+
+
+  {
+    systems: ["PT20"],
+    code: "PT20-1(P)",
     name: "Pagalbinis priekinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
@@ -1009,8 +1024,21 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       ),
   },
   {
-    systems: ["PT5", "PT20"],
-    code: "PT10-4(P)",
+    systems: ["PT20"],
+    code: "PT20-4(P)",
+    name: "Pagalbinis galinis laikiklis",
+    length: null,
+    calculateQuantity: (i) =>
+      calculateHelperFrontHolderQuantity(
+        i.moduleCount,
+        i.rowsCount,
+        i.moduleLength,
+        i.isEvenModules,
+      ),
+  },
+  {
+    systems: ["PT5"],
+    code: "PT5-4(P)",
     name: "Pagalbinis galinis laikiklis",
     length: null,
     calculateQuantity: (i) =>
