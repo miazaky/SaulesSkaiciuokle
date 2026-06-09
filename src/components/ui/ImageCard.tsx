@@ -20,6 +20,8 @@ export function ImageCard({
       onClick={onClick}
       style={{
         width: 260,
+        maxWidth: "100%",
+        boxSizing: "border-box",
         padding: 16,
         cursor: "pointer",
         border: selected
