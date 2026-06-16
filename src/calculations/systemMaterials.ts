@@ -7,6 +7,8 @@ const MATERIAL_KEYS = {
   m10Screw: "materials.m10Screw",
   m10Nut: "materials.m10Nut",
   studs: "materials.studs",
+  roofClamp: "materials.roofClamp",
+  roofHook: "materials.roofHook",
   clampG: "materials.clampG",
   m8Screw20: "materials.m8Screw20",
   clampV: "materials.clampV",
@@ -1157,9 +1159,35 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       ),
   },
   {
-    mountingMethods: ["studs", "clamps", "hooks"],
+    mountingMethods: ["studs"],
     code: "SM180",
     name: MATERIAL_KEYS.studs,
+    length: null,
+    calculateQuantity: (i) =>
+      calculateStudsQuantity(
+        i.moduleCount,
+        i.moduleWidth,
+        i.moduleLength,
+        i.orientation,
+      ),
+  },
+  {
+    mountingMethods: ["clamps"],
+    code: "SPValc",
+    name: MATERIAL_KEYS.roofClamp,
+    length: null,
+    calculateQuantity: (i) =>
+      calculateStudsQuantity(
+        i.moduleCount,
+        i.moduleWidth,
+        i.moduleLength,
+        i.orientation,
+      ),
+  },
+  {
+    mountingMethods: ["hooks"],
+    code: "Kab",
+    name: MATERIAL_KEYS.roofHook,
     length: null,
     calculateQuantity: (i) =>
       calculateStudsQuantity(

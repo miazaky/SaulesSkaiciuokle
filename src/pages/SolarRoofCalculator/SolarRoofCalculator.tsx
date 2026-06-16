@@ -8,6 +8,8 @@ import { useLocation } from "react-router-dom";
 import "../SolarCalculator.css";
 
 const MODULE_WIDTH = 1134;
+const DEFAULT_MODULE_LENGTH = 1700;
+const DEFAULT_SLAITINIS_MODULE_LENGTH = 1762;
 
 type BatteryType = "ploksciasStogas" | "slaitinisStogas" | null;
 type Orientation = "PT" | "RV" | "vertical" |"horizontal" | null;
@@ -74,10 +76,10 @@ export default function SolarRoofCalculator() {
   );
 
   const [moduleLength, setModuleLength] = useState<number>(
-    restoredState?.moduleLength ?? 1700,
+    restoredState?.moduleLength ?? DEFAULT_MODULE_LENGTH,
   );
   const [moduleLengthInput, setModuleLengthInput] = useState<string>(
-    String(restoredState?.moduleLength ?? 1700),
+    String(restoredState?.moduleLength ?? DEFAULT_MODULE_LENGTH),
   );
 
   const [moduleCount, setModuleCount] = useState<number>(
@@ -189,6 +191,14 @@ export default function SolarRoofCalculator() {
       setOrientation("horizontal");
       setRoofMaterial("cement");
       setSystem(null);
+      if (
+        !restoredState?.moduleLength &&
+        moduleLength === DEFAULT_MODULE_LENGTH &&
+        moduleLengthInput === String(DEFAULT_MODULE_LENGTH)
+      ) {
+        setModuleLength(DEFAULT_SLAITINIS_MODULE_LENGTH);
+        setModuleLengthInput(String(DEFAULT_SLAITINIS_MODULE_LENGTH));
+      }
     } else if (batteryType === "ploksciasStogas") {
       setOrientation("PT");
     setSystem("PT5"); 
@@ -928,7 +938,7 @@ export default function SolarRoofCalculator() {
           <div className="solar-calculator__content">
             <h3>{t("sections.modules")}</h3>
             <FormGrid columns={2}>
-              <InputField label={orientation === "vertical" ? t("fields.moduleWidth") : t("fields.moduleLength")}>
+              <InputField label={t("fields.moduleLength")}>
                 <input
                   type="number"
                   min={1700}

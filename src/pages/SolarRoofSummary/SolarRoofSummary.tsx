@@ -13,6 +13,10 @@ function fmt(n: number): string {
   return n.toFixed(2).replace(".", ",");
 }
 
+function materialKey(item: { code: string; name: string }): string {
+  return `${item.code}:${item.name}`;
+}
+
 export default function SolarRoofSummary() {
   const navigate = useNavigate();
   const { state } = useLocation() as { state: CalculatorInput };
@@ -35,12 +39,19 @@ export default function SolarRoofSummary() {
 
   const rowMaterials = isSlaitinis
     ? effectiveRowModuleCounts.map((rowModules) =>
-        calculateSystemMaterials({ ...state, rowsCount: 1, moduleCount: rowModules })
+        calculateSystemMaterials({
+          ...state,
+          rowsCount: 1,
+          moduleCount: rowModules,
+          rowModuleCounts: [rowModules],
+        })
       )
     : [];
 
   const uniqueMaterials = isSlaitinis
-    ? Array.from(new Map(rowMaterials.flat().map((m) => [m.name, m])).values())
+    ? Array.from(
+        new Map(rowMaterials.flat().map((m) => [materialKey(m), m])).values()
+      )
     : [];
 
   const getPrice = (code: string): number | null =>
@@ -59,7 +70,10 @@ export default function SolarRoofSummary() {
     ? uniqueMaterials.reduce((sum, item) => {
         const p = getPrice(item.code ?? "");
         const qty = rowMaterials.reduce(
-          (acc, row) => acc + (row.find((m) => m.name === item.name)?.quantity ?? 0),
+          (acc, row) =>
+            acc +
+            (row.find((m) => materialKey(m) === materialKey(item))
+              ?.quantity ?? 0),
           0
         );
         return p != null ? sum + p * qty : sum;
@@ -123,7 +137,10 @@ export default function SolarRoofSummary() {
           <tbody>
             {uniqueMaterials.map((item, index) => {
               const totalQty = rowMaterials.reduce(
-                (acc, row) => acc + (row.find((m) => m.name === item.name)?.quantity ?? 0),
+                (acc, row) =>
+                  acc +
+                  (row.find((m) => materialKey(m) === materialKey(item))
+                    ?.quantity ?? 0),
                 0
               );
               const price = getPrice(item.code ?? "");
@@ -134,7 +151,10 @@ export default function SolarRoofSummary() {
                   <td>{tr(item.name)}</td>
                   <td>{totalQty}</td>
                   {rowMaterials.map((row, ri) => (
-                    <td key={ri}>{row.find((m) => m.name === item.name)?.quantity ?? 0}</td>
+                    <td key={ri}>
+                      {row.find((m) => materialKey(m) === materialKey(item))
+                        ?.quantity ?? 0}
+                    </td>
                   ))}
                   <td>{loading ? "…" : price != null ? fmt(price) : "–"}</td>
                   <td>{loading ? "…" : total != null ? fmt(total) : "–"}</td>

@@ -1,4 +1,8 @@
-import { groundSystemMaterials, roofSystemMaterials } from "./systemMaterials";
+import {
+  groundSystemMaterials,
+  roofSystemMaterials,
+  type SystemMaterialDefinition,
+} from "./systemMaterials";
 import { CalculatorInput } from "./types";
 import { solarGroundMaterials } from "../config/materials";
 import { registry } from "./solarGround/formulaRegistry";
@@ -66,6 +70,62 @@ function normalizeFlatRoofFormulaInput(input: CalculatorInput): CalculatorInput 
   };
 }
 
+function resolveSystemMaterial(
+  input: CalculatorInput,
+  row: SystemMaterialDefinition,
+): CalculatedSystemMaterial {
+  return {
+    code: typeof row.code === "function" ? row.code(input) : row.code,
+    name: row.name,
+    quantity: row.calculateQuantity ? row.calculateQuantity(input) : 0,
+    length: row.calculateLength
+      ? row.calculateLength(input)
+      : (row.length ?? null),
+    note: row.note ?? "",
+  };
+}
+
+function getSlaitinisRowModuleCounts(input: CalculatorInput): number[] {
+  if (!input.rowModuleCounts?.length) {
+    return [];
+  }
+
+  const rowsCount = Math.max(1, input.rowsCount || 1);
+
+  return input.rowModuleCounts
+    .slice(0, rowsCount)
+    .map((count) => (Number.isFinite(count) ? count : 0));
+}
+
+function calculateSlaitinisSystemMaterials(
+  input: CalculatorInput,
+  rows: SystemMaterialDefinition[],
+): CalculatedSystemMaterial[] {
+  const rowModuleCounts = getSlaitinisRowModuleCounts(input);
+  if (rowModuleCounts.length === 0) {
+    return rows.map((row) => resolveSystemMaterial(input, row));
+  }
+
+  return rows.map((row) => {
+    const firstRowInput = {
+      ...input,
+      rowsCount: 1,
+      moduleCount: rowModuleCounts[0] ?? 0,
+    };
+    const material = resolveSystemMaterial(firstRowInput, row);
+
+    return {
+      ...material,
+      quantity: rowModuleCounts.reduce((sum, moduleCount) => {
+        const rowInput = { ...input, rowsCount: 1, moduleCount };
+        return (
+          sum + (row.calculateQuantity ? row.calculateQuantity(rowInput) : 0)
+        );
+      }, 0),
+    };
+  });
+}
+
 export function calculateSystemMaterials(
   input: CalculatorInput,
 ): CalculatedSystemMaterial[] {
@@ -114,15 +174,11 @@ export function calculateSystemMaterials(
     return true;
   });
 
+  if (input.batteryType === "slaitinisStogas") {
+    return calculateSlaitinisSystemMaterials(input, filtered);
+  }
+
   const formulaInput = normalizeFlatRoofFormulaInput(input);
 
-  return filtered.map((row) => ({
-    code: typeof row.code === "function" ? row.code(formulaInput) : row.code,
-    name: row.name,
-    quantity: row.calculateQuantity ? row.calculateQuantity(formulaInput) : 0,
-    length: row.calculateLength
-      ? row.calculateLength(formulaInput)
-      : (row.length ?? null),
-    note: row.note ?? "",
-  }));
+  return filtered.map((row) => resolveSystemMaterial(formulaInput, row));
 }
