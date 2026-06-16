@@ -7,8 +7,6 @@ const MATERIAL_KEYS = {
   m10Screw: "materials.m10Screw",
   m10Nut: "materials.m10Nut",
   studs: "materials.studs",
-  roofClamp: "materials.roofClamp",
-  roofHook: "materials.roofHook",
   clampG: "materials.clampG",
   m8Screw20: "materials.m8Screw20",
   clampV: "materials.clampV",
@@ -68,7 +66,7 @@ function calculateSquareRailQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
 
   if (orientation === "vertical") {
     return (
@@ -91,22 +89,22 @@ function calculateSquareRailFinishQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
-    
+
   const squareRailQty = calculateSquareRailQuantity(
     moduleCount,
     moduleWidth,
     moduleLength,
     orientation,
   );
-  
+
 
   return Math.max(0, (Math.floor(squareRailQty / 2) - 1) * 2);
 }
 
 function calculateSquareRailFinish(moduleCount: number)
-: number{
-    if(moduleCount <= 0) return 0;
-    return squareRailFinish;
+  : number {
+  if (moduleCount <= 0) return 0;
+  return squareRailFinish;
 }
 
 
@@ -116,25 +114,25 @@ function calculateStudsQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       2 *
-        Math.floor(
-          (moduleWidth * moduleCount + 100 + (moduleCount - 1) * 20 - 1) /
-            1200 +
-            1,
-        ) +
+      Math.floor(
+        (moduleWidth * moduleCount + 100 + (moduleCount - 1) * 20 - 1) /
+        1200 +
+        1,
+      ) +
       2
     );
   } else {
     return (
       2 *
-        Math.floor(
-          (moduleLength * moduleCount + 100 + (moduleCount - 1) * 20 - 1) /
-            1200 +
-            1,
-        ) +
+      Math.floor(
+        (moduleLength * moduleCount + 100 + (moduleCount - 1) * 20 - 1) /
+        1200 +
+        1,
+      ) +
       2
     );
   }
@@ -163,18 +161,18 @@ function calculateM10ScrewQuantity(
 }
 
 function calculateClampVQuantity(moduleCount: number): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   return (moduleCount - 1) * 2;
 }
 
 function calculateM8NutQuantity(moduleCount: number): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   const clampVQty = calculateClampVQuantity(moduleCount);
   return clampVQty + 4;
 }
 
 function calculateEPDMMiniQuantity(moduleCount: number): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   return (moduleCount + 1) * 2;
 }
 
@@ -184,7 +182,7 @@ function calculateEDPM40Quantity(
   moduleLength: number,
   orientation: string,
 ): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       Math.floor(
@@ -206,7 +204,7 @@ function calculateEDPM80Quantity(
   moduleLength: number,
   orientation: string,
 ): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       Math.floor(
@@ -228,31 +226,31 @@ function calcaulteSpecScrewQuantity(
   moduleLength: number,
   orientation: string,
 ): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   if (orientation === "vertical") {
     return (
       2 *
-        Math.floor(
-          (moduleWidth * moduleCount + 100 + (moduleCount - 1) * 20 - 1) / 800 +
-            1,
-        ) +
+      Math.floor(
+        (moduleWidth * moduleCount + 100 + (moduleCount - 1) * 20 - 1) / 800 +
+        1,
+      ) +
       2
     );
   } else {
     return (
       2 *
-        Math.floor(
-          (moduleLength * moduleCount + 100 + (moduleCount - 1) * 20 - 1) /
-            800 +
-            1,
-        ) +
+      Math.floor(
+        (moduleLength * moduleCount + 100 + (moduleCount - 1) * 20 - 1) /
+        800 +
+        1,
+      ) +
       2
     );
   }
 }
 
 function calculateM80ClampGQuantity(moduleCount: number): number {
-  if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   return clampG;
 }
 
@@ -260,27 +258,27 @@ function calculateFrontHolderQuantity(
   moduleCount: number,
   rowsCount: number,
   holderPCount?: number,
-  isEvenModules?:string,
+  isEvenModules?: string,
 ): number {
-  if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   return isEqual(String(isEvenModules)) ? moduleCount + 1 : (holderPCount ?? 0);
 }
 
 function calculateBackHolderQuantity(
   moduleCount: number,
   holderGCount?: number,
-    isEvenModules?: string,
+  isEvenModules?: string,
 ): number {
-  if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   return isEqual(String(isEvenModules)) ? moduleCount + 1 : (holderGCount ?? 0);
 }
 function calculateMiddleHolderQuantity(
   moduleCount: number,
   rowsCount: number,
   holderVCount?: number,
-    isEvenModules?: string,
+  isEvenModules?: string,
 ): number {
-    if(moduleCount <= 0) return 0;
+  if (moduleCount <= 0) return 0;
   return isEqual(String(isEvenModules))
     ? (moduleCount + 1) * (rowsCount - 1)
     : (holderVCount ?? 0);
@@ -290,7 +288,7 @@ function calculateHelperFrontHolderQuantity(
   moduleCount: number,
   rowsCount: number,
   moduleLength: number,
-    isEvenModules?: string,
+  isEvenModules?: string,
 ): number {
   return isEqual(String(isEvenModules))
     ? moduleLength < 2000
@@ -322,9 +320,12 @@ function calculateScrewsForWindboardsQuantity(
 function calculateClampBackQuantity(
   rowsCount: number,
   clampGCount?: number,
-    isEvenModules?: string,
+  isEvenModules?: string,
+  moduleLength?: number,
+  moduleCount?: number,
 ): number {
-  return isEqual(String(isEvenModules)) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
+  if ((moduleLength ?? 0) < 2000) return isEqual(String(isEvenModules)) ? rowsCount * 2 * 2 : (clampGCount ?? 0);
+  return isEqual(String(isEvenModules)) ? rowsCount * 2 * 2 : (clampGCount ?? 0) + (calculateHelperFrontHolderQuantity(moduleCount ?? 0, rowsCount, moduleLength ?? 0, isEvenModules) * 2);
 }
 
 function calculateClampInnerQuantity(
@@ -343,25 +344,30 @@ function calculateM8x30ScrewQuantity(
   rowsCount: number,
   clampGCount?: number,
   clampVCount?: number,
-    isEvenModules?: string,
+  isEvenModules?: string,
+  moduleLength?: number,
 ): number {
-  return isEqual(String(isEvenModules))
+  if (moduleLength < 2000) return isEqual(String(isEvenModules))
     ? rowsCount * 2 * 2 + (moduleCount - 1) * (rowsCount * 2)
     : (clampGCount ?? 0) + (clampVCount ?? 0);
+
+  return isEqual(String(isEvenModules))
+    ? rowsCount * 2 * 2 + (moduleCount - 1) * (rowsCount * 2)
+    : (clampGCount ?? 0) + (clampVCount ?? 0)+(calculateHelperFrontHolderQuantity(moduleCount ?? 0, rowsCount, moduleLength ?? 0, isEvenModules) * 2);
 }
 
 function calculateSingleMountingHolder(
   moduleCount: number,
   rowsCount: number,
   construction: string,
-    isEvenModules?: string,
+  isEvenModules?: string,
 ): number {
   if (isEqual(String(isEvenModules)) && construction === "ilgoji") {
     return moduleCount * rowsCount * 2;
-  } else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
+  } else if (isEqual(String(isEvenModules)) && construction === "trumpoji") {
     return (moduleCount + 1) * rowsCount;
-  } 
-    else if (!isEqual(String(isEvenModules)) && construction === "ilgoji") {
+  }
+  else if (!isEqual(String(isEvenModules)) && construction === "ilgoji") {
     return moduleCount * 2;
   } else {
     return (rowsCount + 1) * moduleCount;
@@ -374,92 +380,91 @@ function calculatePT15WindboardQuantity(
   construction: string,
   isEvenModules?: string,
 ): number {
-  if( isEqual(String(isEvenModules)) && construction === "ilgoji") {
-   return moduleCount * rowsCount;
-  }
-  else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
+  if (isEqual(String(isEvenModules)) && construction === "ilgoji") {
     return moduleCount * rowsCount;
   }
-  else if( !isEqual(String(isEvenModules)) && construction === "ilgoji") {
+  else if (isEqual(String(isEvenModules)) && construction === "trumpoji") {
+    return moduleCount * rowsCount;
+  }
+  else if (!isEqual(String(isEvenModules)) && construction === "ilgoji") {
     return moduleCount;
   }
-  else{
+  else {
     return moduleCount * rowsCount;
   }
 }
 
 function calculatePT15WindboardScrewsQuantity(
-    moduleCount: number,
-    rowsCount: number,
-    construction: string,
-    isEvenModules?: string,
+  moduleCount: number,
+  rowsCount: number,
+  construction: string,
+  isEvenModules?: string,
 ): number {
-    if( isEqual(String(isEvenModules)) && construction === "ilgoji") {
-        return moduleCount * rowsCount * 4;
-    }
-    else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
-        return (moduleCount + 1) * 2 * (rowsCount - 1);
-    }
-    else if( !isEqual(String(isEvenModules)) && construction === "ilgoji") {
-        return calculatePT15WindboardQuantity(moduleCount, rowsCount, construction) * 4;
-    }
-    else{
-        return calculatePT15WindboardQuantity(moduleCount, rowsCount, construction) * 3;
-    }
+  if (isEqual(String(isEvenModules)) && construction === "ilgoji") {
+    return moduleCount * rowsCount * 4;
+  }
+  else if (isEqual(String(isEvenModules)) && construction === "trumpoji") {
+    return (moduleCount + 1) * 2 * (rowsCount - 1);
+  }
+  else if (!isEqual(String(isEvenModules)) && construction === "ilgoji") {
+    return calculatePT15WindboardQuantity(moduleCount, rowsCount, construction) * 4;
+  }
+  else {
+    return calculatePT15WindboardQuantity(moduleCount, rowsCount, construction) * 3;
+  }
 }
 
 function calculatePT15BackClampQuantity(
-    moduleCount: number,
-    rowsCount: number,
-    construction: string,
-    clampGCount?: number,
-    isEvenModules?: string,
+  moduleCount: number,
+  rowsCount: number,
+  construction: string,
+  clampGCount?: number,
+  isEvenModules?: string,
 ): number {
-    if( isEqual(String(isEvenModules)) && construction === "ilgoji") {
-        return moduleCount * 2 * (rowsCount * 2);
-    }
-    else if(isEqual(String(isEvenModules)) && construction === "trumpoji") {
-       return rowsCount * 2 * 2;
-    }
-    else if( !isEqual(String(isEvenModules)) && construction === "ilgoji") {
-        return moduleCount*4;
-    }
-    else
-    {
-        return clampGCount ?? 0;
-    }
+  if (isEqual(String(isEvenModules)) && construction === "ilgoji") {
+    return moduleCount * 2 * (rowsCount * 2);
+  }
+  else if (isEqual(String(isEvenModules)) && construction === "trumpoji") {
+    return rowsCount * 2 * 2;
+  }
+  else if (!isEqual(String(isEvenModules)) && construction === "ilgoji") {
+    return moduleCount * 4;
+  }
+  else {
+    return clampGCount ?? 0;
+  }
 }
 
 function calculatePT15InnerClampQuantity(
-    moduleCount: number,
-    rowsCount: number,
-    construction: string,
-    clampVCount?: number,
-    isEvenModules?: string,
+  moduleCount: number,
+  rowsCount: number,
+  construction: string,
+  clampVCount?: number,
+  isEvenModules?: string,
 ): number {
-    if( isEqual(String(isEvenModules)) && construction === "trumpoji") {
-        return  (moduleCount - 1) * (rowsCount * 2);
-    }
-    if(!isEqual(String(isEvenModules)) && construction === "trumpoji") {
-        return clampVCount ?? 0;
-    }
-    return 0;
+  if (isEqual(String(isEvenModules)) && construction === "trumpoji") {
+    return (moduleCount - 1) * (rowsCount * 2);
+  }
+  if (!isEqual(String(isEvenModules)) && construction === "trumpoji") {
+    return clampVCount ?? 0;
+  }
+  return 0;
 }
 
 function calculatePT15M8x30ScrewQuantity(
-    moduleCount: number,
-    rowsCount: number,
-    construction: string,
-    clampGCount?: number,
-    clampVCount?: number,
-    isEvenModules?: string,
+  moduleCount: number,
+  rowsCount: number,
+  construction: string,
+  clampGCount?: number,
+  clampVCount?: number,
+  isEvenModules?: string,
 ): number {
-    if(construction === "ilgoji") {
-        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount, isEvenModules);
-    }
-    else{
-        return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount, isEvenModules) + calculatePT15InnerClampQuantity(moduleCount, rowsCount, construction, clampVCount, isEvenModules);
-    }
+  if (construction === "ilgoji") {
+    return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount, isEvenModules);
+  }
+  else {
+    return calculatePT15BackClampQuantity(moduleCount, rowsCount, construction, clampGCount, isEvenModules) + calculatePT15InnerClampQuantity(moduleCount, rowsCount, construction, clampVCount, isEvenModules);
+  }
 }
 
 function calculateFrontBackRVHolderQuantity(
@@ -467,7 +472,7 @@ function calculateFrontBackRVHolderQuantity(
   rowsCount: number,
   holderPCount?: number,
   holderGCount?: number,
-    isEvenModules?: string,
+  isEvenModules?: string,
 ): number {
   if (isEqual(String(isEvenModules))) {
     return (moduleCount + 1) * 2;
@@ -503,12 +508,12 @@ function calculateClampInnerHelperQuantity(moduleLength: number, moduleCount: nu
   if (isEqual(String(isEvenModules))) {
     return moduleLength < 2000 ? 0 : (moduleCount * rowsCount) / 2;
   } else {
-    return moduleLength < 2000 ? 0 : moduleCount/2;
+    return moduleLength < 2000 ? 0 : moduleCount / 2;
   }
 }
 
 function calculateRVClampInnerQuantity(moduleCount: number, rowsCount: number, clampVCount?: number, isEvenModules?: string): number {
-  return isEqual(String(isEvenModules))    ? (moduleCount - 1) * (rowsCount * 2)
+  return isEqual(String(isEvenModules)) ? (moduleCount - 1) * (rowsCount * 2)
     : (clampVCount ?? 0);
 }
 
@@ -742,7 +747,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
-      calculateM8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.clampGCount, i.clampVCount, i.isEvenModules),
+      calculateM8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.clampGCount, i.clampVCount, i.isEvenModules, i.moduleLength),
   },
   {
     systems: ["RV10-Z"],
@@ -971,7 +976,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "M8x30 varžtas",
     length: null,
     calculateQuantity: (i) =>
-     calculatePT15M8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.clampVCount, i.isEvenModules),
+      calculatePT15M8x30ScrewQuantity(i.moduleCount, i.rowsCount, i.moduleConstruction, i.clampGCount, i.clampVCount, i.isEvenModules),
   },
   {
     systems: ["PT5"],
@@ -1073,7 +1078,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
     name: "Prispaudėjas galinis",
     length: null,
     calculateQuantity: (i) =>
-      calculateClampBackQuantity(i.rowsCount, i.clampGCount, i.isEvenModules),
+      calculateClampBackQuantity(i.rowsCount, i.clampGCount, i.isEvenModules, i.moduleLength, i.moduleCount),
   },
   {
     systems: ["PT5", "PT10", "PT15", "PT20"],
@@ -1095,6 +1100,7 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
         i.clampGCount,
         i.clampVCount,
         i.isEvenModules,
+        i.moduleLength
       ),
   },
 
@@ -1159,35 +1165,9 @@ export const roofSystemMaterials: SystemMaterialDefinition[] = [
       ),
   },
   {
-    mountingMethods: ["studs"],
+    mountingMethods: ["studs", "clamps", "hooks"],
     code: "SM180",
     name: MATERIAL_KEYS.studs,
-    length: null,
-    calculateQuantity: (i) =>
-      calculateStudsQuantity(
-        i.moduleCount,
-        i.moduleWidth,
-        i.moduleLength,
-        i.orientation,
-      ),
-  },
-  {
-    mountingMethods: ["clamps"],
-    code: "SPValc",
-    name: MATERIAL_KEYS.roofClamp,
-    length: null,
-    calculateQuantity: (i) =>
-      calculateStudsQuantity(
-        i.moduleCount,
-        i.moduleWidth,
-        i.moduleLength,
-        i.orientation,
-      ),
-  },
-  {
-    mountingMethods: ["hooks"],
-    code: "Kab",
-    name: MATERIAL_KEYS.roofHook,
     length: null,
     calculateQuantity: (i) =>
       calculateStudsQuantity(
