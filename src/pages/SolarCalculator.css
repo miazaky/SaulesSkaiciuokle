@@ -303,3 +303,58 @@
   }
 }
 
+
+.readonly-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-highlight);
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent-hover);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.solar-calculator input:disabled,
+.solar-calculator select:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  background: var(--color-surface-soft);
+}
+
+.readonly-canvas-preview {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.readonly-canvas-preview__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.readonly-canvas-preview__img {
+  width: 100%;
+  max-width: 700px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  display: block;
+}
+
+.readonly-status {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+.readonly-status--error {
+  color: var(--color-danger);
+}

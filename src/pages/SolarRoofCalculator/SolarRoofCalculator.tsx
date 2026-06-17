@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { FormGrid } from "../../components/layout/FormGrid";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { useReadonlyMode } from "../../hooks/useReadonlyMode";
 import "../SolarCalculator.css";
 
 const MODULE_WIDTH = 1134;
@@ -34,96 +35,55 @@ export default function SolarRoofCalculator() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const location = useLocation();
-  const restoredState = location.state as
-    | {
-        batteryType: BatteryType;
-        moduleCount: number;
-        moduleLength: number;
-        moduleThickness: number;
-        constructionLength: number;
-        rowsCount: number;
-        orientation: Orientation;
-        system: SystemKey;
-        moduleColor: string;
-        moduleConstruction: string;
-        gapBetweenRows: number;
-        roofMaterial: RoofMaterial;
-        mountingMethod: string;
-        rowModuleCounts?: number[];
-        isEvenModules: string;
-        savedModules?: Array<{ id: number; row: number; col: number }>;
-      }
-    | undefined;
+  const { readonly, data: roData, loading: roLoading, error: roError } = useReadonlyMode<any>();
 
-  const [batteryType, setBatteryType] = useState<BatteryType>(
-    restoredState?.batteryType ?? null,
-  );
+  const seed = (roData ?? location.state) as any;
 
-  const [orientation, setOrientation] = useState<Orientation>(
-    restoredState?.orientation ?? null,
-  );
-
-  const [system, setSystem] = useState<SystemKey>(
-    restoredState?.system ?? "PT5",
-  );
-
-  const prevOrientationRef = useRef<Orientation>(
-    restoredState?.orientation ?? null,
-  );
-
-  const [roofMaterial, setRoofMaterial] = useState<RoofMaterial>(
-    restoredState?.roofMaterial ?? "cement",
-  );
-
-  const [moduleLength, setModuleLength] = useState<number>(
-    restoredState?.moduleLength ?? DEFAULT_MODULE_LENGTH,
-  );
-  const [moduleLengthInput, setModuleLengthInput] = useState<string>(
-    String(restoredState?.moduleLength ?? DEFAULT_MODULE_LENGTH),
-  );
-
-  const [moduleCount, setModuleCount] = useState<number>(
-    restoredState?.moduleCount ?? 2,
-  );
-  const [moduleCountInput, setModuleCountInput] = useState<string>(
-    String(restoredState?.moduleCount ?? 2),
-  );
-
-  const [moduleThickness, setModuleThickness] = useState<number>(
-    restoredState?.moduleThickness ?? 30,
-  );
-
-  const [moduleColor, setModuleColor] = useState<string>(
-    restoredState?.moduleColor ?? "juoda",
-  );
-
-  const [mountingMethod, setMountingMethod] = useState<string>(
-    restoredState?.mountingMethod ?? "",
-  );
-
-  const [moduleConstruction, setModuleConstruction] = useState<string>(
-    restoredState?.moduleConstruction ?? "",
-  );
-
-  const [gapBetweenRows, setGapBetweenRows] = useState<number | null>(
-    restoredState?.gapBetweenRows ?? null,
-  );
-
-  const [rowsCount, setRowsCount] = useState<number>(
-    restoredState?.rowsCount ?? 2,
-  );
-
+  const [batteryType, setBatteryType] = useState<BatteryType>(seed?.batteryType ?? null);
+  const [orientation, setOrientation] = useState<Orientation>(seed?.orientation ?? null);
+  const [system, setSystem] = useState<SystemKey>(seed?.system ?? "PT5");
+  const prevOrientationRef = useRef<Orientation>(seed?.orientation ?? null);
+  const [roofMaterial, setRoofMaterial] = useState<RoofMaterial>(seed?.roofMaterial ?? "cement");
+  const [moduleLength, setModuleLength] = useState<number>(seed?.moduleLength ?? DEFAULT_MODULE_LENGTH);
+  const [moduleLengthInput, setModuleLengthInput] = useState<string>(String(seed?.moduleLength ?? DEFAULT_MODULE_LENGTH));
+  const [moduleCount, setModuleCount] = useState<number>(seed?.moduleCount ?? 2);
+  const [moduleCountInput, setModuleCountInput] = useState<string>(String(seed?.moduleCount ?? 2));
+  const [moduleThickness, setModuleThickness] = useState<number>(seed?.moduleThickness ?? 30);
+  const [moduleColor, setModuleColor] = useState<string>(seed?.moduleColor ?? "juoda");
+  const [mountingMethod, setMountingMethod] = useState<string>(seed?.mountingMethod ?? "");
+  const [moduleConstruction, setModuleConstruction] = useState<string>(seed?.moduleConstruction ?? "");
+  const [gapBetweenRows, setGapBetweenRows] = useState<number | null>(seed?.gapBetweenRows ?? null);
+  const [rowsCount, setRowsCount] = useState<number>(seed?.rowsCount ?? 2);
   const [rowModuleCounts, setRowModuleCounts] = useState<number[]>(
-    restoredState?.rowModuleCounts?.length
-      ? restoredState.rowModuleCounts
-      : restoredState?.moduleCount
-        ? [restoredState.moduleCount]
-        : [2],
+    seed?.rowModuleCounts?.length ? seed.rowModuleCounts : seed?.moduleCount ? [seed.moduleCount] : [2]
   );
+  const [rowsCountInput, setRowsCountInput] = useState<string>(String(seed?.rowsCount ?? 2));
 
-  const [rowsCountInput, setRowsCountInput] = useState<string>(
-    String(restoredState?.rowsCount ?? 2),
-  );
+  // Sync all state once roData arrives from async fetch
+  useEffect(() => {
+    if (!roData) return;
+    if (roData.batteryType)     setBatteryType(roData.batteryType);
+    if (roData.orientation)     setOrientation(roData.orientation);
+    if (roData.system)          setSystem(roData.system);
+    if (roData.roofMaterial)    setRoofMaterial(roData.roofMaterial);
+    if (roData.moduleLength != null) { setModuleLength(roData.moduleLength); setModuleLengthInput(String(roData.moduleLength)); }
+    if (roData.moduleCount != null)  { setModuleCount(roData.moduleCount);   setModuleCountInput(String(roData.moduleCount)); }
+    if (roData.moduleThickness) setModuleThickness(roData.moduleThickness);
+    if (roData.moduleColor)     setModuleColor(roData.moduleColor);
+    if (roData.mountingMethod)  setMountingMethod(roData.mountingMethod);
+    if (roData.moduleConstruction) setModuleConstruction(roData.moduleConstruction);
+    if (roData.gapBetweenRows != null) setGapBetweenRows(roData.gapBetweenRows);
+    if (roData.rowsCount != null) { setRowsCount(roData.rowsCount); setRowsCountInput(String(roData.rowsCount)); }
+    if (roData.rowModuleCounts?.length) setRowModuleCounts(roData.rowModuleCounts);
+  }, [roData]);
+
+  const restoredState = seed as {
+    batteryType: BatteryType; moduleCount: number; moduleLength: number; moduleThickness: number;
+    constructionLength: number; rowsCount: number; orientation: Orientation; system: SystemKey;
+    moduleColor: string; moduleConstruction: string; gapBetweenRows: number; roofMaterial: RoofMaterial;
+    mountingMethod: string; rowModuleCounts?: number[]; isEvenModules: string;
+    savedModules?: Array<{ id: number; row: number; col: number }>; canvasImageDataUrl?: string;
+  } | undefined;
 
   const isRv =
     batteryType === "ploksciasStogas" && orientation === "RV";
@@ -186,6 +146,7 @@ export default function SolarRoofCalculator() {
       return;
     }
     prevBatteryTypeRef.current = batteryType;
+    if (readonly) return;
 
     if (batteryType === "slaitinisStogas") {
       setOrientation("horizontal");
@@ -208,6 +169,7 @@ export default function SolarRoofCalculator() {
   }, [batteryType]);
 
   useEffect(() => {
+    if (readonly) return;
     if (prevOrientationRef.current !== orientation) {
       if (prevOrientationRef.current !== null) {
         if (orientation === "PT") {
@@ -224,6 +186,7 @@ export default function SolarRoofCalculator() {
 
   // Auto-set / keep mountingMethod valid when roof material changes
   useEffect(() => {
+    if (readonly) return;
     if (!roofMaterial) {
       if (mountingMethod !== "") setMountingMethod("");
       return;
@@ -265,8 +228,8 @@ export default function SolarRoofCalculator() {
 
   // Module construction rules (PT + RV)
   useEffect(() => {
+    if (readonly) return;
     if (!system) return;
-
     // RV rules
     if (system === "RV10") {
       // <= 2m => trumpoji, > 2m => abi
@@ -442,6 +405,7 @@ export default function SolarRoofCalculator() {
 
   // keep gapBetweenRows in sync with selected system
   useEffect(() => {
+    if (readonly) return;
     if (gapConfig.kind === "none") {
       if (gapBetweenRows !== null) setGapBetweenRows(null);
       return;
@@ -500,8 +464,16 @@ export default function SolarRoofCalculator() {
     if (!Number.isFinite(rowsCount) || rowsCount < 2) setRowsCount(2);
   }, [system]);
 
+  if (roLoading) return <div className="readonly-status">⏳ Kraunama...</div>;
+  if (roError)   return <div className="readonly-status readonly-status--error">⚠️ {roError}</div>;
+
   return (
     <div className="solar-calculator">
+      {readonly && (
+        <div className="readonly-banner">
+          👁 Peržiūros režimas — redaguoti negalima
+        </div>
+      )}
       <h2>{t("title.selectBattery")}</h2>
 
       <div className="solar-calculator__battery-list">
@@ -509,13 +481,13 @@ export default function SolarRoofCalculator() {
           title={t("batteryTypes.ploksciasStogas")}
           image="/images/flat.jpg"
           selected={batteryType === "ploksciasStogas"}
-          onClick={() => setBatteryType("ploksciasStogas")}
+          onClick={() => { if (!readonly) setBatteryType("ploksciasStogas"); }}
         />
         <ImageCard
           title={t("batteryTypes.slaitinisStogas")}
           image="/images/roof.jpg"
           selected={batteryType === "slaitinisStogas"}
-          onClick={() => setBatteryType("slaitinisStogas")}
+          onClick={() => { if (!readonly) setBatteryType("slaitinisStogas"); }}
         />
       </div>
 
@@ -530,6 +502,7 @@ export default function SolarRoofCalculator() {
               value="PT"
               checked={orientation === "PT"}
               onChange={() => setOrientation("PT")}
+            disabled={readonly}
             />{" "}
             {t("orientation.PT")}
           </label>
@@ -541,6 +514,7 @@ export default function SolarRoofCalculator() {
               value="RV"
               checked={orientation === "RV"}
               onChange={() => setOrientation("RV")}
+            disabled={readonly}
             />{" "}
             {t("orientation.RV")}
           </label>
@@ -552,9 +526,10 @@ export default function SolarRoofCalculator() {
           <h3>{t("system.systemTitle")}</h3>
             <select
               value={system ?? ""}
-              onChange={(e) =>
+              onChange={(e) => {
                 setSystem((e.target.value || null) as SystemKey)
-              }
+              }}
+            disabled={readonly}
             >
               <option value="" disabled>
                 {t("select.placeholder")}
@@ -597,6 +572,7 @@ export default function SolarRoofCalculator() {
                   setModuleLength(clamped);
                   setModuleLengthInput(String(clamped));
                 }}
+              disabled={readonly}
               />
             </InputField>
 
@@ -615,6 +591,7 @@ export default function SolarRoofCalculator() {
               <select
                 value={moduleThickness ?? ""}
                 onChange={(e) => setModuleThickness(Number(e.target.value))}
+              disabled={readonly}
               >
                 <option value="" disabled>
                   {t("select.placeholder")}
@@ -629,6 +606,7 @@ export default function SolarRoofCalculator() {
                 <select
                   value={moduleColor ?? ""}
                   onChange={(e) => setModuleColor(e.target.value)}
+                disabled={readonly}
                 >
                   <option value="" disabled>
                     {t("select.placeholder")}
@@ -691,11 +669,12 @@ export default function SolarRoofCalculator() {
                     const v = Number(e.target.value);
                     setGapBetweenRows(Number.isFinite(v) ? v : null);
                   }}
+                disabled={readonly}
                 />
               ) : (
                 <select
                   value={gapBetweenRows ?? ""}
-                  disabled={gapConfig.kind === "fixed"}
+                  disabled={gapConfig.kind === "fixed" || readonly}
                   onChange={(e) => setGapBetweenRows(Number(e.target.value))}
                 >
                   {gapConfig.kind !== "fixed" && (
@@ -729,6 +708,7 @@ export default function SolarRoofCalculator() {
                   setRowsCount(clamped);
                   setRowsCountInput(String(clamped));
                 }}
+              disabled={readonly}
               />
             </InputField>
 
@@ -745,6 +725,7 @@ export default function SolarRoofCalculator() {
                   setModuleCount(clamped);
                   setModuleCountInput(String(clamped));
                 }}
+              disabled={readonly}
               />
             </InputField>
             </FormGrid>
@@ -771,6 +752,7 @@ export default function SolarRoofCalculator() {
                   setModuleLength(clamped);
                   setModuleLengthInput(String(clamped));
                 }}
+              disabled={readonly}
               />
             </InputField>
 
@@ -788,6 +770,7 @@ export default function SolarRoofCalculator() {
               <select
                 value={moduleThickness ?? ""}
                 onChange={(e) => setModuleThickness(Number(e.target.value))}
+              disabled={readonly}
               >
                 <option value="" disabled>
                   {t("select.placeholder")}
@@ -802,6 +785,7 @@ export default function SolarRoofCalculator() {
                 <select
                   value={moduleColor ?? ""}
                   onChange={(e) => setModuleColor(e.target.value)}
+                disabled={readonly}
                 >
                   <option value="" disabled>
                     {t("select.placeholder")}
@@ -849,11 +833,12 @@ export default function SolarRoofCalculator() {
                     const v = Number(e.target.value);
                     setGapBetweenRows(Number.isFinite(v) ? v : null);
                   }}
+                disabled={readonly}
                 />
               ) : (
                 <select
                   value={gapBetweenRows ?? ""}
-                  disabled={gapConfig.kind === "fixed"}
+                  disabled={gapConfig.kind === "fixed" || readonly}
                   onChange={(e) => setGapBetweenRows(Number(e.target.value))}
                 >
                   {gapConfig.kind !== "fixed" && (
@@ -885,6 +870,7 @@ export default function SolarRoofCalculator() {
                   setRowsCount(clamped);
                   setRowsCountInput(String(clamped));
                 }}
+              disabled={readonly}
               />
               {rowsCountError && (
                 <div style={{ color: "var(--color-danger)", marginTop: 6 }}>
@@ -906,6 +892,7 @@ export default function SolarRoofCalculator() {
                   setModuleCount(clamped);
                   setModuleCountInput(String(clamped));
                 }}
+              disabled={readonly}
               />
             </InputField>
             </FormGrid>
@@ -919,9 +906,10 @@ export default function SolarRoofCalculator() {
             <h3>{t("fields.roofMaterial")}</h3>
             <select
               value={roofMaterial ?? ""}
-              onChange={(e) =>
+              onChange={(e) => {
                 setRoofMaterial((e.target.value || null) as RoofMaterial)
-              }
+              }}
+            disabled={readonly}
             >
               <option value="" disabled>
                 {t("select.placeholder")}
@@ -951,6 +939,7 @@ export default function SolarRoofCalculator() {
                     setModuleLength(clamped);
                     setModuleLengthInput(String(clamped));
                   }}
+                disabled={readonly}
                 />
               </InputField>
 
@@ -967,6 +956,7 @@ export default function SolarRoofCalculator() {
                 <select
                   value={moduleThickness ?? ""}
                   onChange={(e) => setModuleThickness(Number(e.target.value))}
+                disabled={readonly}
                 >
                   <option value="">{t("select.placeholder")}</option>
                   <option value="30">30 mm</option>
@@ -979,6 +969,7 @@ export default function SolarRoofCalculator() {
                 <select
                   value={moduleColor ?? ""}
                   onChange={(e) => setModuleColor(e.target.value)}
+                disabled={readonly}
                 >
                   <option value="" disabled>
                     {t("select.placeholder")}
@@ -997,8 +988,8 @@ export default function SolarRoofCalculator() {
                 <select
                   value={mountingMethod ?? ""}
                   onChange={(e) => setMountingMethod(e.target.value)}
-                  disabled={roofMountingMethodDisabled}
-                >
+                  disabled={readonly}
+                  >
                   <option value="" disabled>
                     {t("select.placeholder")}
                   </option>
@@ -1015,6 +1006,7 @@ export default function SolarRoofCalculator() {
                 <select
                   value={orientation ?? ""}
                   onChange={(e) => setOrientation(e.target.value as Orientation)}
+                disabled={readonly}
                 >
                   <option value="" disabled>
                     {t("select.placeholder")}
@@ -1038,6 +1030,7 @@ export default function SolarRoofCalculator() {
                     setRowsCount(clamped);
                     setRowsCountInput(String(clamped));
                   }}
+                disabled={readonly}
                 />
               </InputField>
 
@@ -1063,6 +1056,7 @@ export default function SolarRoofCalculator() {
                             return copy;
                           });
                         }}
+                      disabled={readonly}
                       />
                     </label>
                   ))}
@@ -1085,14 +1079,27 @@ export default function SolarRoofCalculator() {
 
         return (
           <div className="solar-calculator__actions-row">
+            {readonly && restoredState?.canvasImageDataUrl && (
+              <div className="readonly-canvas-preview">
+                <div className="readonly-canvas-preview__label">Brėžinys</div>
+                <img
+                  src={restoredState.canvasImageDataUrl}
+                  alt="Modulių išdėstymo brėžinys"
+                  className="readonly-canvas-preview__img"
+                />
+              </div>
+            )}
+            {!readonly && (
             <button
               className="solar-calculator__actions_back"
               onClick={() => navigate("/", {})}
             >
               {t("actions.back")}
             </button>
+            )}
 
-            {batteryType === "ploksciasStogas" ? (
+            {!readonly && (
+            batteryType === "ploksciasStogas" ? (
               <button
                 className="solar-calculator__actions"
                 disabled={actionDisabled}
@@ -1158,7 +1165,7 @@ export default function SolarRoofCalculator() {
               >
                 {t("actions.calculate")}
               </button>
-            )}
+            ))}
           </div>
         );
       })()}

@@ -143,6 +143,7 @@ export default function Checkout() {
           orderNumber,
           OrderNumber: orderNumber,
           orderType:   ORDER_TYPE.NoSpecialOffer,
+          stepsJson:   JSON.stringify(state),
           ...(isCompany && { companyCode: buyer.companyCode.trim() }),
           ...(isCompany && buyer.vatCode.trim() && { vatCode: buyer.vatCode.trim() }),
         }),
@@ -348,7 +349,7 @@ export default function Checkout() {
       {/* ── Price shown after submit ─────────────────────────────────────── */}
       {priceVisible && (
         <div className="checkout-price-result">
-          <div className="checkout-price-result__label">Sistemos kaina be PVM</div>
+          <div className="checkout-price-result__label">Sistemos kaina su PVM</div>
           <div className="checkout-price-result__value">{fmt(grandTotal)} €</div>
           {/* {isGround && (
             <div className="checkout-price-result__breakdown">
